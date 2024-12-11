@@ -169,3 +169,24 @@ download_sec <- function(long_cik, short_cik, user_email) {
   df$pctVal <- df$pctVal / 100
   return(df)
 }
+
+fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = 'D') {
+  username <- api_keys$fs$username
+  password <- api_keys$fs$password
+  ids[is.na(ids)] <- ""
+  url <- "https://api.factset.com/content/factset-global-prices/v1/returns"
+  request <- list(
+    ids = as.list(ids),
+    startDate = date_start,
+    endDate = date_end,
+    frequency = freq,
+    dividendAdjust = "EXDATE_C",
+    batch = "N"
+  )
+  response <- httr::POST(
+    url, authenticate(username, password), body = request,
+    add_headers(Accept = 'application/json'), encode = 'json')
+  output <- rawToChar(response$content)
+  json <- parse_json(output)
+  return(json)
+}

@@ -7,21 +7,22 @@
 db <- R6::R6Class(
   'db',
   public = list(
-    #' @description list of api keys
+    #' @field api_keys of api keys
     api_keys = NULL,
-    #' @description aws s3 bucket
+    #' @field bucket aws s3 bucket
     bucket = NULL,
-    #' @description ArcticDB object store
+    #' @field ac ArcticDB object store
     ac = NULL,
-    #' @description master security list: table of meta data for all investments
+    #' @field tbl_msl master security list: table of meta data for all investments
     tbl_msl = NULL,
-    #' @description custodian list: table of meta data for CTFs and SMAs
+    #' @field tbl_cust custodian list: table of meta data for CTFs and SMAs
     tbl_cust = NULL,
-    #' @description SEC list: table of meta data for mutual funds and ETFs
+    #' @field tbl_sec SEC list: table of meta data for mutual funds and ETFs
     tbl_sec = NULL,
-    #' @description excel model list: table of meta data for model portfolios
+    #' @field tbl_xl_mod excel model list: table of meta data for model portfolios
     tbl_xl_mod = NULL,
-    #' @decription holdings fields: table of fields / columns for holdings data
+    #' @field tbl_hold_field holdings fields: table of fields / columns for
+    #'  holdings data
     tbl_hold_field = NULL,
 
     #' @description Create a db object
@@ -65,6 +66,10 @@ db <- R6::R6Class(
       ac <- adb$Arctic(s3_url)
       self$bucket <- bucket
       self$ac <- ac
+      self$tbl_msl <- read_parquet(self$bucket$path("tables/tbl_msl.parquet"))
+      self$tbl_cust <- read_parquet(self$bucket$path("tables/tbl_cust.parquet"))
+      self$tbl_sec <- read_parquet(self$bucket$path("tables/tbl_sec.parquet"))
+      self$tbl_xl_mod <- NULL # place holder
     },
 
     #' @description Check if api keys are properly specified
@@ -76,7 +81,6 @@ db <- R6::R6Class(
         stop("s3 and/or fs not found in api_keys")
       }
     }
-
   )
 )
 
