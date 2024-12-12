@@ -30,8 +30,7 @@ db <- R6::R6Class(
     #'   of keys
     #' @param py_loc optional file path where python is installed to be used
     #'   with `reticulate`
-    initialize = function(api_keys,
-      py_loc = "C:/Users/asotolongo/AppData/Local/anaconda3") {
+    initialize = function(api_keys, py_loc) {
 
       if (!is.list(api_keys)) {
         rdat_file <- grep(".RData", api_keys, fixed = TRUE)
@@ -49,14 +48,8 @@ db <- R6::R6Class(
         access_key = api_keys$s3$access_key,
         secret_key = api_keys$s3$secret_key
       )
-      adb <- try(import("arcticdb"))
-      if ("try-error" %in% class(adb)) {
-        use_python(py_loc)
-        adb <- try(import("arcticdb"))
-        if ("try-error" %in% class(adb)) {
-          return("could not import arcticdb")
-        }
-      }
+      use_python(py_loc)
+      adb <- import("arcticdb")
       base_url <- 's3://s3.us-east-1.amazonaws.com:dtc-inv?'
       s3_url <- paste0(
         base_url,

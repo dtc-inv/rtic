@@ -170,7 +170,15 @@ download_sec <- function(long_cik, short_cik, user_email) {
   return(df)
 }
 
-fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = 'D') {
+#' @title Factset Global Prices API
+#' @param api_keys list of api keys
+#' @param ids character vector of ids to download
+#' @param date_start begginig date, earliest start is 2006-01-03
+#' @param date_end ending date
+#' @param freq "D", or "M" for daily or monthly time-series
+#' @return json with data
+#' @export
+fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = "D") {
   username <- api_keys$fs$username
   password <- api_keys$fs$password
   ids[is.na(ids)] <- ""
@@ -189,4 +197,39 @@ fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = 'D') {
   output <- rawToChar(response$content)
   json <- parse_json(output)
   return(json)
+}
+
+#' @title Factset Formula API: RA_RET
+#' @param id character representing id (only supports one id)
+#' @param t_minus number of months of desired time-series, numeric value
+#' @param freq "D", or "M" for daily or monthly time-series
+#' @return xts time-series
+#' @export
+download_fs_ra_ret <- function(id, api_keys, t_minus = 12, freq = 'D') {
+  username <- api_keys$fs$username
+  password <- api_keys$fs$password
+  base_url <- "https://api.factset.com/formula-api/v1/time-series?ids=$IDS&formulas="
+  request <- paste0(
+    base_url,
+    'RA_RET(',
+    '"',
+    id,
+    '"',
+    ",",
+    "-",
+    t_minus,
+    "/0/0,0,", freq,
+    ",FIVEDAY,USD,1)&flatten=Y"
+  )
+  response <- httr::GET(request, authenticate(username, password))
+  output <- rawToChar(response$content)
+  dat <- parse_json(output)
+  dat <- dat[[1]]
+  dt <- lapply(dat, '[[', 'date')
+  dt <- list_replace_null(dt)
+  val <- lapply(dat, '[[', 2)
+  val <- list_replace_null(val)
+  res <- xts(unlist(val) / 100, as.Date(unlist(dt)))
+  colnames(res) <- id
+  return(res)
 }
