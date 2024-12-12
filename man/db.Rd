@@ -34,6 +34,7 @@ holdings data}
 \itemize{
 \item \href{#method-db-new}{\code{db$new()}}
 \item \href{#method-db-check_api_keys}{\code{db$check_api_keys()}}
+\item \href{#method-db-ret_index}{\code{db$ret_index()}}
 \item \href{#method-db-clone}{\code{db$clone()}}
 }
 }
@@ -43,7 +44,7 @@ holdings data}
 \subsection{Method \code{new()}}{
 Create a db object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{db$new(api_keys, py_loc = "C:/Users/asotolongo/AppData/Local/anaconda3")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{db$new(api_keys, py_loc)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -71,6 +72,27 @@ Check if api keys are properly specified
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{api_keys}}{list of api_keys}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-db-ret_index"></a>}}
+\if{latex}{\out{\hypertarget{method-db-ret_index}{}}}
+\subsection{Method \code{ret_index()}}{
+Update index returns from Factset
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{db$ret_index(ids = NULL, t_minus = 1)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{leave NULL to update all indexes, or enter specific index
+ids to update, note ids will have to first exist in the Master Security
+List `tbl_msl`}
+
+\item{\code{t_minus}}{how many months to download}
 }
 \if{html}{\out{</div>}}
 }
