@@ -73,6 +73,39 @@ db <- R6::R6Class(
       } else {
         stop("s3 and/or fs not found in api_keys")
       }
+    },
+
+    #' @description Update index returns from Factset
+    #' @param ids leave NULL to update all indexes, or enter specific index
+    #'   ids to update, note ids will have to first exist in the Master Security
+    #'   List `tbl_msl`
+    #' @param t_minus how many months to download
+    ret_index = function(ids = NULL, t_minus = 1) {
+      if (is.null(ids)) {
+        idx <- filter(self$tbl_msl, ReturnLibrary == "index")
+        ids <- idx$Ticker
+      }
+      res <- list()
+      is_miss <- rep(FALSE, length(ids))
+      for (i in 1:length(ids)) {
+        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus, "D"))
+        if ("try-error" %in% class(dat)) {
+          is_miss[i] <- TRUE
+        } else {
+          res[[i]] <- dat
+        }
+      }
+      dtc_name <- filter(self$tbl_msl, Ticker %in% ids)$DtcName[!is_miss]
+      dtc_name <- na.omit(dtc_name)
+      ret <- do.call("cbind", res)
+      colnames(ret) <- dtc_name
+      new_dat <- xts_to_dataframe(ret)
+      colnames(new_dat) <- colnames(ret)
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("index")$data
+      old_dat_df <- arc_to_dataframe(old_dat)
+      combo <- xts_rbind(new_dat, old_dat_df, FALSE)
+      lib$write("index", data.frame(combo))
     }
   )
 )
