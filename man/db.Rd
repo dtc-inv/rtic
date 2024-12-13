@@ -35,6 +35,7 @@ holdings data}
 \item \href{#method-db-new}{\code{db$new()}}
 \item \href{#method-db-check_api_keys}{\code{db$check_api_keys()}}
 \item \href{#method-db-ret_index}{\code{db$ret_index()}}
+\item \href{#method-db-ret_stock}{\code{db$ret_stock()}}
 \item \href{#method-db-clone}{\code{db$clone()}}
 }
 }
@@ -96,6 +97,15 @@ List `tbl_msl`}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-db-ret_stock"></a>}}
+\if{latex}{\out{\hypertarget{method-db-ret_stock}{}}}
+\subsection{Method \code{ret_stock()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{db$ret_stock(ids = NULL, date_start = NULL, date_end = Sys.Date(), freq = "D")}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-db-clone"></a>}}
