@@ -178,7 +178,7 @@ download_sec <- function(long_cik, short_cik, user_email) {
 #' @param freq "D", or "M" for daily or monthly time-series
 #' @return json with data
 #' @export
-fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = "D") {
+download_fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = "D") {
   username <- api_keys$fs$username
   password <- api_keys$fs$password
   ids[is.na(ids)] <- ""
@@ -232,4 +232,33 @@ download_fs_ra_ret <- function(id, api_keys, t_minus = 12, freq = 'D') {
   res <- xts(unlist(val) / 100, as.Date(unlist(dt)))
   colnames(res) <- id
   return(res)
+}
+
+#' @export
+flatten_fs_global_prices <- function(json) {
+  if ('status' %in% names(json)) {
+    if (json$status == "Bad Request") {
+      warning('bad request, returning empty data.frame')
+      return(data.frame())
+    }
+  }
+  dat <- json$data
+  requestId <- sapply(dat, '[[', 'requestId')
+  if (is.list(requestId)) {
+    requestId <- unlist(list_replace_null(requestId))
+  }
+  date <- sapply(dat, '[[', 'date')
+  if (is.list(date)) {
+    date <- unlist(list_replace_null(date))
+  }
+  totalReturn <- sapply(dat, '[[', 'totalReturn')
+  if (is.list(totalReturn)) {
+    totalReturn <- unlist(list_replace_null(totalReturn))
+  }
+  df <- data.frame(
+    requestId = requestId,
+    date = date,
+    totalReturn = totalReturn
+  )
+  return(df)
 }

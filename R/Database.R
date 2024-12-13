@@ -75,6 +75,8 @@ db <- R6::R6Class(
       }
     },
 
+    # update returns ----
+
     #' @description Update index returns from Factset
     #' @param ids leave NULL to update all indexes, or enter specific index
     #'   ids to update, note ids will have to first exist in the Master Security
@@ -106,6 +108,42 @@ db <- R6::R6Class(
       old_dat_df <- arc_to_dataframe(old_dat)
       combo <- xts_rbind(new_dat, old_dat_df, FALSE)
       lib$write("index", data.frame(combo))
+    },
+
+    ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
+                         freq = "D") {
+      if (is.null(ids)) {
+        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        ids <- create_ids(stock)
+      }
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("stock")$data
+      if (is.null(date_start)) {
+        date_start <- rownames(old_dat)[nrow(old_dat)]
+      }
+      iter <- space_ids(ids)
+      xdf <- data.frame()
+      for (i in 1:(length(iter)-1)) {
+        json <- download_fs_global_prices(
+          api_keys = self$api_keys,
+          ids = ids[iter[i]:iter[i+1]],
+          date_start = date_start,
+          date_end = date_end,
+          freq = freq
+        )
+        xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
+        print(iter[i])
+      }
+      ix <- match_ids_dtc_name(xdf$requestId, self$tbl_msl)
+      dtc_name <- self$tbl_msl$DtcName[ix]
+      xdf$DtcName <- dtc_name
+      is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
+      xdf <- xdf[!is_dup, ]
+      new_dat <- pivot_wider(xdf, id_cols = date, values_from = totalReturn,
+                             names_from = DtcName)
+      colnames(new_dat)[1] <- "Date"
+      old_dat_df <- arc_to_dataframe(old_dat)
+      combo <- xts_rbind(new_dat, old_dat_df, FALSE)
     }
   )
 )
