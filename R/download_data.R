@@ -1,3 +1,23 @@
+#' @export
+refresh_bd_key <- function(api_keys, save_to_n = FALSE) {
+  bd_key <- api_keys$bd_key
+  response <- httr::POST('https://login.bdreporting.com/connect/token',
+                         encode = 'form',
+                         body = list(grant_type = 'password',
+                                     client_id = bd_key$client_id,
+                                     client_secret = bd_key$client_secret,
+                                     username = bd_key$username,
+                                     password = bd_key$password))
+  tk <- jsonlite::parse_json(response)
+  bd_key$refresh_token <- tk$access_token
+  if (save_to_n) {
+    api_keys$bd_key <- bd_key
+    save(api_keys, file = 'N:/Investment Team/DATABASES/MDB/Keys/api_keys.RData')
+  }
+  return(bd_key)
+}
+
+#' @export
 download_bd <- function(account_id, api_keys, as_of = NULL) {
   if (is.null(as_of)) {
     as_of <- last_us_trading_day()
@@ -60,19 +80,19 @@ download_bd <- function(account_id, api_keys, as_of = NULL) {
     }
   }
   for (i in 1:length(rd)) {
-    df[i, 'assetId'] <- rd[[i]]$asset['assetId'][[1]]
-    df[i, 'name'] <- rd[[i]]$asset['name'][[1]]
-    df[i, 'cusip'] <- robcheck('cusip', rd[[i]]$asset)
-    df[i, 'ticker'] <- robcheck('ticker', rd[[i]]$asset)
-    df[i, 'identifier'] <- robcheck('identifier', rd[[i]]$asset)
-    df[i, 'units'] <- rd[[i]]$returnInfo['units'][[1]]
-    df[i, 'emv'] <- rd[[i]]$returnInfo['emv'][[1]]
-    df[i, 'returnInfo'] <- rd[[i]]$returnInfo['returnDate'][[1]]
+    df[i, 'Name'] <- rd[[i]]$asset['name'][[1]]
+    df[i, 'Cusip'] <- robcheck('cusip', rd[[i]]$asset)
+    df[i, 'Ticker'] <- robcheck('ticker', rd[[i]]$asset)
+    df[i, 'Identifier'] <- robcheck('identifier', rd[[i]]$asset)
+    df[i, 'Units'] <- rd[[i]]$returnInfo['units'][[1]]
+    df[i, 'Value'] <- rd[[i]]$returnInfo['emv'][[1]]
+    df[i, 'TimeStamp'] <- rd[[i]]$returnInfo['returnDate'][[1]]
   }
   df$pctVal <- df$emv / sum(df$emv, na.rm = TRUE)
   return(df)
 }
 
+#' @export
 download_sec <- function(long_cik, short_cik, user_email) {
   doc_type <- 'nport-p'
   url <- paste0(
@@ -103,71 +123,54 @@ download_sec <- function(long_cik, short_cik, user_email) {
   all_list <- XML::xmlToList(root)
   # current node is invstOrSecs for the holdings
   all_sec <- all_list$formData$invstOrSecs
-  df <- data.frame(
-    name = NA,
-    lei = NA,
-    title = NA,
-    cusip = NA,
-    isin = NA, # conditional, required to list at least one additional ID
-    altid = NA, # ID is usually ISIN, check for ISIN otherwise call alt
-    balance = NA,
-    units = NA,
-    curCd = NA,
-    exchangeRt = NA, # conditional, if no FX then this field doesn't exist
-    valUSD = NA,
-    pctVal = NA,
-    payoffProfile = NA,
-    assetCat = NA,
-    issuerCat = NA,
-    invCountry = NA,
-    returnInfo = NA
+  xdf <- data.frame(
+    Name = NA,
+    Lei = NA,
+    Cusip = NA,
+    Isin = NA, # conditional, required to list at least one additional ID
+    Identifier = NA, # ID is usually ISIN, check for ISIN otherwise call alt
+    Value = NA,
+    Units = NA,
+    Currency = NA,
+    CapWgt = NA,
+    Payoff = NA,
+    AssetCat = NA,
+    IssuerCat = NA,
+    Country = NA,
+    TimeStamp = NA,
+    ValueLevel = NA,
+    Maturity = NA,
+    CouponType = NA,
+    CouponRate = NA
   )
   for (i in 1:length(all_sec)) {
     x <- all_sec[[i]]
-    df[i, 'name'] <- x$name
-    df[i, 'lei'] <- x$lei
-    df[i, 'title'] <- x$title
-    df[i, 'cusip']  <- x$cusip
+    xdf[i, 'Name'] <- get_list_fld(x, "name")
+    xdf[i, 'Lei'] <- get_list_fld(x, "lei")
+    xdf[i, 'Cusip']  <- get_list_fld(x, "cusip")
     if ('isin' %in% names(x$identifiers)) {
-      df[i, 'isin'] <- x$identifiers$isin
-      df[i, 'altid'] <- NA
-    } else {
-      df[i, 'isin'] <- NA
-      df[i, 'altid'] <- x$identifiers[[1]][2]
+      xid <- x$identifiers
+      xdf[i, 'Isin'] <- get_list_fld(xid, "isin")
+      xdf[i, 'Identifier'] <- get_list_fld(xid, "altid")
     }
-    df[i, 'balance'] <- x$balance
-    df[i, 'units'] <- x$units
+    xdf[i, 'Value'] <- get_list_fld(x, "valUSD")
+    xdf[i, 'Units'] <- get_list_fld(x, "units")
     if ('curCd' %in% names(x)) {
-      df[i, 'curCd'] <- x$curCd
-      df[i, 'exchangeRt'] <- NA
-    } else if ('currencyConditional' %in% names(x)) {
-      df[i, 'curCd'] <- x$currencyConditional[1]
-      df[i, 'exchangeRt'] <- x$currencyConditional[2]
-    } else {
-      df[i, 'curCd'] <- NA
-      df[i, 'exchangeRt'] <- NA
+      xdf[i, 'Currency'] <- get_list_fld(x, "curCd")
     }
-    df[i, 'valUSD'] <- x$valUSD
-    df[i, 'pctVal'] <- x$pctVal
-    df[i, 'payoffProfile'] <- x$payoffProfile
-    if ('assetCat' %in% names(x)) {
-      df[i, 'assetCat'] <- x$assetCat
-    } else if ('assetConditional' %in% names(x)) {
-      df[i, 'assetCat'] <- x$assetConditional[2]
-    } else {
-      df[i, 'assetCat'] <- NA
+    if ('currencyConditional' %in% names(x)) {
+      xdf[i, 'Currency'] <- get_list_fld(x, "curCd")
     }
-    if ('issuerCat' %in% names(x)) {
-      df[i, 'issuerCat'] <- x$issuerCat[1]
-    } else {
-      df[i, 'issuerCat'] <- NA
-    }
-    df[i, 'invCountry'] <- x$invCountry
+    xdf[i, 'CapWgt'] <- get_list_fld(x, "pctVal")
+    xdf[i, 'Payoff'] <- get_list_fld(x, "payoffProfile")
+    xdf[i, "AssetCat"] <- get_list_fld(x, "assetCat")
+    xdf[i, "IssuerCat"] <- get_list_fld(x, "issuerCat")
+    xdf[i, 'Country'] <- get_list_fld(x, "invCountry")
   }
-  df[ ,'returnInfo'] <- as.Date(file_date)
-  df$pctVal <- as.numeric(df$pctVal)
-  df$pctVal <- df$pctVal / 100
-  return(df)
+  xdf[ ,'TimeStamp'] <- as.Date(file_date)
+  xdf$CapWgt <- as.numeric(xdf$CapWgt)
+  xdf$CapWgt <- xdf$CapWgt / 100
+  return(xdf)
 }
 
 #' @title Factset Global Prices API
@@ -178,7 +181,8 @@ download_sec <- function(long_cik, short_cik, user_email) {
 #' @param freq "D", or "M" for daily or monthly time-series
 #' @return json with data
 #' @export
-download_fs_global_prices <- function(api_keys, ids, date_start, date_end, freq = "D") {
+download_fs_global_prices <- function(api_keys, ids, date_start, date_end,
+                                      freq = "D") {
   username <- api_keys$fs$username
   password <- api_keys$fs$password
   ids[is.na(ids)] <- ""
@@ -256,9 +260,9 @@ flatten_fs_global_prices <- function(json) {
     totalReturn <- unlist(list_replace_null(totalReturn))
   }
   df <- data.frame(
-    requestId = requestId,
-    date = date,
-    totalReturn = totalReturn
+    RequestId = requestId,
+    Date = date,
+    TotalReturn = totalReturn
   )
   return(df)
 }

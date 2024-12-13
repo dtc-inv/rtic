@@ -4,8 +4,8 @@
 #'   Download and store holdings and price time-series data in s3 from various
 #'   sources such as factset, blackdiamond, excel
 #' @export
-db <- R6::R6Class(
-  'db',
+Database <- R6::R6Class(
+  'Database',
   public = list(
     #' @field api_keys of api keys
     api_keys = NULL,
@@ -50,7 +50,7 @@ db <- R6::R6Class(
       )
       use_python(py_loc)
       adb <- import("arcticdb")
-      base_url <- 's3://s3.us-east-1.amazonaws.com:dtc-inv?'
+      base_url <- 's3://s3.us-east-1.amazonaws.com:dtc-rtic?'
       s3_url <- paste0(
         base_url,
         "access=", api_keys$s3$access_key,
@@ -101,13 +101,47 @@ db <- R6::R6Class(
       dtc_name <- na.omit(dtc_name)
       ret <- do.call("cbind", res)
       colnames(ret) <- dtc_name
-      new_dat <- xts_to_dataframe(ret)
-      colnames(new_dat) <- colnames(ret)
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("index")$data
-      old_dat_df <- arc_to_dataframe(old_dat)
-      combo <- xts_rbind(new_dat, old_dat_df, FALSE)
-      lib$write("index", data.frame(combo))
+      new_dat <- xts_to_dataframe(ret)
+      combo <- xts_rbind(new_dat, old_dat, FALSE)
+      combo_df <- xts_to_dataframe(combo)
+      combo_df$Date <- as.character(combo_df$Date)
+      lib$write("index", combo_df)
+    },
+
+    ret_etf = function(ids = NULL, date_start = NULL, date_end = Sys.Date()-1,
+                       freq = "D") {
+      if (is.null(ids)) {
+        etf <- filter(self$tbl_msl, ReturnLibrary == "etf")
+        ids <- etf$Ticker
+      }
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("etf")$data
+      if (is.null(date_start)) {
+        date_start <- rownames(old_dat)[nrow(old_dat)]
+      }
+      iter <- space_ids(ids)
+      xdf <- data.frame()
+      for (i in 1:(length(iter)-1)) {
+        json <- download_fs_global_prices(
+          api_keys = self$api_keys,
+          ids = ids[iter[i]:iter[i+1]],
+          date_start = date_start,
+          date_end = date_end,
+          freq = freq
+        )
+        xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
+        print(iter[i])
+      }
+      xdf$DtcName <- etf$DtcName[match(xdf$RequestId, etf$Ticker)]
+      is_dup <- duplicated(paste0(xdf$Date, xdf$DtcName))
+      new_dat <- pivot_wider(xdf[!is_dup, ], id_cols = Date,
+                             names_from = DtcName, values_from = TotalReturn)
+      combo <- xts_rbind(new_dat, old_dat, FALSE)
+      combo_df <- xts_to_dataframe(combo)
+      combo_df$Date <- as.character(combo_df$Date)
+      lib$write("etf", combo_df)
     },
 
     ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
@@ -144,6 +178,112 @@ db <- R6::R6Class(
       colnames(new_dat)[1] <- "Date"
       old_dat_df <- arc_to_dataframe(old_dat)
       combo <- xts_rbind(new_dat, old_dat_df, FALSE)
+    },
+
+    # holdings ----
+    hold_sec = function(dtc_name = NULL,
+                        user_email = "asotolongo@diversifiedtrust.com",
+                        save_to_db = TRUE, return_data = FALSE) {
+      lib <- self$ac$get_library("holdings")
+      sec <- self$tbl_sec
+      if (!is.null(dtc_name)) {
+        sec <- filter(sec, DtcName %in% dtc_name)
+        if (nrow(sec) == 0) {
+          stop("dtc_names not found in SEC table")
+        }
+      } else {
+        dtc_name <- sec$DtcName
+      }
+      res <- list()
+      for (i in 1:length(dtc_name)) {
+        print(paste0("working on ", dtc_name[i]))
+        dat <- try(download_sec(sec$LongCIK[i], sec$ShortCIK[i], user_email))
+        if ("try-error" %in% class(dat)) {
+          warning(paste0("could not download ", dtc_name[i]))
+          next
+        }
+        if (save_to_db) {
+          dat$TimeStamp <- as.character(dat$TimeStamp)
+          if (dtc_name[i] %in% lib$list_symbols()) {
+            old_dat <- lib$read(dtc_name[i])
+            if (dat$TimeStamp[1] %in% unique(old_dat$data$TimeStamp)) {
+              warning(paste0(dtc_name[i], " already has data for latest date"))
+              if (return_data) {
+                res[[i]] <- dat
+                next
+              }
+            }
+            combo <- rob_rbind(old_dat$data, dat)
+            lib$write(dtc_name[i], combo)
+          } else {
+            warning(
+              paste0(
+                dtc_name[i],
+                " not found in library, creating new symbol"
+              )
+            )
+            lib$write(dtc_name[i], dat)
+          }
+        }
+        if (return_data) {
+          res[[i]] <- dat
+        }
+      }
+      if (return_data) {
+        return(res)
+      }
+    },
+
+    hold_cust = function(dtc_name = NULL, save_to_db = TRUE,
+                       return_data = FALSE) {
+      lib <- self$ac$get_library("holdings")
+      cust <- self$tbl_cust
+      if (!is.null(dtc_name)) {
+        cust <- filter(cust, DtcName %in% dtc_name)
+        if (nrow(cust) == 0) {
+          stop("dtc_names not found in custodian table")
+        }
+      } else {
+        dtc_name <- cust$DtcName
+      }
+      res <- list()
+      for (i in 1:length(dtc_name)) {
+        print(paste0("working on ", dtc_name[i]))
+        dat <- try(download_bd(cust$BdAccountId[i], self$api_keys))
+        if ("try-error" %in% class(dat)) {
+          warning(paste0("could not download ", dtc_name[i]))
+          next
+        }
+        if (save_to_db) {
+          dat$TimeStamp <- as.character(dat$TimeStamp)
+          if (dtc_name[i] %in% lib$list_symbols()) {
+            old_dat <- lib$read(dtc_name[i])
+            if (dat$TimeStamp[1] %in% unique(old_dat$data$TimeStamp)) {
+              warning(paste0(dtc_name[i], " already has data for latest date"))
+              if (return_data) {
+                res[[i]] <- dat
+                next
+              }
+            }
+            combo <- rob_rbind(old_dat$data, dat)
+            lib$write(dtc_name[i], combo)
+          } else {
+            warning(
+              paste0(
+                dtc_name[i],
+                " not found in library, creating new symbol"
+              )
+            )
+            lib$write(dtc_name[i], dat)
+          }
+        }
+        if (return_data) {
+          res[[i]] <- dat
+        }
+      }
+      if (return_data) {
+        return(res)
+      }
     }
   )
 )

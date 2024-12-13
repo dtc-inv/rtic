@@ -94,3 +94,14 @@ rob_rbind <- function(df1, df2) {
   df2 <- df2[, colnames(df1)]
   rbind(df1, df2)
 }
+
+#' @export
+get_list_fld <- function(x, fld) {
+  if (is.null(x[fld][[1]])) {
+    return(NA)
+  } else {
+    x[fld]
+  }
+}
+
+
