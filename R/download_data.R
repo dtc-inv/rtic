@@ -266,3 +266,12 @@ flatten_fs_global_prices <- function(json) {
   )
   return(df)
 }
+
+#' @export
+read_private_xts <- function(file_nm, field_nm) {
+  xdf <- readxl::read_excel(file_nm)
+  r <- dataframe_to_xts(xdf)
+  r <- r$`Return*`
+  colnames(r) <- field_nm
+  return(r)
+}

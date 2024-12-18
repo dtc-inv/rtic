@@ -144,6 +144,67 @@ Database <- R6::R6Class(
       lib$write("etf", combo_df)
     },
 
+    ret_private_index = function() {
+      base <- "N:/Investment Team/DATABASES/CustomRet/PE-Downloads/"
+      pe_q <- read_private_xts(
+        paste0(base, "PrivateEquity.xlsx"),
+        "Private Equity Index"
+      )
+      re_q <- read_private_xts(
+        paste0(base, "PrivateRealEstateValueAdd.xlsx"),
+        "Private Real Estate Value Add Index"
+      )
+      pc_q <- read_private_xts(
+        paste0(base, "PrivateCredit.xlsx"),
+        "Private Credit Index"
+      )
+      lib <- self$ac$get_library("returns")
+      ind <- lib$read("index")
+      ind <- dataframe_to_xts(ind$data)
+      pe_m <- change_freq(na.omit(ind$`Russell 2000`))
+      re_m <- change_freq(na.omit(ind$`Wilshire US REIT`))
+      pc_m <- change_freq(na.omit(ind$`BofAML U.S. HY Master II`))
+      pe <- monthly_spline(pe_m, pe_q)
+      re <- monthly_spline(re_m, re_q)
+      pc <- monthly_spline(pc_m, pc_q)
+      colnames(pe) <- "Private Equity Index"
+      colnames(re) <- "Private Real Estate Value Add Index"
+      colnames(pc) <- "Private Credit Index"
+      dat <- xts_cbind(pe, re)
+      dat <- xts_cbind(dat, pc)
+      xdf <- xts_to_dataframe(dat)
+      xdf$Date <- as.character(xdf$Date)
+      lib$write("private-index", xdf)
+    },
+
+    ret_ctf_monthly = function(ids = NULL, t_minus = 1) {
+      if (is.null(ids)) {
+        ctf <- filter(self$tbl_msl, ReturnLibrary == "ctf")
+        ids <- ctf$Isin
+      }
+      res <- list()
+      is_miss <- rep(FALSE, length(ids))
+      for (i in 1:length(ids)) {
+        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus, "M"))
+        if ("try-error" %in% class(dat)) {
+          is_miss[i] <- TRUE
+        } else {
+          res[[i]] <- dat
+        }
+      }
+      dtc_name <- filter(self$tbl_msl, Isin %in% ids)$DtcName[!is_miss]
+      dtc_name <- na.omit(dtc_name)
+      ret <- do.call("cbind", res)
+      colnames(ret) <- dtc_name
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("ctf")$data
+      new_dat <- xts_to_dataframe(ret)
+      combo <- xts_rbind(new_dat, old_dat, FALSE)
+      combo_df <- xts_to_dataframe(combo)
+      combo_df$Date <- as.character(combo_df$Date)
+      lib$write("ctf", combo_df)
+    },
+
     ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
                          freq = "D") {
       if (is.null(ids)) {
