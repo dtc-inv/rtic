@@ -33,6 +33,14 @@ monthly_spline <- function(m_ret, q_ret, thresh = 0.00001) {
   return(m_adj)
 }
 
+#' @export
 test_diff <- function(a, b) {
   (prod(a+1)-1) - b
+}
+
+#' @export
+unsmooth_ret <- function(x) {
+  lag_x <- lag.xts(x)
+  rho <- as.numeric(acf(as.numeric(x), plot = FALSE)[1][[1]])
+  na.omit((x - lag_x * rho) / (1 - rho))
 }

@@ -110,8 +110,13 @@ Database <- R6::R6Class(
       lib$write("index", combo_df)
     },
 
-    ret_etf = function(ids = NULL, date_start = NULL, date_end = Sys.Date()-1,
-                       freq = "D") {
+    #' @description Update ETF returns from Factset
+    #' @param ids leave `NULL` to udpate all ETFs in the Master Security List,
+    #'   or enter a vector to only update specific ETFs
+    #' @param date_start beginning date for update, if left `NULL` will
+    #'   default to the last date of the existing data
+    #' @param date_end ending date for update, by default is yesterday
+    ret_etf = function(ids = NULL, date_start = NULL, date_end = Sys.Date()-1) {
       if (is.null(ids)) {
         etf <- filter(self$tbl_msl, ReturnLibrary == "etf")
         ids <- etf$Ticker
@@ -129,7 +134,7 @@ Database <- R6::R6Class(
           ids = ids[iter[i]:iter[i+1]],
           date_start = date_start,
           date_end = date_end,
-          freq = freq
+          freq = "D"
         )
         xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
         print(iter[i])
@@ -144,20 +149,24 @@ Database <- R6::R6Class(
       lib$write("etf", combo_df)
     },
 
+    #' @description Update Private Asset Indexes from Excel
     ret_private_index = function() {
       base <- "N:/Investment Team/DATABASES/CustomRet/PE-Downloads/"
       pe_q <- read_private_xts(
         paste0(base, "PrivateEquity.xlsx"),
         "Private Equity Index"
-      )
+      ) |>
+        unsmooth_ret()
       re_q <- read_private_xts(
         paste0(base, "PrivateRealEstateValueAdd.xlsx"),
         "Private Real Estate Value Add Index"
-      )
+      ) |>
+        unsmooth_ret()
       pc_q <- read_private_xts(
         paste0(base, "PrivateCredit.xlsx"),
         "Private Credit Index"
-      )
+      ) |>
+        unsmooth_ret()
       lib <- self$ac$get_library("returns")
       ind <- lib$read("index")
       ind <- dataframe_to_xts(ind$data)
@@ -177,6 +186,11 @@ Database <- R6::R6Class(
       lib$write("private-index", xdf)
     },
 
+    #' @description Update CTF Returns from Factset
+    #' @param ids leave `NULL` to update all CTFs or enter a vector of ids to
+    #'   only update specific CTFs
+    #' @param t_minus integer to indicate how many months back to download new
+    #'   data from
     ret_ctf_monthly = function(ids = NULL, t_minus = 1) {
       if (is.null(ids)) {
         ctf <- filter(self$tbl_msl, ReturnLibrary == "ctf")
@@ -214,7 +228,7 @@ Database <- R6::R6Class(
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("stock")$data
       if (is.null(date_start)) {
-        date_start <- rownames(old_dat)[nrow(old_dat)]
+        date_start <- old_dat$Date[nrow(old_dat)]
       }
       iter <- space_ids(ids)
       xdf <- data.frame()
@@ -229,7 +243,7 @@ Database <- R6::R6Class(
         xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
         print(iter[i])
       }
-      ix <- match_ids_dtc_name(xdf$requestId, self$tbl_msl)
+      ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
       dtc_name <- self$tbl_msl$DtcName[ix]
       xdf$DtcName <- dtc_name
       is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
@@ -242,6 +256,13 @@ Database <- R6::R6Class(
     },
 
     # holdings ----
+
+    #' @description Download holdings from SEC EDGAR Database
+    #' @param dtc_name leave `NULL` to download all, or enter a vector of
+    #'   dtc_names to download specific funds
+    #' @param user_email need to provide an email address to download
+    #' @param save_to_db save data to DTC's database
+    #' @param return_data return data.frame of holdings
     hold_sec = function(dtc_name = NULL,
                         user_email = "asotolongo@diversifiedtrust.com",
                         save_to_db = TRUE, return_data = FALSE) {
@@ -295,8 +316,14 @@ Database <- R6::R6Class(
       }
     },
 
+    #' @description Download account data from custodian, currently done via
+    #'   BlackDiamond
+    #' @param dtc_name leave `NULL` to download all, or enter a vector of
+    #'   dtc_names to download specific funds
+    #' @param save_to_db save data to DTC's database
+    #' @param return_data return data.frame of holdings
     hold_cust = function(dtc_name = NULL, save_to_db = TRUE,
-                       return_data = FALSE) {
+                         return_data = FALSE) {
       lib <- self$ac$get_library("holdings")
       cust <- self$tbl_cust
       if (!is.null(dtc_name)) {
@@ -345,6 +372,35 @@ Database <- R6::R6Class(
       if (return_data) {
         return(res)
       }
+    },
+
+    # Company data ----
+    download_fundamental_data = function(
+      ids = NULL, yrs_back = 1,
+      dtype = c('PE', 'PB', 'PFCF', 'DY', 'ROE', 'MCAP')) {
+
+      dtype <- dtype[1]
+      if (dtype == 'PE') {
+        formulas <- paste0('FG_PE(-', yrs_back, 'AY,NOW,CQ)')
+      } else if (dtype == 'PB') {
+        formulas <- paste0('FG_PBK(-', yrs_back, 'AY,NOW,CQ)')
+      } else if (dtype == 'PFCF') {
+        formulas <- paste0('FG_CFLOW_FREE_EQ_PS(-', yrs_back, 'AY,NOW,CQ,USD)')
+      } else if (dtype == 'DY') {
+        formulas <- paste0('FG_DIV_YLD(-', yrs_back, 'AY,NOW,CQ)')
+      } else if (dtype == 'ROE') {
+        formulas <- paste0('FG_ROE(-', yrs_back, 'AY,NOW,CQ)')
+      } else if (dtype == 'MCAP') {
+        formulas <- paste0('FF_MKT_VAL(ANN_R,-', yrs_back, 'AY,NOW,CQ,,USD)')
+      } else {
+        stop("dtype must be 'PE', 'PB', 'PFCF', 'DY', 'ROE', or 'MCAP'")
+      }
+      if (is.null(ids)) {
+        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        ids <- create_ids(stock)
+      }
+
+
     }
   )
 )

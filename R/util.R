@@ -38,10 +38,10 @@ month_end <- function(dt) {
 
 #' @export
 create_ids <- function(tbl_msl) {
-  ids <- tbl_msl$Cusip
-  ids[is.na(ids)] <- tbl_msl$Isin[is.na(ids)]
+  ids <- tbl_msl$Isin
   ids[is.na(ids)] <- tbl_msl$Sedol[is.na(ids)]
   ids[is.na(ids)] <- tbl_msl$Lei[is.na(ids)]
+  ids[is.na(ids)] <- tbl_msl$Cusip[is.na(ids)]
   ids[is.na(ids)] <- tbl_msl$Ticker[is.na(ids)]
   ids[is.na(ids)] <- tbl_msl$Identifier[is.na(ids)]
   return(ids)

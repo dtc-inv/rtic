@@ -238,6 +238,56 @@ download_fs_ra_ret <- function(id, api_keys, t_minus = 12, freq = 'D') {
   return(res)
 }
 
+#' @title Download Factset formula API
+#' @param api_keys list containing api keys
+#' @param ids vector of ids to download
+#' @param formulas formula to download
+#' @param type "ts" for times-series or "cs" for cross-sectional
+#' @param flatn boolean to add "flatten=Y" to api url
+#' @return json data
+#' @export
+download_fs_formula <- function(api_keys, ids, formulas, type = c('ts', 'cs'),
+                                flatn = TRUE) {
+  if (type[1] == 'ts') {
+    struc <- 'time-series'
+  } else {
+    struc <- 'cross-sectional'
+  }
+  username <- api_keys$fs$username
+  password <- api_keys$fs$password
+  ids[is.na(ids)] <- ""
+  request <- paste0(
+    "https://api.factset.com/formula-api/v1/",
+    struc,
+    "?ids=",
+    paste0(ids, collapse = ","),
+    "&formulas=",
+    paste0(formulas, collapse = ",")
+  )
+  if (flatn) {
+    request <- paste0(request, '&flatten=Y')
+  }
+  response <- httr::GET(request, authenticate(username, password))
+  print(response$status)
+  output <- rawToChar(response$content)
+  json <- parse_json(output)
+  return(json)
+}
+
+#' @export
+flatten_fs_formula <- function(json) {
+  create_df <- function(x) {
+    y <- try(as.data.frame(x))
+    if ("try-error" %in% class(y)) {
+      return(data.frame())
+    } else {
+      return(y)
+    }
+  }
+  df_list <- lapply(json$data, create_df)
+  do.call("rbind", df_list)
+}
+
 #' @export
 flatten_fs_global_prices <- function(json) {
   if ('status' %in% names(json)) {
