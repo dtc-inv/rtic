@@ -399,8 +399,26 @@ Database <- R6::R6Class(
         stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
         ids <- create_ids(stock)
       }
-
-
+      ids <- gsub(" ", "", ids)
+      iter <- space_ids(ids)
+      xdf <- data.frame()
+      for (i in 204:(length(iter)-1)) {
+        json <- download_fs_formula(self$api_keys, ids[iter[i]:iter[i+1]],
+                                    formulas)
+        xdf <- rob_rbind(xdf, flatten_fs_formula(json))
+        print(iter[i])
+      }
+      dtc_name <- match_ids_dtc_name(xdf$requestId, self$tbl_msl)
+      xdf$DtcName <- self$tbl_msl$DtcName[dtc_name]
+      xdf <- na.omit(xdf)
+      is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
+      xdf <- xdf[!is_dup, ]
+      colnames(xdf)[1:2] <- c("Date", dtype)
+      wdf <- pivot_wider(xdf, id_cols = Date, names_from = DtcName,
+                         values_from = dtype)
+      lib <- self$ac$get_library("co-data")
+      old_data <- lib$read(dtype)
+      combo <- xts_rbind(wdf, old_data$data, FALSE)
     }
   )
 )
