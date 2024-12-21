@@ -250,9 +250,7 @@ Database <- R6::R6Class(
       xdf <- xdf[!is_dup, ]
       new_dat <- pivot_wider(xdf, id_cols = date, values_from = totalReturn,
                              names_from = DtcName)
-      colnames(new_dat)[1] <- "Date"
-      old_dat_df <- arc_to_dataframe(old_dat)
-      combo <- xts_rbind(new_dat, old_dat_df, FALSE)
+
     },
 
     # holdings ----
@@ -402,23 +400,38 @@ Database <- R6::R6Class(
       ids <- gsub(" ", "", ids)
       iter <- space_ids(ids)
       xdf <- data.frame()
-      for (i in 204:(length(iter)-1)) {
+      for (i in 1:(length(iter)-1)) {
         json <- download_fs_formula(self$api_keys, ids[iter[i]:iter[i+1]],
                                     formulas)
-        xdf <- rob_rbind(xdf, flatten_fs_formula(json))
+        xdf <- rbind(xdf, flatten_fs_formula(json))
         print(iter[i])
       }
-      dtc_name <- match_ids_dtc_name(xdf$requestId, self$tbl_msl)
-      xdf$DtcName <- self$tbl_msl$DtcName[dtc_name]
-      xdf <- na.omit(xdf)
+      ix <- match_ids_dtc_name(xdf$requestId, self$tbl_msl)
+      dtc_name <- self$tbl_msl$DtcName[ix]
+      xdf$DtcName <- dtc_name
       is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
       xdf <- xdf[!is_dup, ]
-      colnames(xdf)[1:2] <- c("Date", dtype)
+      colnames(xdf)[2:3] <- c(dtype, "Date")
       wdf <- pivot_wider(xdf, id_cols = Date, names_from = DtcName,
-                         values_from = dtype)
+                         values_from = all_of(dtype))
       lib <- self$ac$get_library("co-data")
       old_data <- lib$read(dtype)
       combo <- xts_rbind(wdf, old_data$data, FALSE)
+      combo_df <- xts_to_dataframe(combo)
+      combo_df$Date <- as.character(combo_df$Date)
+      lib$write(dtype, combo_df)
+    },
+
+    download_cusip = function(ids = NULL) {
+      if (is.null(ids)) {
+        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        ids <- stock$Isin
+      }
+      ids <- gsub(" ", "", ids)
+      ids <- na.omit(ids)
+      iter <- space_ids(ids)
+      formulas <- "FSYM_CUSIP(0,'ID')"
+      json <- download_fs_formula(self$api_keys, ids[1:10], formulas)
     }
   )
 )
