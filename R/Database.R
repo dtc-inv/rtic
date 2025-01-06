@@ -124,7 +124,7 @@ Database <- R6::R6Class(
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("etf")$data
       if (is.null(date_start)) {
-        date_start <- rownames(old_dat)[nrow(old_dat)]
+        date_start <- old_dat$Date[nrow(old_dat)]
       }
       iter <- space_ids(ids)
       xdf <- data.frame()
@@ -141,12 +141,44 @@ Database <- R6::R6Class(
       }
       xdf$DtcName <- etf$DtcName[match(xdf$RequestId, etf$Ticker)]
       is_dup <- duplicated(paste0(xdf$Date, xdf$DtcName))
+      xdf$TotalReturn <- xdf$TotalReturn / 100
       new_dat <- pivot_wider(xdf[!is_dup, ], id_cols = Date,
                              names_from = DtcName, values_from = TotalReturn)
       combo <- xts_rbind(new_dat, old_dat, FALSE)
       combo_df <- xts_to_dataframe(combo)
       combo_df$Date <- as.character(combo_df$Date)
       lib$write("etf", combo_df)
+    },
+
+    ret_mutual_fund = function(ids = NULL, days_back = 1) {
+      if (is.null(ids)) {
+        mf <- filter(self$tbl_msl, ReturnLibrary == "mutual-fund")
+        ids <- mf$Ticker
+      }
+      formulas <- paste0('P_TOTAL_RETURNC(-', days_back, 'D,NOW,D,USD)')
+      iter <- space_ids(ids)
+      xdf <- data.frame()
+      for (i in 1:(length(iter)-1)) {
+        json <- download_fs_formula(
+          api_keys = self$api_keys,
+          ids = ids[iter[i]:iter[i+1]],
+          formulas = formulas
+        )
+        xdf <- rob_rbind(xdf, flatten_fs_formula(json))
+      }
+      colnames(xdf)[2] <- "TotalReturn"
+      xdf$TotalReturn <- xdf$TotalReturn / 100
+      xdf$DtcName <- mf$DtcName[match(xdf$requestId, mf$Ticker)]
+      is_dup <- duplicated(paste0(xdf$date, xdf$DtcName))
+      new_dat <- pivot_wider(xdf[!is_dup, ], id_cols = date,
+                             names_from = DtcName, values_from = TotalReturn)
+      colnames(new_dat)[1] <- "Date"
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("mutual-fund")$data
+      combo <- xts_rbind(new_dat, old_dat, FALSE)
+      combo_df <- xts_to_dataframe(combo)
+      combo_df$Date <- as.character(combo_df$Date)
+      lib$write("mutual-fund", combo_df)
     },
 
     #' @description Update Private Asset Indexes from Excel
@@ -209,6 +241,7 @@ Database <- R6::R6Class(
       dtc_name <- filter(self$tbl_msl, Isin %in% ids)$DtcName[!is_miss]
       dtc_name <- na.omit(dtc_name)
       ret <- do.call("cbind", res)
+      ret <- ret / 100
       colnames(ret) <- dtc_name
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("ctf")$data
@@ -219,39 +252,39 @@ Database <- R6::R6Class(
       lib$write("ctf", combo_df)
     },
 
-    ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
-                         freq = "D") {
-      if (is.null(ids)) {
-        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
-        ids <- create_ids(stock)
-      }
-      lib <- self$ac$get_library("returns")
-      old_dat <- lib$read("stock")$data
-      if (is.null(date_start)) {
-        date_start <- old_dat$Date[nrow(old_dat)]
-      }
-      iter <- space_ids(ids)
-      xdf <- data.frame()
-      for (i in 1:(length(iter)-1)) {
-        json <- download_fs_global_prices(
-          api_keys = self$api_keys,
-          ids = ids[iter[i]:iter[i+1]],
-          date_start = date_start,
-          date_end = date_end,
-          freq = freq
-        )
-        xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
-        print(iter[i])
-      }
-      ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
-      dtc_name <- self$tbl_msl$DtcName[ix]
-      xdf$DtcName <- dtc_name
-      is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
-      xdf <- xdf[!is_dup, ]
-      new_dat <- pivot_wider(xdf, id_cols = date, values_from = totalReturn,
-                             names_from = DtcName)
-
-    },
+    # ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
+    #                      freq = "D") {
+    #   if (is.null(ids)) {
+    #     stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+    #     ids <- create_ids(stock)
+    #   }
+    #   lib <- self$ac$get_library("returns")
+    #   old_dat <- lib$read("stock")$data
+    #   if (is.null(date_start)) {
+    #     date_start <- old_dat$Date[nrow(old_dat)]
+    #   }
+    #   iter <- space_ids(ids)
+    #   xdf <- data.frame()
+    #   for (i in 1:(length(iter)-1)) {
+    #     json <- download_fs_global_prices(
+    #       api_keys = self$api_keys,
+    #       ids = ids[iter[i]:iter[i+1]],
+    #       date_start = date_start,
+    #       date_end = date_end,
+    #       freq = freq
+    #     )
+    #     xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
+    #     print(iter[i])
+    #   }
+    #   ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
+    #   dtc_name <- self$tbl_msl$DtcName[ix]
+    #   xdf$DtcName <- dtc_name
+    #   is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
+    #   xdf <- xdf[!is_dup, ]
+    #   new_dat <- pivot_wider(xdf, id_cols = date, values_from = totalReturn,
+    #                          names_from = DtcName)
+    #
+    # },
 
     # holdings ----
 
