@@ -374,7 +374,7 @@ Database <- R6::R6Class(
           next
         }
         if (save_to_db) {
-          dat$TimeStamp <- as.character(dat$TimeStamp)
+          dat$TimeStamp <- as.character(as.Date(dat$TimeStamp))
           if (dtc_name[i] %in% lib$list_symbols()) {
             old_dat <- lib$read(dtc_name[i])
             if (dat$TimeStamp[1] %in% unique(old_dat$data$TimeStamp)) {
@@ -385,6 +385,7 @@ Database <- R6::R6Class(
               }
             }
             combo <- rob_rbind(old_dat$data, dat)
+            lib$write(dtc_name[i], combo)
             lib$write(dtc_name[i], combo)
           } else {
             warning(
@@ -403,6 +404,16 @@ Database <- R6::R6Class(
       if (return_data) {
         return(res)
       }
+    },
+
+    read_hold = function(dtc_name) {
+      lib <- self$ac$get_library("holdings")
+      if (!dtc_name %in% lib$list_symbols()) {
+        warning(paste0(dtc_name, " not found in holdings library. Returning
+                       list of symbols available in library."))
+        return(sort(lib$list_symbols()))
+      }
+      lib$read(dtc_name)$data
     },
 
     # Company data ----

@@ -59,14 +59,13 @@ download_bd <- function(account_id, api_keys, as_of = NULL) {
   }
   # convert json list into data.frame by looping through each holding
   df <- data.frame(
-    assetId = NA,
-    name = NA,
-    cusip = NA,
-    ticker = NA,
-    identifier = NA,
-    units = NA,
-    emv = NA,
-    returnInfo = NA
+    Name = NA,
+    Cusip = NA,
+    Ticker = NA,
+    Identifier = NA,
+    Units = NA,
+    Value = NA,
+    TimeStamp = NA
   )
   robcheck <- function(x, l) {
     if (x %in% names(l)) {
@@ -88,7 +87,7 @@ download_bd <- function(account_id, api_keys, as_of = NULL) {
     df[i, 'Value'] <- rd[[i]]$returnInfo['emv'][[1]]
     df[i, 'TimeStamp'] <- rd[[i]]$returnInfo['returnDate'][[1]]
   }
-  df$pctVal <- df$emv / sum(df$emv, na.rm = TRUE)
+  df$CapWgt <- df$Value / sum(df$Value, na.rm = TRUE)
   return(df)
 }
 

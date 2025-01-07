@@ -18,6 +18,7 @@ space_ids <- function(ids, max_ids = 50) {
   return(iter)
 }
 
+
 #' @export
 extract_list <- function(x, nm) {
   y <- lapply(x, '[[', nm)
@@ -53,6 +54,7 @@ fill_ix <- function(a, b) {
     a[is.na(a)] <- b[is.na(a)]
     return(a)
   } else {
+    warning("a and b were different lengths, returning a")
     return(a)
   }
 }
@@ -76,6 +78,42 @@ match_ids_dtc_name <- function(ids, tbl_msl) {
   ix <- fill_ix(ix, ix_ticker)
   ix <- fill_ix(ix, ix_id)
   return(ix)
+}
+
+#' @export
+match_mult <- function(x, y, match_by) {
+  x <- as.data.frame(x)
+  y <- as.data.frame(y)
+  incomps <- c(NA, "000000000", "N/A", "0")
+  ix <- rep(NA, nrow(x))
+  for (i in 1:length(match_by)) {
+    a <- try(x[, match_by[i]], silent = TRUE)
+    if ("try-error" %in% class(a)) {
+      warning(paste0(match_by[i], " not found in x"))
+      a <- rep(NA, nrow(x))
+    }
+    b <- try(y[, match_by[i]], silent = TRUE)
+    if ("try-error" %in% class(b)) {
+      warning(paste0(match_by[i], " not found in y"))
+      b <- rep(NA, nrow(y))
+    }
+    ix <- fill_ix(ix, match(a, b, incomparables = incomps))
+  }
+  return(ix)
+}
+
+#' @export
+left_merge <- function(x, y, match_by) {
+  ix <- match_mult(x, y, match_by)
+  dup_col <- colnames(y) %in% colnames(x)
+  tbl_union <- cbind(x, y[ix, !dup_col])
+  tbl_inter <- tbl_union[!is.na(ix), ]
+  tbl_miss <- tbl_union[is.na(ix), ]
+  list(
+    union = tbl_union,
+    inter = tbl_inter,
+    miss = tbl_miss
+  )
 }
 
 #' @export
@@ -103,5 +141,3 @@ get_list_fld <- function(x, fld) {
     x[fld]
   }
 }
-
-
