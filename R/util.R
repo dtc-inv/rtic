@@ -103,10 +103,15 @@ match_mult <- function(x, y, match_by) {
 }
 
 #' @export
-left_merge <- function(x, y, match_by) {
+left_merge <- function(x, y, match_by, keep_x_dup_col = TRUE) {
   ix <- match_mult(x, y, match_by)
-  dup_col <- colnames(y) %in% colnames(x)
-  tbl_union <- cbind(x, y[ix, !dup_col])
+  if (keep_x_dup_col) {
+    dup_col <- colnames(y) %in% colnames(x)
+    tbl_union <- cbind(x, y[ix, !dup_col])
+  } else {
+    dup_col <- colnames(x) %in% colnames(y)
+    tbl_union <- cbind(x[, !dup_col], y[ix, ])
+  }
   tbl_inter <- tbl_union[!is.na(ix), ]
   tbl_miss <- tbl_union[is.na(ix), ]
   list(
