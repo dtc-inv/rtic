@@ -9,7 +9,7 @@ Portfolio <- R6::R6Class(
     lib_ret = NULL,
 
     initialize = function(ac, tbl_hold, tbl_msl) {
-      self$ac
+      self$ac <- ac
       self$lib_hold <- ac$get_library("holdings")
       self$lib_ret <- ac$get_library("returns")
       self$tbl_hold <- tbl_hold
@@ -30,7 +30,6 @@ Portfolio <- R6::R6Class(
     },
 
     drill_down = function() {
-      # TO-DO handle cap weight
       is_lay_1 <- self$tbl_hold$Layer == 1
       lay_1 <- self$tbl_hold[is_lay_1, ]
       x <- self$tbl_hold[!is_lay_1, ]
@@ -38,6 +37,7 @@ Portfolio <- R6::R6Class(
         for (j in 1:nrow(x)) {
           record <- self$lib_hold$read(x$DtcName[j])
           record$data[, paste0("Layer", x$Layer[j])] <- x$DtcName[j]
+          record$data$CapWgt <- record$data$CapWgt * x$CapWgt[j]
           lay_1 <- rob_rbind(lay_1, record$data)
         }
         res <- left_merge(
@@ -58,6 +58,21 @@ Portfolio <- R6::R6Class(
         if (nrow(x) == 0) {
           break
         }
+      }
+      self$tbl_hold <- lay_1
+    },
+
+    get_fund_data = function(xsymbols = NULL) {
+      lib <- self$ac$get_library("co-data")
+      if (is.null(xsymbols)) {
+        xsymbols<- lib$list_symbols()
+      }
+      for (i in 1:length(xsymbols)) {
+        record <- lib$read(xsymbols[i])
+        ix <- match(self$tbl_hold$DtcName, colnames(record$data))
+        miss <- is.na(ix)
+        latest_data <- record$data[nrow(record$data), ix[!miss]]
+        self$tbl_hold[!miss, xsymbols[i]] <- as.numeric(latest_data)
       }
     }
   )
