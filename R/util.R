@@ -32,10 +32,6 @@ list_replace_null <- function(x) {
   return(x)
 }
 
-#' @export
-month_end <- function(dt) {
-  lubridate::ceiling_date(as.Date(dt), 'months') - 1
-}
 
 #' @export
 create_ids <- function(tbl_msl) {
@@ -146,3 +142,9 @@ get_list_fld <- function(x, fld) {
     x[fld]
   }
 }
+
+#' @export
+month_end <- function(dt) {
+  lubridate::ceiling_date(as.Date(dt), 'months') - 1
+}
+

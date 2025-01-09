@@ -362,3 +362,36 @@ read_xts <- function(wb, sht = 1, skip = 0) {
   dat <- readxl::read_excel(wb, sheet = sht, col_types = 'numeric', skip = skip)
   xts(dat[, -1], as.Date(dat[[1]], origin = '1899-12-30'))
 }
+
+# cleaning ----
+
+#' @title Get Intersection of Asset, Benchmark, and Risk-free time-series
+#' @param x asset time-series, xts, multiple columns accepted
+#' @param b benchmark time-series, xts, mutliple columns accepted
+#' @param rf risk-free time-series, optional, one column accepted
+#' @return list with `x`, `b`, and `rf` aligned for common dates
+clean_asset_bench_rf <- function(x, b, rf = NULL) {
+  combo <- xts_cbind_inter(x, b)
+  if (!is.null(colnames(combo$miss_ret))) {
+    if (colnames(combo$miss_ret) == colnames(b)) {
+      stop('benchmark is missing')
+    }
+  }
+  if (!is.null(rf)) {
+    combo <- xts_cbind_inter(combo$ret, rf)
+    if (!is.null(colnames(combo$miss_ret))) {
+      if (colnames(combo$miss_ret) == colnames(rf)) {
+        stop('rf is missing')
+      }
+    }
+  }
+  res <- list()
+  if (!is.null(rf)) {
+    res$rf <- combo$ret[, colnames(combo$ret) %in% colnames(rf)]
+  } else {
+    res$rf <- NULL
+  }
+  res$b <- combo$ret[, colnames(combo$ret) %in% colnames(b)]
+  res$x <- combo$ret[, colnames(combo$ret) %in% colnames(x)]
+  return(res)
+}
