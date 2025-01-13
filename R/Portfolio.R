@@ -1,3 +1,4 @@
+#' @export
 Portfolio <- R6::R6Class(
   "Portfolio",
   public = list(

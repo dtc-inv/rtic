@@ -370,6 +370,7 @@ read_xts <- function(wb, sht = 1, skip = 0) {
 #' @param b benchmark time-series, xts, mutliple columns accepted
 #' @param rf risk-free time-series, optional, one column accepted
 #' @return list with `x`, `b`, and `rf` aligned for common dates
+#' @export
 clean_asset_bench_rf <- function(x, b, rf = NULL) {
   combo <- xts_cbind_inter(x, b)
   if (!is.null(colnames(combo$miss_ret))) {

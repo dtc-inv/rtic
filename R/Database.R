@@ -150,6 +150,10 @@ Database <- R6::R6Class(
       lib$write("etf", combo_df)
     },
 
+    #' @description Update index returns from Factset
+    #' @param ids leave NULL to update all mutual funds, or enter specific
+    #'   mutual fund, note if ids are entered they must be in the MSL
+    #' @param days_back how many days to download
     ret_mutual_fund = function(ids = NULL, days_back = 1) {
       if (is.null(ids)) {
         mf <- filter(self$tbl_msl, ReturnLibrary == "mutual-fund")
@@ -241,7 +245,6 @@ Database <- R6::R6Class(
       dtc_name <- filter(self$tbl_msl, Isin %in% ids)$DtcName[!is_miss]
       dtc_name <- na.omit(dtc_name)
       ret <- do.call("cbind", res)
-      ret <- ret / 100
       colnames(ret) <- dtc_name
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("ctf")$data
@@ -287,6 +290,8 @@ Database <- R6::R6Class(
     # },
 
     # read returns ----
+    #' @description Read Returns by Ticker
+    #' @param ids tickers to read in
     read_ret_ticker = function(ids) {
       lib <- self$ac$get_library("returns")
       ids_dict <- filter(self$tbl_msl, Ticker %in% ids)
@@ -307,7 +312,12 @@ Database <- R6::R6Class(
       if ("monthly" %in% ret_data$Freq) {
         #TO-DO convert daily to monthly
       }
-      do.call("xts_cbind", res)
+      if (length(res) == 1) {
+        return(res[[1]])
+      } else {
+        ret <- do.call("xts_cbind", res)
+        return(ret)
+      }
     },
 
     # holdings ----
@@ -430,17 +440,29 @@ Database <- R6::R6Class(
       }
     },
 
-    read_hold = function(dtc_name) {
+    #' @description Read Holdings Data
+    #' @param dtc_name DtcName field in MSL to pull holdings
+    #' @param latest option to truncate to most recent holdings
+    read_hold = function(dtc_name, latest = FALSE) {
       lib <- self$ac$get_library("holdings")
       if (!dtc_name %in% lib$list_symbols()) {
         warning(paste0(dtc_name, " not found in holdings library. Returning
                        list of symbols available in library."))
         return(sort(lib$list_symbols()))
       }
-      lib$read(dtc_name)$data
+      tbl_hold <- lib$read(dtc_name)$data
+      if (latest) {
+        tbl_hold <- latest_holdings(tbl_hold)
+      }
+      return(tbl_hold)
     },
 
     # Company data ----
+
+    #' @description Download equity financial data
+    #' @param ids leave `NULL` to get for all stocks, or enter specific ids
+    #' @param yrs_back how many years of data to pull
+    #' @param dtype data type: one of PE, PB, PFCF, DY, ROE, and MCAP
     download_fundamental_data = function(
       ids = NULL, yrs_back = 1,
       dtype = c('PE', 'PB', 'PFCF', 'DY', 'ROE', 'MCAP')) {
