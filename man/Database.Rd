@@ -36,9 +36,15 @@ holdings data}
 \item \href{#method-Database-check_api_keys}{\code{Database$check_api_keys()}}
 \item \href{#method-Database-ret_index}{\code{Database$ret_index()}}
 \item \href{#method-Database-ret_etf}{\code{Database$ret_etf()}}
-\item \href{#method-Database-ret_stock}{\code{Database$ret_stock()}}
+\item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
+\item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
+\item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
+\item \href{#method-Database-read_ret_ticker}{\code{Database$read_ret_ticker()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
+\item \href{#method-Database-read_hold}{\code{Database$read_hold()}}
+\item \href{#method-Database-download_fundamental_data}{\code{Database$download_fundamental_data()}}
+\item \href{#method-Database-download_cusip}{\code{Database$download_cusip()}}
 \item \href{#method-Database-clone}{\code{Database$clone()}}
 }
 }
@@ -105,34 +111,98 @@ List `tbl_msl`}
 \if{html}{\out{<a id="method-Database-ret_etf"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_etf}{}}}
 \subsection{Method \code{ret_etf()}}{
+Update ETF returns from Factset
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_etf(
-  ids = NULL,
-  date_start = NULL,
-  date_end = Sys.Date() - 1,
-  freq = "D"
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_etf(ids = NULL, date_start = NULL, date_end = Sys.Date() - 1)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{leave `NULL` to udpate all ETFs in the Master Security List,
+or enter a vector to only update specific ETFs}
+
+\item{\code{date_start}}{beginning date for update, if left `NULL` will
+default to the last date of the existing data}
+
+\item{\code{date_end}}{ending date for update, by default is yesterday}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_mutual_fund"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_mutual_fund}{}}}
+\subsection{Method \code{ret_mutual_fund()}}{
+Update index returns from Factset
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_mutual_fund(ids = NULL, days_back = 1)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{leave NULL to update all mutual funds, or enter specific
+mutual fund, note if ids are entered they must be in the MSL}
+
+\item{\code{days_back}}{how many days to download}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_private_index"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_private_index}{}}}
+\subsection{Method \code{ret_private_index()}}{
+Update Private Asset Indexes from Excel
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_private_index()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Database-ret_stock"></a>}}
-\if{latex}{\out{\hypertarget{method-Database-ret_stock}{}}}
-\subsection{Method \code{ret_stock()}}{
+\if{html}{\out{<a id="method-Database-ret_ctf_monthly"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_ctf_monthly}{}}}
+\subsection{Method \code{ret_ctf_monthly()}}{
+Update CTF Returns from Factset
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_stock(
-  ids = NULL,
-  date_start = NULL,
-  date_end = Sys.Date(),
-  freq = "D"
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_monthly(ids = NULL, t_minus = 1)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{leave `NULL` to update all CTFs or enter a vector of ids to
+only update specific CTFs}
+
+\item{\code{t_minus}}{integer to indicate how many months back to download new
+data from}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-read_ret_ticker"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-read_ret_ticker}{}}}
+\subsection{Method \code{read_ret_ticker()}}{
+Read Returns by Ticker
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$read_ret_ticker(ids)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{tickers to read in}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-hold_sec"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-hold_sec}{}}}
 \subsection{Method \code{hold_sec()}}{
+Download holdings from SEC EDGAR Database
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_sec(
   dtc_name = NULL,
@@ -142,13 +212,94 @@ List `tbl_msl`}
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{leave `NULL` to download all, or enter a vector of
+dtc_names to download specific funds}
+
+\item{\code{user_email}}{need to provide an email address to download}
+
+\item{\code{save_to_db}}{save data to DTC's database}
+
+\item{\code{return_data}}{return data.frame of holdings}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-hold_cust"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-hold_cust}{}}}
 \subsection{Method \code{hold_cust()}}{
+Download account data from custodian, currently done via
+  BlackDiamond
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust(dtc_name = NULL, save_to_db = TRUE, return_data = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{leave `NULL` to download all, or enter a vector of
+dtc_names to download specific funds}
+
+\item{\code{save_to_db}}{save data to DTC's database}
+
+\item{\code{return_data}}{return data.frame of holdings}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-read_hold"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-read_hold}{}}}
+\subsection{Method \code{read_hold()}}{
+Read Holdings Data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$read_hold(dtc_name, latest = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{DtcName field in MSL to pull holdings}
+
+\item{\code{latest}}{option to truncate to most recent holdings}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-download_fundamental_data"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-download_fundamental_data}{}}}
+\subsection{Method \code{download_fundamental_data()}}{
+Download equity financial data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$download_fundamental_data(
+  ids = NULL,
+  yrs_back = 1,
+  dtype = c("PE", "PB", "PFCF", "DY", "ROE", "MCAP")
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{leave `NULL` to get for all stocks, or enter specific ids}
+
+\item{\code{yrs_back}}{how many years of data to pull}
+
+\item{\code{dtype}}{data type: one of PE, PB, PFCF, DY, ROE, and MCAP}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-download_cusip"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-download_cusip}{}}}
+\subsection{Method \code{download_cusip()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$download_cusip(ids = NULL)}\if{html}{\out{</div>}}
 }
 
 }

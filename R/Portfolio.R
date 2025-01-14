@@ -66,7 +66,16 @@ Portfolio <- R6::R6Class(
     get_fund_data = function(xsymbols = NULL) {
       lib <- self$ac$get_library("co-data")
       if (is.null(xsymbols)) {
-        xsymbols<- lib$list_symbols()
+        xsymbols <- lib$list_symbols()
+      }
+      symb_exists <- xsymbols %in% lib$list_symbols()
+      if (all(!symb_exists)) {
+        warning("no symbols found in library")
+        return()
+      }
+      if (any(!symb_exists)) {
+        warning(paste0(xsymbols[!symb_exists], " not found in library"))
+        xsymbols <- xsymbols[symb_exists]
       }
       for (i in 1:length(xsymbols)) {
         record <- lib$read(xsymbols[i])

@@ -511,6 +511,42 @@ Database <- R6::R6Class(
       combo_df$Date <- as.character(combo_df$Date)
       lib$write(dtype, combo_df)
     },
+    
+    download_sectors = function(ids = NULL) {
+      if (is.null(ids)) {
+        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        ids <- stock$Isin
+      }
+      ids[is.na(ids)] <- stock$Cusip[is.na(ids)]
+      ids <- gsub(" ", "", ids)
+      ids <- na.omit(ids)
+      iter <- space_ids(ids)
+      xformula <- "FG_FACTSET_SECTOR"
+      xdf <- data.frame()
+      for (i in 1:(length(iter)-1)) {
+        json <- download_fs_formula(
+          api_keys = self$api_keys, 
+          ids = ids[iter[i]:iter[i+1]], 
+          formulas = xformula
+        )
+        xdf <- rbind(xdf, flatten_fs_formula(json))
+      }
+      colnames(xdf) <- c("RequestId", "FactsetSector")
+      is_dup <- duplicated(xdf$RequestId)
+      xdf <- xdf[!is_dup, ]
+      ix <- match(xdf$RequestId, stock$Isin)
+      ix[is.na(ix)] <- match(xdf$RequestId, stock$Cusip)[is.na(ix)]
+      xdf$DtcName <- stock$DtcName[ix]
+      macro_lib <- self$ac$get_library("ps-macro")
+      r3 <- macro_lib$read("macro_sel_r3")$data
+      # TO-DO add ACWI
+      r3 <- rename(r3, Isin = ISIN)
+      res <- left_merge(r3, self$tbl_msl, c("Ticker", "Isin"))
+      res <- left_merge(xdf, res$inter, "DtcName")
+      sect <- res$union[, c("RequestId", "FactsetSector", "DtcName", "Sector")]
+      sect <- rename(sect, GicsMacro = Sector)
+      ret_meta
+    }
 
     download_cusip = function(ids = NULL) {
       if (is.null(ids)) {
