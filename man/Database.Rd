@@ -44,7 +44,8 @@ holdings data}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
 \item \href{#method-Database-read_hold}{\code{Database$read_hold()}}
 \item \href{#method-Database-download_fundamental_data}{\code{Database$download_fundamental_data()}}
-\item \href{#method-Database-download_cusip}{\code{Database$download_cusip()}}
+\item \href{#method-Database-download_sectors}{\code{Database$download_sectors()}}
+\item \href{#method-Database-update_ps_macro_select}{\code{Database$update_ps_macro_select()}}
 \item \href{#method-Database-clone}{\code{Database$clone()}}
 }
 }
@@ -295,13 +296,45 @@ Download equity financial data
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Database-download_cusip"></a>}}
-\if{latex}{\out{\hypertarget{method-Database-download_cusip}{}}}
-\subsection{Method \code{download_cusip()}}{
+\if{html}{\out{<a id="method-Database-download_sectors"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-download_sectors}{}}}
+\subsection{Method \code{download_sectors()}}{
+Download Sector Data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$download_cusip(ids = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$download_sectors(ids = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{specify ids or leave `NULL` to gather for all stocks in MSL}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Sector data are gathered from Factset, mapped to GICS, and from 
+Piper Sandler Macro Downloads
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-update_ps_macro_select"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-update_ps_macro_select}{}}}
+\subsection{Method \code{update_ps_macro_select()}}{
+Download Macro Select Workbook and Save to Library
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$update_ps_macro_select(wb, is_us = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{wb}}{file location of workbook}
+
+\item{\code{is_us}}{TRUE for Russell 3000, FALSE for MSCI ACWI}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-clone"></a>}}

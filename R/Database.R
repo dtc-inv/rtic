@@ -59,9 +59,10 @@ Database <- R6::R6Class(
       ac <- adb$Arctic(s3_url)
       self$bucket <- bucket
       self$ac <- ac
-      self$tbl_msl <- read_parquet(self$bucket$path("tables/tbl_msl.parquet"))
-      self$tbl_cust <- read_parquet(self$bucket$path("tables/tbl_cust.parquet"))
-      self$tbl_sec <- read_parquet(self$bucket$path("tables/tbl_sec.parquet"))
+      lib <- ac$get_library("meta-tables")
+      self$tbl_msl <- lib$read("msl")$data
+      self$tbl_cust <- lib$read("cust")$data
+      self$tbl_sec <- lib$read("sec")$data
       self$tbl_xl_mod <- NULL # place holder
     },
 
@@ -512,6 +513,11 @@ Database <- R6::R6Class(
       lib$write(dtype, combo_df)
     },
     
+    #' @description Download Sector Data
+    #' @param ids specify ids or leave `NULL` to gather for all stocks in MSL
+    #' @details
+        #' Sector data are gathered from Factset, mapped to GICS, and from 
+        #' Piper Sandler Macro Downloads
     download_sectors = function(ids = NULL) {
       if (is.null(ids)) {
         stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
@@ -545,7 +551,11 @@ Database <- R6::R6Class(
       res <- left_merge(xdf, res$inter, "DtcName")
       sect <- res$union[, c("RequestId", "FactsetSector", "DtcName", "Sector")]
       sect <- rename(sect, GicsMacro = Sector)
-      ret_meta
+      lib <- self$ac$get_library("meta-tables")
+      sect_map <- lib$read("sector-map")$data
+      res <- left_merge(sect, sect_map, c("FactsetSector"))
+      lib <- self$ac$get_library("co-qual-data")
+      lib$write("sector", res$union)
     },
 
     # download_cusip = function(ids = NULL) {

@@ -1,24 +1,46 @@
+#' Portfolio Object
+#' 
+#' @description
+#' Structure to contain and wrangle portfolio holdings and returns
+#' 
 #' @export
 Portfolio <- R6::R6Class(
   "Portfolio",
   public = list(
+    name = NULL,
+    #' @field tbl_hold holdings table
     tbl_hold = data.frame(),
+    #' @field tbl_miss holdings that are missing from MSL
     tbl_miss = data.frame(),
+    #' @field tbl_msl table containing master security list
     tbl_msl = data.frame(),
+    #' @field ac ArcticDB datastore
     ac = NULL,
+    #' @field lib_hold ArcticDB library of holdings tables
     lib_hold = NULL,
+    #' @field lib_ret ArcticDb library of returns
     lib_ret = NULL,
 
-    initialize = function(ac, tbl_hold, tbl_msl) {
+    #' @description Create new Portfolio
+    #' @param ac ArcticDB datastore from Database Object
+    #' @param tbl_hold holdings table, see details
+    #' @details tbl_hold is gathered with the Database Object method $get_hold().
+    initialize = function(ac, tbl_hold, name = NULL) {
+      if (is.null(name)) {
+        name <- "Port"
+      }
+      self$name <- name
       self$ac <- ac
+      lib_meta <- ac$get_library("meta-tables")
       self$lib_hold <- ac$get_library("holdings")
       self$lib_ret <- ac$get_library("returns")
       self$tbl_hold <- tbl_hold
-      self$tbl_msl <- tbl_msl
+      self$tbl_msl <- lib_meta$read("msl")$data
       self$tbl_miss <- data.frame()
       self$merge_msl()
     },
 
+    #' @description Merge MSL with Holdings Table
     merge_msl = function() {
       res <- left_merge(
         x = self$tbl_hold,
@@ -30,8 +52,13 @@ Portfolio <- R6::R6Class(
       self$tbl_miss <- res$miss
     },
 
+    #' @description Drill down to underlying holdings of funds / CTFs / models
     drill_down = function() {
       is_lay_1 <- self$tbl_hold$Layer == 1
+      if (is_lay_1) {
+        warning("no layers beyond 1 found")
+        return(NULL)
+      }
       lay_1 <- self$tbl_hold[is_lay_1, ]
       x <- self$tbl_hold[!is_lay_1, ]
       for (i in 1:10) {
@@ -63,7 +90,10 @@ Portfolio <- R6::R6Class(
       self$tbl_hold <- lay_1
     },
 
-    get_fund_data = function(xsymbols = NULL) {
+    #' @description Get Company
+    #' @param xsymbols leave blank for all data, or specify specific data, e.g.,
+    #'   `"PE"`, `"PB"`
+    get_fina_data = function(xsymbols = NULL) {
       lib <- self$ac$get_library("co-data")
       if (is.null(xsymbols)) {
         xsymbols <- lib$list_symbols()
@@ -84,6 +114,14 @@ Portfolio <- R6::R6Class(
         latest_data <- record$data[nrow(record$data), ix[!miss]]
         self$tbl_hold[!miss, xsymbols[i]] <- as.numeric(latest_data)
       }
+    },
+    
+    #' @description Get Sector Data
+    get_sector_data = function() {
+      lib <- self$ac$get_library("co-qual-data")
+      sect <- lib$read("sector")$data
+      res <- left_merge(self$tbl_hold, sect, "DtcName")
+      self$tbl_hold <- res$union
     }
   )
 )

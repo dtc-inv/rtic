@@ -131,10 +131,10 @@ left_merge <- function(x, y, match_by, keep_x_dup_col = TRUE) {
   ix <- match_mult(x, y, match_by)
   if (keep_x_dup_col) {
     dup_col <- colnames(y) %in% colnames(x)
-    tbl_union <- cbind(x, y[ix, !dup_col])
+    tbl_union <- cbind(x, y[ix, !dup_col, drop = FALSE])
   } else {
     dup_col <- colnames(x) %in% colnames(y)
-    tbl_union <- cbind(x[, !dup_col], y[ix, ])
+    tbl_union <- cbind(x[, !dup_col, drop = FALSE], y[ix, ])
   }
   tbl_inter <- tbl_union[!is.na(ix), ]
   tbl_miss <- tbl_union[is.na(ix), ]
