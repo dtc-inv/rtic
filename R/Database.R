@@ -546,18 +546,38 @@ Database <- R6::R6Class(
       sect <- res$union[, c("RequestId", "FactsetSector", "DtcName", "Sector")]
       sect <- rename(sect, GicsMacro = Sector)
       ret_meta
-    }
+    },
 
-    download_cusip = function(ids = NULL) {
-      if (is.null(ids)) {
-        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
-        ids <- stock$Isin
+    # download_cusip = function(ids = NULL) {
+    #   if (is.null(ids)) {
+    #     stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+    #     ids <- stock$Isin
+    #   }
+    #   ids <- gsub(" ", "", ids)
+    #   ids <- na.omit(ids)
+    #   iter <- space_ids(ids)
+    #   formulas <- "FSYM_CUSIP(0,'ID')"
+    #   json <- download_fs_formula(self$api_keys, ids[1:10], formulas)
+    # }
+    
+    #' @description Download Macro Select Workbook and Save to Library
+    #' @param wb file location of workbook
+    #' @param is_us TRUE for Russell 3000, FALSE for MSCI ACWI
+    update_ps_macro_select = function(wb, is_us = TRUE) {
+      if (is_us) {
+        idx_nm <- "Russell 3000"
+      } else {
+        idx_nm <- "MSCI ACWI"
       }
-      ids <- gsub(" ", "", ids)
-      ids <- na.omit(ids)
-      iter <- space_ids(ids)
-      formulas <- "FSYM_CUSIP(0,'ID')"
-      json <- download_fs_formula(self$api_keys, ids[1:10], formulas)
+      dat <- read_macro_wb(wb, idx_nm)
+      bad_row <- rowSums(is.na(dat)) == ncol(dat)
+      dat <- dat[!bad_row, ]
+      lib <- self$ac$get_library("ps-macro")
+      if (is_us) {
+        lib$write("macro_sel_r3", dat)
+      } else {
+        lib$write("macro_sel_acwi", dat)  
+      }
     }
   )
 )
