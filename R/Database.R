@@ -444,7 +444,7 @@ Database <- R6::R6Class(
     #' @description Read Holdings Data
     #' @param dtc_name DtcName field in MSL to pull holdings
     #' @param latest option to truncate to most recent holdings
-    read_hold = function(dtc_name, latest = FALSE) {
+    read_hold = function(dtc_name, latest = TRUE) {
       lib <- self$ac$get_library("holdings")
       if (!dtc_name %in% lib$list_symbols()) {
         warning(paste0(dtc_name, " not found in holdings library. Returning

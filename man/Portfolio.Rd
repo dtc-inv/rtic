@@ -40,7 +40,7 @@ Structure to contain and wrangle portfolio holdings and returns
 \subsection{Method \code{new()}}{
 Create new Portfolio
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Portfolio$new(ac, tbl_hold)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$new(ac, tbl_hold, name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

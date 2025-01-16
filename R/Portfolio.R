@@ -55,7 +55,7 @@ Portfolio <- R6::R6Class(
     #' @description Drill down to underlying holdings of funds / CTFs / models
     drill_down = function() {
       is_lay_1 <- self$tbl_hold$Layer == 1
-      if (is_lay_1) {
+      if (all(is_lay_1)) {
         warning("no layers beyond 1 found")
         return(NULL)
       }
