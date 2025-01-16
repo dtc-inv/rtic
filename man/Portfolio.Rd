@@ -31,6 +31,7 @@ Structure to contain and wrangle portfolio holdings and returns
 \item \href{#method-Portfolio-drill_down}{\code{Portfolio$drill_down()}}
 \item \href{#method-Portfolio-get_fina_data}{\code{Portfolio$get_fina_data()}}
 \item \href{#method-Portfolio-get_sector_data}{\code{Portfolio$get_sector_data()}}
+\item \href{#method-Portfolio-get_country_data}{\code{Portfolio$get_country_data()}}
 \item \href{#method-Portfolio-clone}{\code{Portfolio$clone()}}
 }
 }
@@ -102,6 +103,16 @@ Get Company
 Get Sector Data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$get_sector_data()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Portfolio-get_country_data"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-get_country_data}{}}}
+\subsection{Method \code{get_country_data()}}{
+Get Country Data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$get_country_data()}\if{html}{\out{</div>}}
 }
 
 }

@@ -122,6 +122,15 @@ Portfolio <- R6::R6Class(
       sect <- lib$read("sector")$data
       res <- left_merge(self$tbl_hold, sect, "DtcName")
       self$tbl_hold <- res$union
+    },
+    
+    #' @description Get Country Data
+    get_country_data = function() {
+      lib <- self$ac$get_library("co-qual-data")
+      country <- lib$read("country")$data
+      res <- left_merge(self$tbl_hold, country, "DtcName")
+      self$tbl_hold <- res$union
     }
+    
   )
 )

@@ -1,3 +1,9 @@
+#' Reporter Object
+#' 
+#' @description
+#' Structure to wrangle portfolios and an optional benchmark into reports
+#' 
+#' @export
 Reporter <- R6::R6Class(
   "Reporter",
   public = list(
@@ -25,51 +31,31 @@ Reporter <- R6::R6Class(
       }
     },
     
-    cat_summ = function(cat_tbl, tgt_nm) {
+    cat_summ = function(tbl_cat, tgt_nm) {
+      tbl_cat <- data.frame(x = sort(unique(tbl_cat[, tgt_nm])))
+      colnames(tbl_cat)[1] <- tgt_nm
       for (i in 1:length(self$port)) {
-        port <- self$port[[i]]
+        port <- self$port[[i]]$clone()
         port$drill_down()
         port$get_sector_data()
-        
-        xsect <- group_by(port$tbl_hold, .data[[sect_col]]) |>
+        port$get_country_data()
+        tbl_group <- group_by(port$tbl_hold, .data[[tgt_nm]]) |>
           summarize(x = sum(CapWgt))
-        colnames(xsect)[2] <- port$name
-        res <- left_merge(tbl_sect, xsect, sect_col)
-        tbl_sect <- res$union
+        colnames(tbl_group)[2] <- port$name
+        res <- left_merge(tbl_cat, tbl_group, tgt_nm)
+        tbl_cat <- res$union
       }
-      return(tbl_sect)
-    },
-    
-    sect_summ = function(sect_col = c("GicsMacro", "GicsMap", "FactsetSector")) {
-      sect_col <- sect_col[1]
-      lib <- self$ac$get_library("meta-tables")
-      sect_map <- lib$read("sector-map")$data
-      if (sect_col == "FactsetSector") {
-        tbl_sect <- data.frame(
-          "FactsetSector" = sort(unique(sect_map$FactsetSector))  
-        )
-      } else if (sect_col == "GicsMap") {
-        tbl_sect <- data.frame(
-          "GicsMap" = sort(unique(sect_map$GicsMap))
-        )
-      } else if (sect_col == "GicsMacro") {
-        tbl_sect <- data.frame(
-          "GicsMacro" = sort(unique(sect_map$GicsMap))
-        )
-      } else {
-        stop("sect_col misspecified")
-      }
-      for (i in 1:length(self$port)) {
-        port <- self$port[[i]]
-        port$drill_down()
-        port$get_sector_data()
-        xsect <- group_by(port$tbl_hold, .data[[sect_col]]) |>
+      if (!is.null(self$bench)) {
+        bench <- self$bench$clone()
+        bench$drill_down()
+        bench$get_sector_data()
+        bench$get_country_data()
+        tbl_group <- group_by(bench$tbl_hold, .data[[tgt_nm]]) |>
           summarize(x = sum(CapWgt))
-        colnames(xsect)[2] <- port$name
-        res <- left_merge(tbl_sect, xsect, sect_col)
-        tbl_sect <- res$union
+        colnames(tbl_group)[2] <- "Benchmark" 
+        res <- left_merge(tbl_cat, tbl_group, tgt_nm)
       }
-      return(tbl_sect)
+      return(res$union)
     }
   )
 )

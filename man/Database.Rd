@@ -257,7 +257,7 @@ dtc_names to download specific funds}
 \subsection{Method \code{read_hold()}}{
 Read Holdings Data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$read_hold(dtc_name, latest = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$read_hold(dtc_name, latest = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -3,6 +3,7 @@
 export(.drawdown)
 export(Database)
 export(Portfolio)
+export(Reporter)
 export(absorp_ratio)
 export(arc_to_dataframe)
 export(block_boot_strap)
