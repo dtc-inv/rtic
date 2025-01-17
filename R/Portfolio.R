@@ -16,11 +16,7 @@ Portfolio <- R6::R6Class(
     tbl_msl = data.frame(),
     #' @field ac ArcticDB datastore
     ac = NULL,
-    #' @field lib_hold ArcticDB library of holdings tables
-    lib_hold = NULL,
-    #' @field lib_ret ArcticDb library of returns
-    lib_ret = NULL,
-
+    
     #' @description Create new Portfolio
     #' @param ac ArcticDB datastore from Database Object
     #' @param tbl_hold holdings table, see details
@@ -31,15 +27,33 @@ Portfolio <- R6::R6Class(
       }
       self$name <- name
       self$ac <- ac
-      lib_meta <- ac$get_library("meta-tables")
-      self$lib_hold <- ac$get_library("holdings")
-      self$lib_ret <- ac$get_library("returns")
+      self$check_ac()
+      lib <- self$ac$get_library("meta-tables")
+      self$tbl_msl <- lib$read("msl")$data
       self$tbl_hold <- tbl_hold
-      self$tbl_msl <- lib_meta$read("msl")$data
+      self$check_tbl_hold()
       self$tbl_miss <- data.frame()
       self$merge_msl()
     },
 
+    check_ac = function() {
+      if (!"arcticdb.arctic.Arctic" %in% class(self$ac)) {
+        stop("ac not proper arcticdb object")
+      } 
+    }
+    
+    check_tbl_hold = function() {
+      if (!"data.frame" %in% class(self$tbl_hold)) {
+        stop("holdings table is not a data.frame")
+      }
+      id_check <- any(c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
+                        "Identifier") %in% colnames(self$tbl_hold))
+      wgt_check <- "CapWgt" %in% colnames(self$tbl_hold)
+      if (!id_check | !wgt_check) {
+        stop("holdings table not properly specified")
+      }
+    },
+    
     #' @description Merge MSL with Holdings Table
     merge_msl = function() {
       res <- left_merge(
@@ -61,9 +75,10 @@ Portfolio <- R6::R6Class(
       }
       lay_1 <- self$tbl_hold[is_lay_1, ]
       x <- self$tbl_hold[!is_lay_1, ]
+      lib_hold <- self$ac$get_library("holdings")
       for (i in 1:10) {
         for (j in 1:nrow(x)) {
-          record <- self$lib_hold$read(x$DtcName[j])
+          record <- lib_hold$read(x$DtcName[j])
           record$data[, paste0("Layer", x$Layer[j])] <- x$DtcName[j]
           record$data$CapWgt <- record$data$CapWgt * x$CapWgt[j]
           lay_1 <- rob_rbind(lay_1, record$data)

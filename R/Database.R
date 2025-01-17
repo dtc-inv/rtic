@@ -291,13 +291,29 @@ Database <- R6::R6Class(
     # },
 
     # read returns ----
-    #' @description Read Returns by Ticker
-    #' @param ids tickers to read in
-    read_ret_ticker = function(ids) {
+    #' @description Read Returns by ids
+    #' @param ids ids to read in, search in order of Ticker, Cusip, Sedol,
+    #'   Lei, DtcName, Identifier
+    #' @details
+        #' If any returns are pulled from a monthly return library, e.g., CTF
+        #' official returns, then all returns pinged will be converted to monthly
+    read_ret = function(ids, id_type = c("Ticker", "Cusip", "Sedol", "Lei", 
+                                         "DtcName", "Identifier")) {
+      id_type <- id_type[1]
       lib <- self$ac$get_library("returns")
-      ids_dict <- filter(self$tbl_msl, Ticker %in% ids)
-      miss <- !ids %in% ids_dict$Ticker
-      if (any(miss)) {
+      ids_dict <- filter(
+        self$tbl_msl, 
+        Ticker %in% ids | Cusip %in% ids | Sedol %in% ids | Lei %in% ids | 
+          DtcName %in% ids | Identifier %in% ids
+      )
+      found <- ids %in% ids_dict$Ticker | ids %in% ids_dict$Cusip |
+        ids %in% ids_dict$Lei | ids %in% ids_dict$Lei | 
+        ids %in% ids_dict$DtcName | ids %in% ids_dict$Identifier
+      if (all(!found)) {
+        warning("no ids found")
+        return(NULL)
+      }
+      if (any(!found)) {
         warning(paste0(ids[miss], " not found. "))
       }
       ret_lib <- unique(na.omit(ids_dict$ReturnLibrary))
@@ -311,7 +327,9 @@ Database <- R6::R6Class(
         res[[i]] <- dataframe_to_xts(record$data)
       }
       if ("monthly" %in% ret_data$Freq) {
-        #TO-DO convert daily to monthly
+        for (i in 1:length(res)) {
+          res[[i]] <- change_freq(res[[i]])
+        }
       }
       if (length(res) == 1) {
         return(res[[1]])
@@ -320,7 +338,7 @@ Database <- R6::R6Class(
         return(ret)
       }
     },
-
+    
     # holdings ----
 
     #' @description Download holdings from SEC EDGAR Database

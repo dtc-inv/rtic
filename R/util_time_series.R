@@ -297,7 +297,7 @@ last_us_trading_day <- function() {
 #' @importFrom lubridate ceiling_date
 #' @export
 change_freq <- function(x, period = 'months', dtype = c('return', 'price')) {
-
+  x[is.na(x)] <- 0
   dtype <- tolower(dtype[1])
   if (dtype == 'return') {
     price <- ret_to_price(x)
@@ -315,6 +315,7 @@ change_freq <- function(x, period = 'months', dtype = c('return', 'price')) {
     zoo::index(data_out) <- lubridate::ceiling_date(zoo::index(data_out),
                                                     'months') - 1
   }
+  is_miss <- data_out[data_out == 0] <- NA
   return(data_out)
 }
 
