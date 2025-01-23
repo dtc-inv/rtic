@@ -76,6 +76,12 @@ Database <- R6::R6Class(
       }
     },
 
+    # tables ----
+    write_msl = function() {
+      lib <- self$ac$get_library("meta-tables")
+      lib$write("msl", self$tbl_msl)
+    },
+    
     # update returns ----
 
     #' @description Update index returns from Factset
@@ -297,9 +303,7 @@ Database <- R6::R6Class(
     #' @details
         #' If any returns are pulled from a monthly return library, e.g., CTF
         #' official returns, then all returns pinged will be converted to monthly
-    read_ret = function(ids, id_type = c("Ticker", "Cusip", "Sedol", "Lei", 
-                                         "DtcName", "Identifier")) {
-      id_type <- id_type[1]
+    read_ret = function(ids) {
       lib <- self$ac$get_library("returns")
       ids_dict <- filter(
         self$tbl_msl, 

@@ -34,12 +34,13 @@ holdings data}
 \itemize{
 \item \href{#method-Database-new}{\code{Database$new()}}
 \item \href{#method-Database-check_api_keys}{\code{Database$check_api_keys()}}
+\item \href{#method-Database-write_msl}{\code{Database$write_msl()}}
 \item \href{#method-Database-ret_index}{\code{Database$ret_index()}}
 \item \href{#method-Database-ret_etf}{\code{Database$ret_etf()}}
 \item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
-\item \href{#method-Database-read_ret_ticker}{\code{Database$read_ret_ticker()}}
+\item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
 \item \href{#method-Database-read_hold}{\code{Database$read_hold()}}
@@ -86,6 +87,15 @@ Check if api keys are properly specified
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-write_msl"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-write_msl}{}}}
+\subsection{Method \code{write_msl()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$write_msl()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_index"></a>}}
@@ -183,21 +193,27 @@ data from}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Database-read_ret_ticker"></a>}}
-\if{latex}{\out{\hypertarget{method-Database-read_ret_ticker}{}}}
-\subsection{Method \code{read_ret_ticker()}}{
-Read Returns by Ticker
+\if{html}{\out{<a id="method-Database-read_ret"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-read_ret}{}}}
+\subsection{Method \code{read_ret()}}{
+Read Returns by ids
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$read_ret_ticker(ids)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$read_ret(ids)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{ids}}{tickers to read in}
+\item{\code{ids}}{ids to read in, search in order of Ticker, Cusip, Sedol,
+Lei, DtcName, Identifier}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+If any returns are pulled from a monthly return library, e.g., CTF
+official returns, then all returns pinged will be converted to monthly
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-hold_sec"></a>}}

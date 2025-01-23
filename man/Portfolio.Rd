@@ -16,10 +16,6 @@ Structure to contain and wrangle portfolio holdings and returns
 \item{\code{tbl_msl}}{table containing master security list}
 
 \item{\code{ac}}{ArcticDB datastore}
-
-\item{\code{lib_hold}}{ArcticDB library of holdings tables}
-
-\item{\code{lib_ret}}{ArcticDb library of returns}
 }
 \if{html}{\out{</div>}}
 }
@@ -27,6 +23,8 @@ Structure to contain and wrangle portfolio holdings and returns
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Portfolio-new}{\code{Portfolio$new()}}
+\item \href{#method-Portfolio-check_ac}{\code{Portfolio$check_ac()}}
+\item \href{#method-Portfolio-check_tbl_hold}{\code{Portfolio$check_tbl_hold()}}
 \item \href{#method-Portfolio-merge_msl}{\code{Portfolio$merge_msl()}}
 \item \href{#method-Portfolio-drill_down}{\code{Portfolio$drill_down()}}
 \item \href{#method-Portfolio-get_fina_data}{\code{Portfolio$get_fina_data()}}
@@ -55,6 +53,24 @@ Create new Portfolio
 }
 \subsection{Details}{
 tbl_hold is gathered with the Database Object method $get_hold().
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Portfolio-check_ac"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-check_ac}{}}}
+\subsection{Method \code{check_ac()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$check_ac()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Portfolio-check_tbl_hold"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-check_tbl_hold}{}}}
+\subsection{Method \code{check_tbl_hold()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$check_tbl_hold()}\if{html}{\out{</div>}}
 }
 
 }

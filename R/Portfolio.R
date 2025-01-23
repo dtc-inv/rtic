@@ -40,7 +40,7 @@ Portfolio <- R6::R6Class(
       if (!"arcticdb.arctic.Arctic" %in% class(self$ac)) {
         stop("ac not proper arcticdb object")
       } 
-    }
+    },
     
     check_tbl_hold = function() {
       if (!"data.frame" %in% class(self$tbl_hold)) {

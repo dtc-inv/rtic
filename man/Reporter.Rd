@@ -6,13 +6,27 @@
 \description{
 Structure to wrangle portfolios and an optional benchmark into reports
 }
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{port}}{list of Portfolio Object(s)}
+
+\item{\code{bench}}{portfolio object representing benchmark, can be NULL}
+
+\item{\code{ac}}{ArcticDB datastore object}
+
+\item{\code{rf}}{risk-free time-series}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Reporter-new}{\code{Reporter$new()}}
 \item \href{#method-Reporter-clean_port_nm}{\code{Reporter$clean_port_nm()}}
+\item \href{#method-Reporter-sector_summ}{\code{Reporter$sector_summ()}}
+\item \href{#method-Reporter-country_summ}{\code{Reporter$country_summ()}}
 \item \href{#method-Reporter-cat_summ}{\code{Reporter$cat_summ()}}
-\item \href{#method-Reporter-sect_summ}{\code{Reporter$sect_summ()}}
 \item \href{#method-Reporter-clone}{\code{Reporter$clone()}}
 }
 }
@@ -20,17 +34,53 @@ Structure to wrangle portfolios and an optional benchmark into reports
 \if{html}{\out{<a id="method-Reporter-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-new}{}}}
 \subsection{Method \code{new()}}{
+Create Reporter object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$new(port, bench = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$new(port, bench = NULL, rf = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{port}}{list of Portfolio Object(s)}
+
+\item{\code{bench}}{benchmark (Portfolio Object), can leave NULL}
+
+\item{\code{rf}}{xts representing risk-free rate, can leave NULL, will default
+to BIL ETF}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-clean_port_nm"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-clean_port_nm}{}}}
 \subsection{Method \code{clean_port_nm()}}{
+Forces all portfolio names to be unique
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Reporter$clean_port_nm()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Reporter-sector_summ"></a>}}
+\if{latex}{\out{\hypertarget{method-Reporter-sector_summ}{}}}
+\subsection{Method \code{sector_summ()}}{
+Sector summary
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$sector_summ(
+  tgt = c("FactsetSector", "GicsMacro", "GicsMap"),
+  layer = 1
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Reporter-country_summ"></a>}}
+\if{latex}{\out{\hypertarget{method-Reporter-country_summ}{}}}
+\subsection{Method \code{country_summ()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$country_summ(tgt = "RiskCountry", layer = 1)}\if{html}{\out{</div>}}
 }
 
 }
@@ -39,16 +89,7 @@ Structure to wrangle portfolios and an optional benchmark into reports
 \if{latex}{\out{\hypertarget{method-Reporter-cat_summ}{}}}
 \subsection{Method \code{cat_summ()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$cat_summ(tbl_cat, tgt_nm)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Reporter-sect_summ"></a>}}
-\if{latex}{\out{\hypertarget{method-Reporter-sect_summ}{}}}
-\subsection{Method \code{sect_summ()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$sect_summ(sect_col = c("GicsMacro", "GicsMap", "FactsetSector"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$cat_summ(tbl_cat, tgt_nm, layer = 1)}\if{html}{\out{</div>}}
 }
 
 }
