@@ -46,6 +46,31 @@ space_ids <- function(ids, max_ids = 50) {
   return(iter)
 }
 
+#' @export
+clean_ids <- function(tbl_hold) {
+  if ("Cusip" %in% colnames(tbl_hold)) {
+    tbl_hold[tbl_hold[, "Cusip"] == "000000000", "Cusip"] <- NA
+  }
+  return(tbl_hold)
+}
+
+#' @export
+get_ids <- function(tbl_hold) {
+  tbl_hold <- clean_ids(tbl_hold)
+  id_field <- c("Ticker", "Cusip", "Sedol", "Lei", "DtcName", "Identifier")
+  id_bool <- id_field %in% colnames(tbl_hold)
+  if (!any(id_bool)) {
+    stop("no id fields found")
+  }
+  tbl_id <- tbl_hold[, id_field[id_bool], drop = FALSE]
+  ids <- tbl_id[, 1]
+  if (ncol(tbl_id) > 1) {
+    for (i in 2:ncol(tbl_id)) {
+      ids[is.na(ids)] <- tbl_id[, i][is.na(ids)]
+    }
+  }
+  return(ids)
+}
 
 #' @export
 extract_list <- function(x, nm) {
