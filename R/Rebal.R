@@ -96,7 +96,7 @@ Rebal <- R6::R6Class(
         rebal_combo[1, ] <- self$rebal_wgt[1, ]
       }
       rebal_xts <- fill_na_price(rebal_combo)
-      colnames(rebal_xts) <- colnames(rebal_wgt)
+      colnames(rebal_xts) <- colnames(self$Srebal_wgt)
       self$rebal_wgt <- rebal_xts
     },
     
@@ -146,7 +146,7 @@ Rebal <- R6::R6Class(
       }
       pr <- price_to_ret(port_wealth)
       colnames(pr) <- self$name
-      self$rebal_ret <- pr
+      self$rebal_ret <- port_wealth
     }
   )
 )

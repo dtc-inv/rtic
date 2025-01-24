@@ -16,6 +16,8 @@ Structure to contain and wrangle portfolio holdings and returns
 \item{\code{tbl_msl}}{table containing master security list}
 
 \item{\code{ac}}{ArcticDB datastore}
+
+\item{\code{rebal}}{Rebalance object}
 }
 \if{html}{\out{</div>}}
 }
@@ -31,6 +33,8 @@ Structure to contain and wrangle portfolio holdings and returns
 \item \href{#method-Portfolio-get_sector_data}{\code{Portfolio$get_sector_data()}}
 \item \href{#method-Portfolio-get_country_data}{\code{Portfolio$get_country_data()}}
 \item \href{#method-Portfolio-read_ret}{\code{Portfolio$read_ret()}}
+\item \href{#method-Portfolio-read_rebal_wgt}{\code{Portfolio$read_rebal_wgt()}}
+\item \href{#method-Portfolio-init_rebal}{\code{Portfolio$init_rebal()}}
 \item \href{#method-Portfolio-clone}{\code{Portfolio$clone()}}
 }
 }
@@ -139,6 +143,24 @@ Get Country Data
 \subsection{Method \code{read_ret()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_ret()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Portfolio-read_rebal_wgt"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-read_rebal_wgt}{}}}
+\subsection{Method \code{read_rebal_wgt()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_rebal_wgt()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Portfolio-init_rebal"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-init_rebal}{}}}
+\subsection{Method \code{init_rebal()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$init_rebal(rebal_freq = "M", asset_freq = NULL)}\if{html}{\out{</div>}}
 }
 
 }

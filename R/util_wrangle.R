@@ -115,6 +115,7 @@ get_ids <- function(tbl_hold) {
       ids[is.na(ids)] <- tbl_id[, i][is.na(ids)]
     }
   }
+  ids <- unique(ids)
   return(ids)
 }
 
@@ -245,4 +246,10 @@ get_list_fld <- function(x, fld) {
 #' @export
 month_end <- function(dt) {
   lubridate::ceiling_date(as.Date(dt), 'months') - 1
+}
+
+#' @export
+guess_freq <- function(x) {
+  freq <- periodicity(x)
+  toupper(substr(freq$scale, 1, 1))
 }

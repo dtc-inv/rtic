@@ -16,6 +16,8 @@ Portfolio <- R6::R6Class(
     tbl_msl = data.frame(),
     #' @field ac ArcticDB datastore
     ac = NULL,
+    #' @field rebal Rebalance object
+    rebal = NULL,
     
     #' @description Create new Portfolio
     #' @param ac ArcticDB datastore from Database Object
@@ -151,6 +153,26 @@ Portfolio <- R6::R6Class(
     read_ret = function() {
       ids <- get_ids(self$tbl_hold)
       ret <- read_ret(ids, self$ac)      
+    },
+    
+    read_rebal_wgt = function() {
+      rebal_wgt <- tidyr::pivot_wider(
+        data = self$tbl_hold, 
+        id_cols = TimeStamp,
+        values_from = CapWgt,
+        names_from = DtcName)
+      dataframe_to_xts(rebal_wgt)
+    },
+    
+    init_rebal = function(rebal_freq = "M", asset_freq = NULL) {
+      asset_ret <- self$read_ret()
+      res <- clean_ret(asset_ret)
+      asset_ret <- res$ret
+      rebal_wgt <- self$read_rebal_wgt()
+      if (is.null(asset_freq)) {
+        asset_freq <- guess_freq(asset_ret)
+      }
+      self$rebal <- Rebal$new(rebal_wgt, asset_ret, asset_freq, rebal_freq)
     }
   )
 )

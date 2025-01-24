@@ -398,3 +398,43 @@ clean_asset_bench_rf <- function(x, b, rf = NULL) {
   return(res)
 }
 
+#' @export
+clean_ret <- function(x, trunc_start = TRUE, trunc_end = TRUE, eps = 0.05) {
+  if (trunc_start) {
+    x <- x[paste0(first_comm_start(x), "/")]
+  }
+  if (trunc_end) {
+    x <- x[paste0("/", last_comm_end(x))]
+  }
+  miss_col <- colSums(is.na(x)) > floor(eps * nrow(x))
+  if (all(miss_col)) {
+    ret <- xts()
+  } else {
+    ret <- x[, !miss_col]
+  }
+  if (!all(miss_col)) {
+    miss <- xts()
+  } else {
+    miss <- x[, miss_col]
+  }
+  res <- list()
+  res$ret <- ret
+  res$miss <- miss
+  return(res)
+}
+
+#' @export
+ret_date_info <- function(x) {
+  sdate <- rep(NA, ncol(x))
+  edate <- sdate
+  for (i in 1:ncol(x)) {
+    dt <- zoo::index(na.omit(x[, i]))
+    sdate[i] <- dt[1]
+    edate[i] <- dt[length(dt)]
+  }
+  nm <- colnames(x)
+  if (is.null(nm)) {
+    nm <- 1:ncol(x)
+  }
+  data.frame(Name = nm, Start = as.Date(sdate), End = as.Date(edate))
+}
