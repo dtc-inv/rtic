@@ -304,43 +304,7 @@ Database <- R6::R6Class(
         #' If any returns are pulled from a monthly return library, e.g., CTF
         #' official returns, then all returns pinged will be converted to monthly
     read_ret = function(ids) {
-      lib <- self$ac$get_library("returns")
-      ids_dict <- filter(
-        self$tbl_msl, 
-        Ticker %in% ids | Cusip %in% ids | Sedol %in% ids | Lei %in% ids | 
-          DtcName %in% ids | Identifier %in% ids
-      )
-      found <- ids %in% ids_dict$Ticker | ids %in% ids_dict$Cusip |
-        ids %in% ids_dict$Lei | ids %in% ids_dict$Lei | 
-        ids %in% ids_dict$DtcName | ids %in% ids_dict$Identifier
-      if (all(!found)) {
-        warning("no ids found")
-        return(NULL)
-      }
-      if (any(!found)) {
-        warning(paste0(ids[miss], " not found. "))
-      }
-      ret_lib <- unique(na.omit(ids_dict$ReturnLibrary))
-      ret_meta <- read_parquet(self$bucket$path("tables/tbl_ret_meta.parquet"))
-      ret_data <- left_join(data.frame(ReturnLibrary = ret_lib),
-                           ret_meta, by = "ReturnLibrary")
-      res <- list()
-      for (i in 1:length(ret_lib)) {
-        x_dict <- filter(ids_dict, ReturnLibrary %in% ret_lib[i])
-        record <- lib$read(ret_lib[i], columns = c("Date", x_dict$DtcName))
-        res[[i]] <- dataframe_to_xts(record$data)
-      }
-      if ("monthly" %in% ret_data$Freq) {
-        for (i in 1:length(res)) {
-          res[[i]] <- change_freq(res[[i]])
-        }
-      }
-      if (length(res) == 1) {
-        return(res[[1]])
-      } else {
-        ret <- do.call("xts_cbind", res)
-        return(ret)
-      }
+      read_ret(ids, self$ac)
     },
     
     # holdings ----

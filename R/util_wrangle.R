@@ -25,6 +25,52 @@ read_macro_wb <- function(wb, idx_nm) {
   return(model) 
 }
 
+#' @title Read Returns
+#' @param ids ticker, cusip, lei, dtc name, or identifier
+#' @param ac arcticdb datastore
+#' @return xts of time-series of ids, will warn if some ids are not found
+#' @export
+read_ret = function(ids, ac) {
+  lib_ret <- ac$get_library("returns")
+  lib_tbl <- ac$get_library("meta-tables")
+  tbl_msl <- lib_tbl$read("msl")$data
+  ids_dict <- filter(
+    tbl_msl, 
+    Ticker %in% ids | Cusip %in% ids | Sedol %in% ids | Lei %in% ids | 
+      DtcName %in% ids | Identifier %in% ids
+  )
+  found <- ids %in% ids_dict$Ticker | ids %in% ids_dict$Cusip |
+    ids %in% ids_dict$Lei | ids %in% ids_dict$Lei | 
+    ids %in% ids_dict$DtcName | ids %in% ids_dict$Identifier
+  if (all(!found)) {
+    warning("no ids found")
+    return(NULL)
+  }
+  if (any(!found)) {
+    warning(paste0(ids[miss], " not found. "))
+  }
+  ret_src <- unique(na.omit(ids_dict$ReturnLibrary))
+  ret_meta <- lib_tbl$read("ret-meta")$data
+  ret_data <- left_join(data.frame(ReturnLibrary = ret_src),
+                        ret_meta, by = "ReturnLibrary")
+  res <- list()
+  for (i in 1:length(ret_src)) {
+    x_dict <- filter(ids_dict, ReturnLibrary %in% ret_src[i])
+    record <- lib_ret$read(ret_src[i], columns = c("Date", x_dict$DtcName))
+    res[[i]] <- dataframe_to_xts(record$data)
+  }
+  if ("monthly" %in% ret_data$Freq) {
+    for (i in 1:length(res)) {
+      res[[i]] <- change_freq(res[[i]])
+    }
+  }
+  if (length(res) == 1) {
+    return(res[[1]])
+  } else {
+    ret <- do.call("xts_cbind", res)
+    return(ret)
+  }
+}
 
 #' @title Space Out ids in multiple iterations
 #' @param ids vector of ids
