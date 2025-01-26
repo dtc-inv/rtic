@@ -153,7 +153,7 @@ Rebal <- R6::R6Class(
         ctr_mat[i, ] <- as.numeric(port_wealth[i]) * asset_wgt[i, ] *
           asset_ret[i, ]
       }
-      ctr_mat <- xts(ctr_mat, zoo::index(ret))
+      ctr_mat <- xts(ctr_mat, zoo::index(asset_ret))
       pr <- price_to_ret(port_wealth)
       colnames(pr) <- self$name
       self$rebal_ret <- pr

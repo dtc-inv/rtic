@@ -36,6 +36,8 @@ Reporter <- R6::R6Class(
       self$rf <- na.omit(dataframe_to_xts(rf$data))
     },
     
+    # holdings ----
+    
     #' @description Forces all portfolio names to be unique
     clean_port_nm = function() {
       nm <- sapply(self$port, '[[', "name")
@@ -109,6 +111,12 @@ Reporter <- R6::R6Class(
         res <- left_merge(tbl_cat, tbl_group, tgt_nm)
       }
       return(res$union)
+    },
+    
+    # returns ----
+    
+    ret_combo = function(layer) {
+      
     }
   )
 )

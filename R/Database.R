@@ -574,6 +574,11 @@ Database <- R6::R6Class(
       } else {
         lib$write("macro_sel_acwi", dat)  
       }
+    },
+    
+    create_port = function(dtc_name, latest = FALSE) {
+      tbl_hold <- self$read_hold(dtc_name, latest)
+      Portfolio$new(self$ac, tbl_hold, dtc_name)
     }
   )
 )

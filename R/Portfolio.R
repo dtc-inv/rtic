@@ -18,6 +18,8 @@ Portfolio <- R6::R6Class(
     ac = NULL,
     #' @field rebal Rebalance object
     rebal = NULL,
+    #' @field track_rec xts return time-series
+    track_rec = NULL,
     
     #' @description Create new Portfolio
     #' @param ac ArcticDB datastore from Database Object
@@ -150,7 +152,14 @@ Portfolio <- R6::R6Class(
     },
     
     # returns ----
-    read_ret = function() {
+    read_track_rec = function(id = NULL) {
+      if (is.null(id)) {
+        id <- self$name
+      }
+      self$track_record <- read_ret(id, self$ac)
+    },
+    
+    read_asset_ret = function() {
       ids <- get_ids(self$tbl_hold)
       ret <- read_ret(ids, self$ac)      
     },
@@ -165,7 +174,7 @@ Portfolio <- R6::R6Class(
     },
     
     init_rebal = function(rebal_freq = "M", asset_freq = NULL, sum_to_1 = TRUE) {
-      asset_ret <- self$read_ret()
+      asset_ret <- self$read_asset_ret()
       res <- clean_ret(asset_ret)
       asset_ret <- res$ret
       rebal_wgt <- self$read_rebal_wgt()
