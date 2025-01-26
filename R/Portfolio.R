@@ -164,15 +164,17 @@ Portfolio <- R6::R6Class(
       dataframe_to_xts(rebal_wgt)
     },
     
-    init_rebal = function(rebal_freq = "M", asset_freq = NULL) {
+    init_rebal = function(rebal_freq = "M", asset_freq = NULL, sum_to_1 = TRUE) {
       asset_ret <- self$read_ret()
       res <- clean_ret(asset_ret)
       asset_ret <- res$ret
       rebal_wgt <- self$read_rebal_wgt()
+      rebal_wgt[is.na(rebal_wgt)] <- 0
       if (is.null(asset_freq)) {
         asset_freq <- guess_freq(asset_ret)
       }
       self$rebal <- Rebal$new(rebal_wgt, asset_ret, asset_freq, rebal_freq)
+      self$rebal$rebal(sum_to_1)
     }
   )
 )

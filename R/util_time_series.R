@@ -407,6 +407,7 @@ clean_ret <- function(x, trunc_start = TRUE, trunc_end = TRUE, eps = 0.05) {
     x <- x[paste0("/", last_comm_end(x))]
   }
   miss_col <- colSums(is.na(x)) > floor(eps * nrow(x))
+  x[is.na(x)] <- 0
   if (all(miss_col)) {
     ret <- xts()
   } else {

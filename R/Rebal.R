@@ -9,7 +9,7 @@ Rebal <- R6::R6Class(
     asset_freq = NULL,
     rebal_freq = NULL,
     rebal_ret = NULL,
-    contr_to_ret = NULL,
+    ctr_mat = NULL,
     asset_ret_start = NULL,
     asset_ret_end = NULL,
     
@@ -100,13 +100,20 @@ Rebal <- R6::R6Class(
       self$rebal_wgt <- rebal_xts
     },
     
-    rebal = function() {
+    rebal = function(sum_to_1 = TRUE) {
       if (is.vector(self$rebal_wgt)) {
         self$wrangle_rebal_vect()
       }
       self$align_rebal_wgt()
       self$fill_rebal_dates()
       rebal_wgt <- self$rebal_wgt
+      if (!all(rowSums(rebal_wgt) == 1)) {
+        warning("row sums of rebal_wgt != 1, if sum_to_1 is set to FALSE will 
+                cause return drag.")
+      }
+      if (sum_to_1) {
+        rebal_wgt <- rebal_wgt / rowSums(rebal_wgt)
+      }
       asset_ret <- self$asset_ret
       rebal_dt <- zoo::index(rebal_wgt)
       ret_dt <- zoo::index(asset_ret)
@@ -125,9 +132,11 @@ Rebal <- R6::R6Class(
       for (i in 1:n_obs) {
         asset_idx[i + 1, ] <- asset_idx[i, ] * (1 + asset_ret[i, ])
         asset_wgt[i, ] <- asset_idx[i, ] / sum(asset_idx[i, ])
-        if (rebal_counter <= length(rebal_dt) & rebal_dt[rebal_counter] <= ret_dt[i]) {
+        if (rebal_counter <= length(rebal_dt) & 
+            rebal_dt[rebal_counter] <= ret_dt[i]) {
           asset_idx[i + 1, ] <- as.numeric(sum(asset_idx[i, ])) *
-            as.numeric(rebal_wgt[rebal_counter, ]) * as.numeric((1 + asset_ret[i, ]))
+            as.numeric(rebal_wgt[rebal_counter, ]) * 
+            as.numeric((1 + asset_ret[i, ]))
           asset_wgt[i, ] <- rebal_wgt[rebal_counter, ]
           rebal_counter <- rebal_counter + 1
         }
@@ -144,9 +153,11 @@ Rebal <- R6::R6Class(
         ctr_mat[i, ] <- as.numeric(port_wealth[i]) * asset_wgt[i, ] *
           asset_ret[i, ]
       }
+      ctr_mat <- xts(ctr_mat, zoo::index(ret))
       pr <- price_to_ret(port_wealth)
       colnames(pr) <- self$name
-      self$rebal_ret <- port_wealth
+      self$rebal_ret <- pr
+      self$ctr_mat <- ctr_mat
     }
   )
 )
