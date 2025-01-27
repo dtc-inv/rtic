@@ -167,13 +167,14 @@ xts_to_tidy <- function(x) {
 #' @param old newer time-series
 #' @param is_xts boolean, if set to FALSE, assumes new and old are data.frames
 #'   with `Date` column
+#' @param backfill if set to TRUE missing values of new will be filled with old
 #' @details
 #' For any overlapping dates, the old xts will be overwritten by the new xts.
 #' The function will align the intersection of column names for the old and new
 #' xts objects. For any column names that do not intersect NAs will be added
 #' to the new or old xts depending on which xts is missing the column name(s).
 #' @export
-xts_rbind <- function(new, old, is_xts = TRUE) {
+xts_rbind <- function(new, old, is_xts = TRUE, backfill = FALSE) {
   if (is_xts) {
     new_df <- xts_to_dataframe(new)
     old_df <- xts_to_dataframe(old)
@@ -185,6 +186,9 @@ xts_rbind <- function(new, old, is_xts = TRUE) {
                           values_to = "value")
   old_ldf <- pivot_longer(old_df, cols = -Date, names_to = "name",
                           values_to = "value")
+  if (backfill) {
+    new_ldf <- na.omit(new_ldf)
+  }
   new_id <- paste0(new_ldf$Date, new_ldf$name)
   old_id <- paste0(old_ldf$Date, old_ldf$name)
   # find new ids place in old ids, replace with new values
