@@ -53,8 +53,9 @@ Portfolio <- R6::R6Class(
       id_check <- any(c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
                         "Identifier") %in% colnames(self$tbl_hold))
       wgt_check <- "CapWgt" %in% colnames(self$tbl_hold)
-      if (!id_check | !wgt_check) {
-        stop("holdings table not properly specified")
+      time_check <- "TimeStamp" %in% colnames(self$tbl_hold)
+      if (!id_check | !wgt_check | !time_check) {
+        stop("Holdings table not properly specified. Need id, weight, and date")
       }
     },
     
@@ -161,7 +162,7 @@ Portfolio <- R6::R6Class(
     
     read_asset_ret = function() {
       ids <- get_ids(self$tbl_hold)
-      ret <- read_ret(ids, self$ac)      
+      read_ret(ids, self$ac)      
     },
     
     read_rebal_wgt = function() {
@@ -173,10 +174,15 @@ Portfolio <- R6::R6Class(
       dataframe_to_xts(rebal_wgt)
     },
     
-    init_rebal = function(rebal_freq = "M", asset_freq = NULL, sum_to_1 = TRUE) {
+    init_rebal = function(rebal_freq = "M", asset_freq = NULL, sum_to_1 = TRUE,
+                          clean_ret = TRUE) {
       asset_ret <- self$read_asset_ret()
-      res <- clean_ret(asset_ret)
-      asset_ret <- res$ret
+      if (clean_ret) {
+        res <- clean_ret(asset_ret)
+        asset_ret <- res$ret
+      } else {
+        asset_ret[is.na(asset_ret)] <- 0
+      }
       rebal_wgt <- self$read_rebal_wgt()
       rebal_wgt[is.na(rebal_wgt)] <- 0
       if (is.null(asset_freq)) {

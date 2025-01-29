@@ -36,18 +36,18 @@ read_ret = function(ids, ac) {
   tbl_msl <- lib_tbl$read("msl")$data
   ids_dict <- filter(
     tbl_msl, 
-    Ticker %in% ids | Cusip %in% ids | Sedol %in% ids | Lei %in% ids | 
-      DtcName %in% ids | Identifier %in% ids
+      DtcName %in% ids | Ticker %in% ids | Cusip %in% ids | Sedol %in% ids | 
+      Lei %in% ids |  Identifier %in% ids
   )
-  found <- ids %in% ids_dict$Ticker | ids %in% ids_dict$Cusip |
-    ids %in% ids_dict$Lei | ids %in% ids_dict$Lei | 
-    ids %in% ids_dict$DtcName | ids %in% ids_dict$Identifier
+  found <- ids %in% ids_dict$DtcName | ids %in% ids_dict$Ticker | 
+    ids %in% ids_dict$Cusip | ids %in% ids_dict$Lei | ids %in% ids_dict$Lei | 
+    ids %in% ids_dict$Identifier
   if (all(!found)) {
     warning("no ids found")
     return(NULL)
   }
   if (any(!found)) {
-    warning(paste0(ids[miss], " not found. "))
+    warning(paste0(ids[!found], " not found. "))
   }
   ret_src <- unique(na.omit(ids_dict$ReturnLibrary))
   ret_meta <- lib_tbl$read("ret-meta")$data
@@ -67,7 +67,9 @@ read_ret = function(ids, ac) {
   if (length(res) == 1) {
     return(res[[1]])
   } else {
-    ret <- do.call("xts_cbind", res)
+    ret <- do.call("cbind", res)
+    nm <- unlist(lapply(res, colnames))
+    colnames(ret) <- nm
     return(ret)
   }
 }
@@ -95,7 +97,10 @@ space_ids <- function(ids, max_ids = 50) {
 #' @export
 clean_ids <- function(tbl_hold) {
   if ("Cusip" %in% colnames(tbl_hold)) {
-    tbl_hold[tbl_hold[, "Cusip"] == "000000000", "Cusip"] <- NA
+    ix <- tbl_hold[, "Cusip"] == "000000000"
+    if (any(na.omit(ix))) {
+      tbl_hold[ix, "Cusip"] <- NA
+    }
   }
   return(tbl_hold)
 }
@@ -103,7 +108,7 @@ clean_ids <- function(tbl_hold) {
 #' @export
 get_ids <- function(tbl_hold) {
   tbl_hold <- clean_ids(tbl_hold)
-  id_field <- c("Ticker", "Cusip", "Sedol", "Lei", "DtcName", "Identifier")
+  id_field <- c("DtcName", "Ticker", "Cusip", "Sedol", "Lei", "Identifier")
   id_bool <- id_field %in% colnames(tbl_hold)
   if (!any(id_bool)) {
     stop("no id fields found")

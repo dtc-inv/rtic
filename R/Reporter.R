@@ -115,7 +115,7 @@ Reporter <- R6::R6Class(
     
     # returns ----
     
-    ret_combo = function(layer) {
+    ret_combo = function() {
       
     }
   )

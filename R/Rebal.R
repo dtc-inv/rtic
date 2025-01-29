@@ -65,16 +65,17 @@ Rebal <- R6::R6Class(
     fill_rebal_dates = function() {
       # TO-DO: NEED FUNCTION TO CHECK REBAL AND RET FREQ
       # create date vector based on rebalance frequency, exit for BH
+      start_date <- zoo::index(self$rebal_wgt)[1]
       if (self$rebal_freq == 'D') {
         dt_vec <- zoo::index(self$asset_ret)
       } else if (self$rebal_freq == 'M') {
-        dt_vec <- seq(self$asset_ret_start, self$asset_ret_end, 'months')
+        dt_vec <- seq(start_date, self$asset_ret_end, 'months')
         dt_vec <- lubridate::floor_date(dt_vec + 10, 'months') - 1
       } else if (self$rebal_freq == 'Q') {
-        dt_vec <- seq(self$asset_ret_start, self$asset_ret_end, 'quarters')
+        dt_vec <- seq(start_date, self$asset_ret_end, 'quarters')
         dt_vec <- lubridate::floor_date(dt_vec + 10, 'quarters') - 1
       } else if (self$rebal_freq == 'A') {
-        dt_vec <- seq(self$asset_ret_start, self$asset_ret_end, 'years')
+        dt_vec <- seq(start_date, self$asset_ret_end, 'years')
       } else if (self$rebal_freq == "BH") {
         return(invisible(self))
       } else {
@@ -115,6 +116,7 @@ Rebal <- R6::R6Class(
         rebal_wgt <- rebal_wgt / rowSums(rebal_wgt)
       }
       asset_ret <- self$asset_ret
+      asset_ret <- cut_time(asset_ret, zoo::index(rebal_wgt)[1])
       rebal_dt <- zoo::index(rebal_wgt)
       ret_dt <- zoo::index(asset_ret)
       n_obs <- nrow(asset_ret)

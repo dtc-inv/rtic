@@ -82,6 +82,58 @@ Database <- R6::R6Class(
       lib$write("msl", self$tbl_msl)
     },
     
+    write_sec = function() {
+      lib <- self$ac$get_library("meta-tables")
+      lib$write("sec", self$tbl_sec)
+    },
+    
+    write_cust = function() {
+      lib <- self$ac$get_library("meta-tables")
+      lib$write("cust", self$tbl_cust)
+    },
+    
+    add_asset = function(dtc_name, id, id_type, layer, sec_type, ret_lib = NA, 
+                         hold_tbl = NA, short_cik = NA, long_cik = NA,
+                         bd_acct_id = NA) {
+      if (!id_type %in% c("Ticker", "Layer", "Cusip", "Sedol", "Isin", "Lei", 
+                          "Identifier")) {
+        stop("id type not found")
+      }
+      msl_row <- data.frame(
+        DtcName = dtc_name,
+        Ticker = NA,
+        Layer = layer,
+        Cusip = NA,
+        Sedol = NA,
+        Isin = NA,
+        Lei = NA,
+        Identifier = NA,
+        SecType = sec_type,
+        ReturnLibrary = ret_lib,
+        HoldingsTable = hold_tbl
+      )
+      msl_row[1, id_type] <- id
+      self$tbl_msl <- rbind(self$tbl_msl, msl_row)
+      self$write_msl()
+      if (!is.na(short_cik) & !is.na(long_cik)) {
+        sec_row <- data.frame(
+          DtcName = dtc_name,
+          ShortCIK = short_cik,
+          LongCIK = long_cik
+        )
+        self$tbl_sec <- rbind(self$tbl_sec, sec_row)
+        self$write_sec()
+      }
+      if (!is.na(bd_acct_id)) {
+        cust_row <- data.frame(
+          DtcName = dtc_name,
+          BdAccountId = bd_account_id
+        )
+        self$tbl_cust <- rbind(self$tbl_cust, cust_row)
+        self$write_cust()
+      }
+    },
+    
     # update returns ----
 
     #' @description Update index returns from Factset
@@ -127,6 +179,8 @@ Database <- R6::R6Class(
       if (is.null(ids)) {
         etf <- filter(self$tbl_msl, ReturnLibrary == "etf")
         ids <- etf$Ticker
+      } else {
+        etf <- filter(self$tbl_msl, Ticker %in% ids)
       }
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("etf")$data
@@ -165,6 +219,8 @@ Database <- R6::R6Class(
       if (is.null(ids)) {
         mf <- filter(self$tbl_msl, ReturnLibrary == "mutual-fund")
         ids <- mf$Ticker
+      } else {
+        mf <- filter(self$tbl_msl, Ticker %in% ids)
       }
       formulas <- paste0('P_TOTAL_RETURNC(-', days_back, 'D,NOW,D,USD)')
       iter <- space_ids(ids)
@@ -262,6 +318,17 @@ Database <- R6::R6Class(
       lib$write("ctf", combo_df)
     },
 
+    ret_backfill = function(xl_file = NULL, sht = 1) {
+      if (is.null(xl_file)) {
+        xl_file <- "N:/Investment Team/DATABASES/CustomRet/backfill.xlsx"
+      }
+      backfill <- read_xts(xl_file, sht)
+      backfill <- xts_to_dataframe(backfill)
+      backfill$Date <- as.character(backfill$Date)
+      lib <- self$ac$get_library("returns")
+      lib$write("backfill", backfill)
+    },
+    
     # ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
     #                      freq = "D") {
     #   if (is.null(ids)) {
