@@ -51,31 +51,6 @@ last_comm_end <- function(x) {
   return(min(as.Date(last_days, origin = "1970-01-01")))
 }
 
-# clean ----
-
-#' @title Remove columns in return time-series with too many missing values
-#' @param x xts object
-#' @param eps portion of data, enter 0.05 for 5%, at which to delete the column
-#'   if the missing value % of the column length exceeds. See details for more info.
-#' @param rpl value to replace missing values, `0` by default
-#' @details
-#' If the the column length is 10 and the `eps` = 0.05, then if the missing values
-#' in a column are greater than 2 (10 * 0.05 = 2) then remove the column. Any
-#' missing data in a column that was less than the `eps` will be replaced with zero.
-#' @return xts with bad columns removed. Missing values are `NA` found by the
-#' `is.na` function.
-#' @export
-rm_na_col <- function(x, eps = 0.05, rpl = 0) {
-  bad_col <- colSums(is.na(x)) / nrow(x) > eps
-  miss_dat <- x[, bad_col]
-  dat <- x[, !bad_col]
-  dat[is.na(dat)] <- rpl
-  res <- list()
-  res$ret <- dat
-  res$miss_ret <- miss_dat
-  return(res)
-}
-
 #' @title Fill Missing Price Data with Last Found Observation
 #' @param x xts
 #' @details
@@ -231,10 +206,7 @@ xts_cbind <- function(x, y) {
 #' @export
 xts_cbind_inter <- function(x, y) {
   combo <- xts_cbind(x, y)
-  sd <- first_comm_start(combo)
-  ed <- last_comm_end(combo)
-  combo <- cut_time(combo, sd, ed)
-  res <- rm_na_col(combo)
+  res <- clean_ret(combo)
   return(res)
 }
 

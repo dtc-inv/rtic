@@ -113,6 +113,10 @@ Reporter <- R6::R6Class(
       return(res$union)
     },
     
+    fina_summ = function() {
+      
+    },
+    
     # returns ----
     
     ret_combo = function() {

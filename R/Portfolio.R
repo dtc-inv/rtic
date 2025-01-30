@@ -84,6 +84,7 @@ Portfolio <- R6::R6Class(
       for (i in 1:10) {
         for (j in 1:nrow(x)) {
           record <- lib_hold$read(x$DtcName[j])
+          record$data <- latest_holdings(record$data)
           record$data[, paste0("Layer", x$Layer[j])] <- x$DtcName[j]
           record$data$CapWgt <- record$data$CapWgt * x$CapWgt[j]
           lay_1 <- rob_rbind(lay_1, record$data)

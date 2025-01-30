@@ -258,3 +258,9 @@ guess_freq <- function(x) {
   freq <- periodicity(x)
   toupper(substr(freq$scale, 1, 1))
 }
+
+#' @export
+remove_holding_dup <- function(tbl_hold, id = "Name") {
+  is_dup <- duplicated(paste0(tbl_hold[, id], tbl_hold[, "TimeStamp"]))
+  tbl_hold[!is_dup, ]
+}

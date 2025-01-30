@@ -407,12 +407,14 @@ Database <- R6::R6Class(
           dat$TimeStamp <- as.character(dat$TimeStamp)
           if (dtc_name[i] %in% lib$list_symbols()) {
             old_dat <- lib$read(dtc_name[i])
-            if (dat$TimeStamp[1] %in% unique(old_dat$data$TimeStamp)) {
+            dup_date <- as.character(dat$TimeStamp[1]) %in% 
+              unique(old_dat$data$TimeStamp)
+            if (dup_date) {
               warning(paste0(dtc_name[i], " already has data for latest date"))
               if (return_data) {
                 res[[i]] <- dat
-                next
               }
+              next
             }
             combo <- rob_rbind(old_dat$data, dat)
             lib$write(dtc_name[i], combo)
