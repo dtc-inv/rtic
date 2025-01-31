@@ -81,6 +81,7 @@ Reporter <- R6::R6Class(
       colnames(tbl_cat)[1] <- tgt_nm
       for (i in 1:length(self$port)) {
         port <- self$port[[i]]$clone()
+        port$tbl_hold <- latest_holdings(port$tbl_hold)
         port$drill_down()
         port$get_sector_data()
         port$get_country_data()
@@ -113,8 +114,44 @@ Reporter <- R6::R6Class(
       return(res$union)
     },
     
-    fina_summ = function() {
-      
+    fina_summ = function(layer = 1) {
+      for (i in 1:length(self$port)) {
+        port <- self$port[[i]]$clone()
+        port$drill_down()
+        port$get_fina_data()
+        met <- c("PE", "PB", "PFCF", "DY")
+        res <- data.frame(Metric = met)
+        if (layer == 1) {
+          w <- port$tbl_hold$CapWgt
+          pe <- avg_fina_ratio(w, port$tbl_hold$PE)
+          pb <- avg_fina_ratio(w, port$tbl_hold$PB)
+          pfcf <- avg_fina_ratio(w, port$tbl_hold$PFCF)
+          dy <- avg_fina_ratio(w, port$tbl_hold$DY)
+          xdf <- data.frame(Metric = me, x = c(pe, pb, pfcf, dy))
+          colnames(xdf)[2] <- port$name
+          x <- left_join(res, xdf, "Metric")
+          res <- x$union
+        } else {
+          tgt_layer <- paste0("Layer", layer) 
+          if (tgt_layer %in% colnames(port$tbl_hold)) {
+            tbl_group <- group_by(port$tbl_hold, .data[[tgt_layer]])
+            pe <- summarize(tbl_group, PE = avg_fina_ratio(CapWgt, PE))
+            pb <- summarize(tbl_group, PB = avg_fina_ratio(CapWgt, PB))
+            pfcf <- summarize(tbl_group, PFCF = avg_fina_ratio(CapWgt, PFCF))
+            dy <- summarize(tbl_group, DY = wgt_avg(CapWgt, DY))
+            xdf <- cbind(pe[, 2], pb[, 2], pfcf[, 2], dy[, 2])
+            is_miss <- is.na(pe[[1]])
+            xdf <- xdf[!is_miss, ]
+            xdf <- t(xdf)
+            colnames(xdf) <- pe[[1]][!is_miss]
+            xdf <- as.data.frame(xdf)
+            xdf$Metric <- rownames(xdf)
+            x <- left_merge(res, xdf, "Metric")
+            res <- x$union
+          }
+        }
+      }
+      return(res)
     },
     
     # returns ----

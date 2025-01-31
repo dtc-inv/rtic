@@ -35,11 +35,15 @@ holdings data}
 \item \href{#method-Database-new}{\code{Database$new()}}
 \item \href{#method-Database-check_api_keys}{\code{Database$check_api_keys()}}
 \item \href{#method-Database-write_msl}{\code{Database$write_msl()}}
+\item \href{#method-Database-write_sec}{\code{Database$write_sec()}}
+\item \href{#method-Database-write_cust}{\code{Database$write_cust()}}
+\item \href{#method-Database-add_asset}{\code{Database$add_asset()}}
 \item \href{#method-Database-ret_index}{\code{Database$ret_index()}}
 \item \href{#method-Database-ret_etf}{\code{Database$ret_etf()}}
 \item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
+\item \href{#method-Database-ret_backfill}{\code{Database$ret_backfill()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
@@ -47,6 +51,7 @@ holdings data}
 \item \href{#method-Database-download_fundamental_data}{\code{Database$download_fundamental_data()}}
 \item \href{#method-Database-download_sectors}{\code{Database$download_sectors()}}
 \item \href{#method-Database-update_ps_macro_select}{\code{Database$update_ps_macro_select()}}
+\item \href{#method-Database-create_port}{\code{Database$create_port()}}
 \item \href{#method-Database-clone}{\code{Database$clone()}}
 }
 }
@@ -94,6 +99,44 @@ Check if api keys are properly specified
 \subsection{Method \code{write_msl()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$write_msl()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-write_sec"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-write_sec}{}}}
+\subsection{Method \code{write_sec()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$write_sec()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-write_cust"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-write_cust}{}}}
+\subsection{Method \code{write_cust()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$write_cust()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-add_asset"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-add_asset}{}}}
+\subsection{Method \code{add_asset()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$add_asset(
+  dtc_name,
+  id,
+  id_type,
+  layer,
+  sec_type,
+  ret_lib = NA,
+  hold_tbl = NA,
+  short_cik = NA,
+  long_cik = NA,
+  bd_acct_id = NA
+)}\if{html}{\out{</div>}}
 }
 
 }
@@ -191,6 +234,15 @@ data from}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_backfill"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_backfill}{}}}
+\subsection{Method \code{ret_backfill()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_backfill(xl_file = NULL, sht = 1)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-read_ret"></a>}}
@@ -351,6 +403,15 @@ Download Macro Select Workbook and Save to Library
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-create_port"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-create_port}{}}}
+\subsection{Method \code{create_port()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$create_port(dtc_name, latest = FALSE)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-clone"></a>}}

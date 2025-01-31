@@ -264,3 +264,23 @@ remove_holding_dup <- function(tbl_hold, id = "Name") {
   is_dup <- duplicated(paste0(tbl_hold[, id], tbl_hold[, "TimeStamp"]))
   tbl_hold[!is_dup, ]
 }
+
+#' @export
+avg_fina_ratio <- function(w, x, rm_negative = TRUE) {
+  if (rm_negative) {
+    x[x < 0] <- NA
+  }
+  is_miss <- is.na(x) | is.na(w)
+  x[is_miss] <- NA
+  w[is_miss] <- NA
+  w <- w / sum(x, na.rm = TRUE)
+  wgt_harmonic_mean(w, x)
+} 
+
+#' @export
+wgt_avg <- function(w, x) {
+  is_miss <- is.na(x) | is.na(w)
+  x[is_miss] <- NA
+  w[is_miss] <- NA
+  sum(x * w, na.rm = TRUE) / sum(w, na.rm = TRUE)
+}

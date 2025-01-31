@@ -18,6 +18,8 @@ Structure to contain and wrangle portfolio holdings and returns
 \item{\code{ac}}{ArcticDB datastore}
 
 \item{\code{rebal}}{Rebalance object}
+
+\item{\code{track_rec}}{xts return time-series}
 }
 \if{html}{\out{</div>}}
 }
@@ -32,7 +34,8 @@ Structure to contain and wrangle portfolio holdings and returns
 \item \href{#method-Portfolio-get_fina_data}{\code{Portfolio$get_fina_data()}}
 \item \href{#method-Portfolio-get_sector_data}{\code{Portfolio$get_sector_data()}}
 \item \href{#method-Portfolio-get_country_data}{\code{Portfolio$get_country_data()}}
-\item \href{#method-Portfolio-read_ret}{\code{Portfolio$read_ret()}}
+\item \href{#method-Portfolio-read_track_rec}{\code{Portfolio$read_track_rec()}}
+\item \href{#method-Portfolio-read_asset_ret}{\code{Portfolio$read_asset_ret()}}
 \item \href{#method-Portfolio-read_rebal_wgt}{\code{Portfolio$read_rebal_wgt()}}
 \item \href{#method-Portfolio-init_rebal}{\code{Portfolio$init_rebal()}}
 \item \href{#method-Portfolio-clone}{\code{Portfolio$clone()}}
@@ -138,11 +141,20 @@ Get Country Data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Portfolio-read_ret"></a>}}
-\if{latex}{\out{\hypertarget{method-Portfolio-read_ret}{}}}
-\subsection{Method \code{read_ret()}}{
+\if{html}{\out{<a id="method-Portfolio-read_track_rec"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-read_track_rec}{}}}
+\subsection{Method \code{read_track_rec()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_ret()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_track_rec(id = NULL)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Portfolio-read_asset_ret"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-read_asset_ret}{}}}
+\subsection{Method \code{read_asset_ret()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_asset_ret()}\if{html}{\out{</div>}}
 }
 
 }
@@ -160,7 +172,12 @@ Get Country Data
 \if{latex}{\out{\hypertarget{method-Portfolio-init_rebal}{}}}
 \subsection{Method \code{init_rebal()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Portfolio$init_rebal(rebal_freq = "M", asset_freq = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$init_rebal(
+  rebal_freq = "M",
+  asset_freq = NULL,
+  sum_to_1 = TRUE,
+  clean_ret = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 }

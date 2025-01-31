@@ -4,7 +4,7 @@
 \alias{xts_rbind}
 \title{Row bind xts}
 \usage{
-xts_rbind(new, old, is_xts = TRUE)
+xts_rbind(new, old, is_xts = TRUE, backfill = FALSE)
 }
 \arguments{
 \item{new}{older time-series}
@@ -13,6 +13,8 @@ xts_rbind(new, old, is_xts = TRUE)
 
 \item{is_xts}{boolean, if set to FALSE, assumes new and old are data.frames
 with `Date` column}
+
+\item{backfill}{if set to TRUE missing values of new will be filled with old}
 }
 \description{
 Row bind xts

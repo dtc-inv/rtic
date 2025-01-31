@@ -27,6 +27,8 @@ Structure to wrangle portfolios and an optional benchmark into reports
 \item \href{#method-Reporter-sector_summ}{\code{Reporter$sector_summ()}}
 \item \href{#method-Reporter-country_summ}{\code{Reporter$country_summ()}}
 \item \href{#method-Reporter-cat_summ}{\code{Reporter$cat_summ()}}
+\item \href{#method-Reporter-fina_summ}{\code{Reporter$fina_summ()}}
+\item \href{#method-Reporter-ret_combo}{\code{Reporter$ret_combo()}}
 \item \href{#method-Reporter-clone}{\code{Reporter$clone()}}
 }
 }
@@ -90,6 +92,24 @@ Sector summary
 \subsection{Method \code{cat_summ()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Reporter$cat_summ(tbl_cat, tgt_nm, layer = 1)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Reporter-fina_summ"></a>}}
+\if{latex}{\out{\hypertarget{method-Reporter-fina_summ}{}}}
+\subsection{Method \code{fina_summ()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$fina_summ(layer = 1)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Reporter-ret_combo"></a>}}
+\if{latex}{\out{\hypertarget{method-Reporter-ret_combo}{}}}
+\subsection{Method \code{ret_combo()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$ret_combo()}\if{html}{\out{</div>}}
 }
 
 }

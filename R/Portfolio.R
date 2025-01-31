@@ -67,12 +67,20 @@ Portfolio <- R6::R6Class(
         match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
                      "Identifier")
       )
+      is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
+      if (any(is_dup)) {
+        warning("duplicate dates found, removing")
+        res$inter <- res$inter[!is_dup, ]
+      }
       self$tbl_hold <- res$inter
       self$tbl_miss <- res$miss
     },
 
     #' @description Drill down to underlying holdings of funds / CTFs / models
-    drill_down = function() {
+    drill_down = function(latest = TRUE) {
+      if (latest) {
+        self$tbl_hold <- latest_holdings(self$tbl_hold)
+      }
       is_lay_1 <- self$tbl_hold$Layer == 1
       if (all(is_lay_1)) {
         warning("no layers beyond 1 found")
@@ -84,7 +92,6 @@ Portfolio <- R6::R6Class(
       for (i in 1:10) {
         for (j in 1:nrow(x)) {
           record <- lib_hold$read(x$DtcName[j])
-          record$data <- latest_holdings(record$data)
           record$data[, paste0("Layer", x$Layer[j])] <- x$DtcName[j]
           record$data$CapWgt <- record$data$CapWgt * x$CapWgt[j]
           lay_1 <- rob_rbind(lay_1, record$data)
