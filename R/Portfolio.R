@@ -7,7 +7,10 @@
 Portfolio <- R6::R6Class(
   "Portfolio",
   public = list(
+    #' @field name portfolio name
     name = NULL,
+    #' @field tbl_hold id to pull track record
+    tr_id = NULL,
     #' @field tbl_hold holdings table
     tbl_hold = data.frame(),
     #' @field tbl_miss holdings that are missing from MSL
@@ -25,11 +28,12 @@ Portfolio <- R6::R6Class(
     #' @param ac ArcticDB datastore from Database Object
     #' @param tbl_hold holdings table, see details
     #' @details tbl_hold is gathered with the Database Object method $get_hold().
-    initialize = function(ac, tbl_hold, name = NULL) {
+    initialize = function(ac, tbl_hold, name = NULL, tr_id = NULL) {
       if (is.null(name)) {
         name <- "Port"
       }
       self$name <- name
+      self$tr_id <- tr_id
       self$ac <- ac
       self$check_ac()
       lib <- self$ac$get_library("meta-tables")
@@ -166,9 +170,11 @@ Portfolio <- R6::R6Class(
     # returns ----
     read_track_rec = function(id = NULL) {
       if (is.null(id)) {
-        id <- self$name
+        id <- self$tr_id
       }
-      self$track_record <- read_ret(id, self$ac)
+      if (!is.null(id)) {
+        self$track_rec <- read_ret(id, self$ac)
+      }
     },
     
     read_asset_ret = function() {
