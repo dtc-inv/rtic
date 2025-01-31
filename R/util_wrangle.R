@@ -3,8 +3,14 @@
 #' @return data.frame with holdings for the most recent date
 #' @export
 latest_holdings <- function(tbl_hold) {
-  tbl_hold$TimeStamp <- as.Date(tbl_hold$TimeStamp)
+  is_char <- "character" %in% class(tbl_hold$Timestamp) 
+  if (is_char) {
+    tbl_hold$TimeStamp <- as.Date(tbl_hold$TimeStamp)
+  }
   is_latest <- tbl_hold$TimeStamp == max(tbl_hold$TimeStamp)
+  if (is_char) {
+    tbl_hold$TimeStamp <- as.character(tbl_hold$TimeStamp)
+  }
   tbl_hold[is_latest, ]
 }
 

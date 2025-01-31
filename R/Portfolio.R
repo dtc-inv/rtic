@@ -84,7 +84,7 @@ Portfolio <- R6::R6Class(
       is_lay_1 <- self$tbl_hold$Layer == 1
       if (all(is_lay_1)) {
         warning("no layers beyond 1 found")
-        return(NULL)
+        return()
       }
       lay_1 <- self$tbl_hold[is_lay_1, ]
       x <- self$tbl_hold[!is_lay_1, ]
@@ -92,6 +92,9 @@ Portfolio <- R6::R6Class(
       for (i in 1:10) {
         for (j in 1:nrow(x)) {
           record <- lib_hold$read(x$DtcName[j])
+          if (latest) {
+            record$data <- latest_holdings(record$data)
+          }
           record$data[, paste0("Layer", x$Layer[j])] <- x$DtcName[j]
           record$data$CapWgt <- record$data$CapWgt * x$CapWgt[j]
           lay_1 <- rob_rbind(lay_1, record$data)

@@ -115,24 +115,22 @@ Reporter <- R6::R6Class(
     },
     
     fina_summ = function(layer = 1) {
+      met <- c("PE", "PB", "PFCF", "DY")
+      res <- data.frame(Metric = met)
       for (i in 1:length(self$port)) {
         port <- self$port[[i]]$clone()
         port$drill_down()
         port$get_fina_data()
-        met <- c("PE", "PB", "PFCF", "DY")
-        res <- data.frame(Metric = met)
-        if (layer == 1) {
-          w <- port$tbl_hold$CapWgt
-          pe <- avg_fina_ratio(w, port$tbl_hold$PE)
-          pb <- avg_fina_ratio(w, port$tbl_hold$PB)
-          pfcf <- avg_fina_ratio(w, port$tbl_hold$PFCF)
-          dy <- avg_fina_ratio(w, port$tbl_hold$DY)
-          xdf <- data.frame(Metric = me, x = c(pe, pb, pfcf, dy))
-          colnames(xdf)[2] <- port$name
-          x <- left_join(res, xdf, "Metric")
-          res <- x$union
-        } else {
-          tgt_layer <- paste0("Layer", layer) 
+        w <- port$tbl_hold$CapWgt
+        pe <- avg_fina_ratio(w, port$tbl_hold$PE)
+        pb <- avg_fina_ratio(w, port$tbl_hold$PB)
+        pfcf <- avg_fina_ratio(w, port$tbl_hold$PFCF)
+        dy <- wgt_avg(w, port$tbl_hold$DY)
+        xdf <- data.frame(Metric = met, x = c(pe, pb, pfcf, dy))
+        colnames(xdf)[2] <- port$name
+        x <- left_merge(res, xdf, "Metric")
+        if (layer >= 1) {
+          tgt_layer <- paste0("Layer", layer)
           if (tgt_layer %in% colnames(port$tbl_hold)) {
             tbl_group <- group_by(port$tbl_hold, .data[[tgt_layer]])
             pe <- summarize(tbl_group, PE = avg_fina_ratio(CapWgt, PE))
@@ -147,9 +145,9 @@ Reporter <- R6::R6Class(
             xdf <- as.data.frame(xdf)
             xdf$Metric <- rownames(xdf)
             x <- left_merge(res, xdf, "Metric")
-            res <- x$union
           }
         }
+        res <- x$union
       }
       return(res)
     },
