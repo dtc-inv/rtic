@@ -44,6 +44,7 @@ holdings data}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
 \item \href{#method-Database-ret_backfill}{\code{Database$ret_backfill()}}
+\item \href{#method-Database-ret_model}{\code{Database$ret_model()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
@@ -241,6 +242,15 @@ data from}
 \subsection{Method \code{ret_backfill()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_backfill(xl_file = NULL, sht = 1)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_model"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_model}{}}}
+\subsection{Method \code{ret_model()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_model(dtc_name = NULL)}\if{html}{\out{</div>}}
 }
 
 }

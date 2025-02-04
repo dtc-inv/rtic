@@ -93,8 +93,8 @@ dataframe_to_xts <- function(df) {
 #' @field dat dataframe with dates as rownames
 #' @export
 arc_to_dataframe <- function(dat) {
-  dat$Date <- rownames(dat)
-  relocate(dat, Date)
+  dat$Date <- as.Date(x)
+  dat
 }
 
 #' @title Convert dataframe with Date column to arctic storage dataframe with
@@ -102,8 +102,14 @@ arc_to_dataframe <- function(dat) {
 #' @param xdf data.frame with Date column (as first column xdf[, 1])
 #' @export
 dataframe_to_arc <- function(xdf) {
-  rownames(xdf) <- xdf$Date
-  xdf[, -1]
+  xdf$Date <- as.character(xdf$Date)
+  xdf
+}
+
+#' @export
+xts_to_arc <- function(x) {
+  x <- xts_to_dataframe(x)
+  dataframe_to_arc(x)
 }
 
 #' @title Convert xts object to a data.frame

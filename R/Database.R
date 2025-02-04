@@ -329,6 +329,50 @@ Database <- R6::R6Class(
       lib$write("backfill", backfill)
     },
     
+    ret_model = function(dtc_name = NULL) {
+      lib <- self$ac$get_library("meta-tables")
+      model <- lib$read("model")$data
+      if (!is.null(dtc_name)) {
+        model <- filter(model, DtcName %in% dtc_name)
+      }
+      model <- model[order(model$Layer), ]
+      ret_m <- list()
+      ret_d <- list()
+      for (i in 1:nrow(model)) {
+        h <- self$read_hold(model$DtcName, FALSE)
+        p <- Portfolio$new(self$ac, h)
+        p$init_rebal(model$RebFreq, model$RetFreq)
+        colnames(p$rebal$rebal_ret) <- model$DtcName[i]
+        if (model$ReturnLibrary == "model-daily") {
+          ret_d[[length(ret_d)+1]] <- p$rebal$rebal_ret
+        } else if (model$ReturnLibrary == "model-monthly") {
+          ret_m[[length(ret_m)+1]] <- p$rebal$rebal_ret
+        } else {
+          warning(paste0(model$DtcName[i], " invalid ReturnLibrary"))
+          next
+        }
+      }
+      ret_lib <- self$ac$get_library("returns")
+      if (length(ret_d) >= 1) {
+        colnm <- unlist(lapply(ret_d, "colnames"))
+        ret_d <- do.call("cbind", ret_d)
+        colnames(ret_d) <- colnm
+          old <- ret_lib$read("model-daily")$data
+          new <- xts_to_arc(ret_d)
+          combo <- xts_rbind(new, old, is_xts = FALSE)
+          ret_lib$write("model-daily", dataframe_to_arc(combo))
+      }
+      if (length(ret_d) >= 1) {
+        colnm <- unlist(lapply(ret_m, "colnames"))
+        ret_m <- do.call("cbind", ret_m)
+        colnames(ret_m) <- colnm
+        old <- ret_lib$read("model-monthly")$data
+        new <- xts_to_arc(ret_m)
+        combo <- xts_rbind(new, old, is_xts = FALSE)
+        ret_lib$write("model-monthly", dataframe_to_arc(combo))
+      }
+    },
+    
     # ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
     #                      freq = "D") {
     #   if (is.null(ids)) {

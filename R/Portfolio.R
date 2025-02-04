@@ -81,11 +81,11 @@ Portfolio <- R6::R6Class(
     },
 
     #' @description Drill down to underlying holdings of funds / CTFs / models
-    drill_down = function(latest = TRUE) {
+    drill_down = function(layer = 1, latest = TRUE) {
       if (latest) {
         self$tbl_hold <- latest_holdings(self$tbl_hold)
       }
-      is_lay_1 <- self$tbl_hold$Layer == 1
+      is_lay_1 <- self$tbl_hold$Layer <= layer
       if (all(is_lay_1)) {
         warning("no layers beyond 1 found")
         return()
@@ -112,7 +112,7 @@ Portfolio <- R6::R6Class(
         )
         lay_1 <- res$inter
         self$tbl_miss <- rob_rbind(self$tbl_miss, res$miss)
-        is_lay_1 <- lay_1$Layer == 1
+        is_lay_1 <- lay_1$Layer <= layer
         if (any(is.na(is_lay_1))) {
           warning("some layer observations missing in tbl_msl")
           is_lay_1[is.na(is_lay_1)] <- TRUE
@@ -173,6 +173,7 @@ Portfolio <- R6::R6Class(
         id <- self$tr_id
       }
       if (!is.null(id)) {
+        self$tr_id <- id
         self$track_rec <- read_ret(id, self$ac)
       }
     },

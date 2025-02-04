@@ -155,7 +155,14 @@ Reporter <- R6::R6Class(
     # returns ----
     
     ret_combo = function() {
-      
+      res <- list()
+      bench <- self$bench$clone()
+      bench$read_track_rec()
+      for (i in 1:length(self$port)) {
+        port <- self$port[[i]]$clone()
+        asset_ret <- port$read_asset_ret()
+        res[[i]] <- clean_asset_bench_rf(asset_ret)
+      }  
     }
   )
 )

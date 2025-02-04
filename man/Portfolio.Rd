@@ -9,6 +9,10 @@ Structure to contain and wrangle portfolio holdings and returns
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
+\item{\code{name}}{portfolio name}
+
+\item{\code{tbl_hold}}{id to pull track record}
+
 \item{\code{tbl_hold}}{holdings table}
 
 \item{\code{tbl_miss}}{holdings that are missing from MSL}
@@ -47,7 +51,7 @@ Structure to contain and wrangle portfolio holdings and returns
 \subsection{Method \code{new()}}{
 Create new Portfolio
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Portfolio$new(ac, tbl_hold, name = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$new(ac, tbl_hold, name = NULL, tr_id = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -98,7 +102,7 @@ Merge MSL with Holdings Table
 \subsection{Method \code{drill_down()}}{
 Drill down to underlying holdings of funds / CTFs / models
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Portfolio$drill_down()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$drill_down(layer = 1, latest = TRUE)}\if{html}{\out{</div>}}
 }
 
 }
