@@ -77,6 +77,10 @@ Database <- R6::R6Class(
     },
 
     # tables ----
+    read_msl = function(wb = "") {
+      
+    },
+    
     write_msl = function() {
       lib <- self$ac$get_library("meta-tables")
       lib$write("msl", self$tbl_msl)
@@ -317,16 +321,75 @@ Database <- R6::R6Class(
       combo_df$Date <- as.character(combo_df$Date)
       lib$write("ctf", combo_df)
     },
+    
+    ret_workup = function() {
+      xl_file <- "N:/Investment Team/DATABASES/CustomRet/workup.xlsx"
+      dat <- read_xts(xl_file)
+      dat <- xts_to_arc(dat)
+      lib <- self$ac$get_library("returns")
+      lib$write("workup", dat)
+    },
 
-    ret_backfill = function(xl_file = NULL, sht = 1) {
-      if (is.null(xl_file)) {
-        xl_file <- "N:/Investment Team/DATABASES/CustomRet/backfill.xlsx"
-      }
-      backfill <- read_xts(xl_file, sht)
+    ret_backfill = function() {
+      xl_file <- "N:/Investment Team/DATABASES/CustomRet/backfill-daily.xlsx"
+      backfill <- read_xts(xl_file)
       backfill <- xts_to_dataframe(backfill)
       backfill$Date <- as.character(backfill$Date)
       lib <- self$ac$get_library("returns")
-      lib$write("backfill", backfill)
+      lib$write("backfill-daily", backfill)
+      xl_file <- "N:/Investment Team/DATABASES/CustomRet/backfill-monthly.xlsx"
+      backfill <- read_xts(xl_file)
+      backfill <- xts_to_dataframe(backfill)
+      backfill$Date <- as.character(backfill$Date)
+      lib$write("backfill-monthly", backfill)
+    },
+    
+    run_backfill = function(dtc_name) {
+      lib_mt <- self$ac$get_library("meta-tables")
+      ret_meta <- lib_mt$read("ret-meta")$data
+      lib <- self$ac$get_library("returns")
+      daily <- lib$read("backfill-daily")$data
+      dd <- filter(self$tbl_msl, DtcName %in% colnames(daily)[-1])
+      if (nrow(dd > 0)) {
+        ret_lib <- na.omit(unique(dd$ReturnLibrary))
+      }
+      if (length(ret_lib) > 0) {
+        ret_lib <- data.frame(ReturnLibrary = ret_lib)
+        res <- left_merge(ret_lib, ret_meta, "ReturnLibrary")
+        ret_lib <- res$inter
+        if (any(ret_lib$Freq != "daily")) {
+          print(ret_lib)
+          stop("daily backfill for wrong frequency")
+        }
+        for (i in 1:nrow(ret_lib)) {
+          x <- filter(dd, ReturnLibrary %in% ret_lib$ReturnLibrary[i])
+          new <- lib$read(ret_lib$ReturnLibrary[i])$data
+          combo <- xts_rbind(new, daily[, c("Date", x$DtcName)], FALSE, TRUE)
+          combo <- xts_to_arc(combo)
+          lib$write(ret_lib$ReturnLibrary[i], combo)
+        }
+      }
+      monthly <- lib$read("backfill-monthly")$data
+      dd <- filter(self$tbl_msl, DtcName %in% colnames(monthly)[-1])
+      if (nrow(dd > 0)) {
+        ret_lib <- na.omit(unique(dd$ReturnLibrary))
+      }
+      if (length(ret_lib) > 0) {
+        ret_lib <- data.frame(ReturnLibrary = ret_lib)
+        res <- left_merge(ret_lib, ret_meta, "ReturnLibrary")
+        ret_lib <- res$inter
+        if (any(ret_lib$Freq != "monthly")) {
+          print(ret_lib)
+          stop("monthly backfill for wrong frequency")
+        }
+        for (i in 1:nrow(ret_lib)) {
+          x <- filter(dd, ReturnLibrary %in% ret_lib$ReturnLibrary[i])
+          new <- lib$read(ret_lib$ReturnLibrary[i])$data
+          combo <- xts_rbind(new, monthly[, c("Date", x$DtcName)], FALSE, TRUE)
+          combo <- xts_to_arc(combo)
+          lib$write(ret_lib$ReturnLibrary[i], combo)
+        }
+      }
     },
     
     ret_model = function(dtc_name = NULL) {
@@ -339,13 +402,13 @@ Database <- R6::R6Class(
       ret_m <- list()
       ret_d <- list()
       for (i in 1:nrow(model)) {
-        h <- self$read_hold(model$DtcName, FALSE)
+        h <- self$read_hold(model$DtcName[i], FALSE)
         p <- Portfolio$new(self$ac, h)
-        p$init_rebal(model$RebFreq, model$RetFreq)
+        p$init_rebal(model$RebFreq[i], model$RetFreq[i], clean_ret = FALSE)
         colnames(p$rebal$rebal_ret) <- model$DtcName[i]
-        if (model$ReturnLibrary == "model-daily") {
+        if (model$ReturnLibrary[i] == "model-daily") {
           ret_d[[length(ret_d)+1]] <- p$rebal$rebal_ret
-        } else if (model$ReturnLibrary == "model-monthly") {
+        } else if (model$ReturnLibrary[i] == "model-monthly") {
           ret_m[[length(ret_m)+1]] <- p$rebal$rebal_ret
         } else {
           warning(paste0(model$DtcName[i], " invalid ReturnLibrary"))
@@ -357,19 +420,19 @@ Database <- R6::R6Class(
         colnm <- unlist(lapply(ret_d, "colnames"))
         ret_d <- do.call("cbind", ret_d)
         colnames(ret_d) <- colnm
-          old <- ret_lib$read("model-daily")$data
-          new <- xts_to_arc(ret_d)
-          combo <- xts_rbind(new, old, is_xts = FALSE)
-          ret_lib$write("model-daily", dataframe_to_arc(combo))
+        old <- ret_lib$read("model-daily")$data
+        new <- xts_to_arc(ret_d)
+        combo <- xts_rbind(new, old, is_xts = FALSE)
+        ret_lib$write("model-daily", xts_to_arc(combo))
       }
-      if (length(ret_d) >= 1) {
+      if (length(ret_m) >= 1) {
         colnm <- unlist(lapply(ret_m, "colnames"))
         ret_m <- do.call("cbind", ret_m)
         colnames(ret_m) <- colnm
         old <- ret_lib$read("model-monthly")$data
         new <- xts_to_arc(ret_m)
         combo <- xts_rbind(new, old, is_xts = FALSE)
-        ret_lib$write("model-monthly", dataframe_to_arc(combo))
+        ret_lib$write("model-monthly", xts_to_arc(combo))
       }
     },
     
@@ -691,7 +754,7 @@ Database <- R6::R6Class(
     
     create_port = function(dtc_name, latest = FALSE) {
       tbl_hold <- self$read_hold(dtc_name, latest)
-      Portfolio$new(self$ac, tbl_hold, dtc_name)
+      Portfolio$new(self$ac, tbl_hold, dtc_name, dtc_name)
     }
   )
 )

@@ -25,6 +25,7 @@ Rebal <- R6::R6Class(
       self$rebal_freq <- rebal_freq
       self$asset_ret_start <- zoo::index(asset_ret)[1]
       self$asset_ret_end <- zoo::index(asset_ret)[nrow(asset_ret)]
+      self$name <- name
     },
     
     wrangle_rebal_vect = function() {

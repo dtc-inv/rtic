@@ -17,44 +17,11 @@ port_to_perf_summary <- function(p, bench = NULL, rf = NULL) {
 
 #' @export
 perf_summary <- function(asset, rf, bench = NULL, freq = "days") {
-  if (ncol(rf) > 1) {
-    warning("rf has more than one column, only taking first column")
-    rf <- rf[, 1]
-  }
   if (!is.null(bench)) {
     combo <- xts_cbind(asset, bench)
-    combo <- xts_cbind(combo, rf)
   } else {
-    combo <- xts_cbind(asset, rf)
+    combo <- asset
   }
-  sd <- first_comm_start(combo)
-  ed <- last_comm_end(combo)
-  combo <- cut_time(combo, sd, ed)
-  res <- rm_na_col(combo)
-  if (ncol(res$miss_ret) > 1) {
-    if (!is.null(bench)) {
-      if (colnames(bench) %in% colnames(res$miss_ret)) {
-        warning("benchmark missing")
-        return(NULL)
-      }
-    }
-    if (colnames(rf) %in% colnames(res$miss_ret)) {
-      warning("rf missing")
-      return(NULL)
-    }
-    if (all(colnames(asset)) %in% colnames(res$miss_ret)) {
-      warning("all assets missing")
-      return(NULL)
-    }
-  }
-  ix <- ncol(asset) - sum(colnames(asset) %in% colnames(res$miss_ret))
-  combo <- res$ret
-  asset <- combo[, 1:ix]
-  if (!is.null(bench)) {
-    bench <- combo[, (ix+1):(ncol(combo)-1)]
-  }
-  rf <- combo[, ncol(combo)]
-  combo <- combo[, -ncol(combo)]
   hist_cov <- cov(combo) * freq_to_scaler(freq)
   if (nrow(combo) >= freq_to_scaler(freq)) {
     geo_ret <- calc_geo_ret(combo, freq)

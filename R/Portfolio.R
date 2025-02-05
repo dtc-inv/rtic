@@ -206,7 +206,8 @@ Portfolio <- R6::R6Class(
       if (is.null(asset_freq)) {
         asset_freq <- guess_freq(asset_ret)
       }
-      self$rebal <- Rebal$new(rebal_wgt, asset_ret, asset_freq, rebal_freq)
+      self$rebal <- Rebal$new(rebal_wgt, asset_ret, asset_freq, rebal_freq, 
+                              self$name)
       self$rebal$rebal(sum_to_1)
     }
   )

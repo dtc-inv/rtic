@@ -261,7 +261,10 @@ month_end <- function(dt) {
 
 #' @export
 guess_freq <- function(x) {
-  freq <- periodicity(x)
+  freq <- try(periodicity(x))
+  if ("try-error" %in% class(x)) {
+    return(NA)
+  }
   toupper(substr(freq$scale, 1, 1))
 }
 

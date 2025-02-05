@@ -354,7 +354,18 @@ read_xts <- function(wb, sht = 1, skip = 0) {
 #' @param rf risk-free time-series, optional, one column accepted
 #' @return list with `x`, `b`, and `rf` aligned for common dates
 #' @export
-clean_asset_bench_rf <- function(x, b, rf = NULL) {
+clean_asset_bench_rf <- function(x, b, rf = NULL, freq = NULL) {
+  if (is.null(freq)) {
+    freq <- sort(c(guess_freq(x), guess_freq(b), guess_freq(rf)), na.last = TRUE,
+                 decreasing = TRUE)
+  }
+  if (freq[1] == "M") {
+    x <- change_freq(x)
+    b <- change_freq(b)
+    if (!is.null(rf)) {
+      rf <- change_freq(rf)
+    }
+  }
   combo <- xts_cbind_inter(x, b)
   if (!is.null(colnames(combo$miss_ret))) {
     if (colnames(combo$miss_ret) == colnames(b)) {

@@ -15,13 +15,15 @@ Reporter <- R6::R6Class(
     ac = NULL,
     #' @field rf risk-free time-series
     rf = NULL,
+    #' @field col vector of colors for charts, leave NULL for standard DTC colors
+    col = NULL,
     
     #' @description Create Reporter object
     #' @param port list of Portfolio Object(s)
     #' @param bench benchmark (Portfolio Object), can leave NULL
     #' @param rf xts representing risk-free rate, can leave NULL, will default
     #'   to BIL ETF
-    initialize = function(port, bench = NULL, rf = NULL) {
+    initialize = function(port, bench = NULL, rf = NULL, col = NULL) {
       self$port <- port
       self$bench <- bench
       self$clean_port_nm()
@@ -34,6 +36,9 @@ Reporter <- R6::R6Class(
         )
       }
       self$rf <- na.omit(dataframe_to_xts(rf$data))
+      if (is.null(col)) {
+        self$col <- dtc_col()
+      }
     },
     
     # holdings ----
@@ -100,6 +105,7 @@ Reporter <- R6::R6Class(
         }
         res <- left_merge(tbl_cat, tbl_group, tgt_nm)
         tbl_cat <- res$union
+        rm(port)
       }
       if (!is.null(self$bench)) {
         bench <- self$bench$clone()
@@ -110,6 +116,7 @@ Reporter <- R6::R6Class(
           summarize(x = sum(CapWgt))
         colnames(tbl_group)[2] <- "Benchmark" 
         res <- left_merge(tbl_cat, tbl_group, tgt_nm)
+        rm(bench)
       }
       return(res$union)
     },
@@ -148,21 +155,59 @@ Reporter <- R6::R6Class(
           }
         }
         res <- x$union
+        rm(port)
+      }
+      if (!is.null(self$bench) & layer == 1) {
+        bench <- self$bench$clone()
+        bench$drill_down()
+        bench$get_fina_data()
+        w <- bench$tbl_hold$CapWgt
+        pe <- avg_fina_ratio(w, bench$tbl_hold$PE)
+        pb <- avg_fina_ratio(w, bench$tbl_hold$PB)
+        pfcf <- avg_fina_ratio(w, bench$tbl_hold$PFCF)
+        dy <- wgt_avg(w, bench$tbl_hold$DY)
+        xdf <- data.frame(Metric = met, x = c(pe, pb, pfcf, dy))
+        colnames(xdf)[2] <- bench$name
+        x <- left_merge(x$union, xdf, "Metric")
+        res <- x$union
+        rm(bench)
       }
       return(res)
     },
     
     # returns ----
     
-    ret_combo = function() {
+    ret_combo = function(freq = NULL) {
       res <- list()
       bench <- self$bench$clone()
       bench$read_track_rec()
+      b_asset_ret <- bench$read_asset_ret()
+      if (is.null(bench$track_rec)) {
+        bench$init_rebal()
+        bench$track_rec <- bench$rebal$rebal_ret
+      }
       for (i in 1:length(self$port)) {
         port <- self$port[[i]]$clone()
+        port$read_track_rec()
+        if (is.null(port$track_rec)) {
+          port$init_rebal()
+          port$track_rec <- port$rebal$rebal_ret
+        }
         asset_ret <- port$read_asset_ret()
-        res[[i]] <- clean_asset_bench_rf(asset_ret)
-      }  
+        x <- clean_asset_bench_rf(asset_ret, b_asset_ret, self$rf, freq)
+        p <- clean_asset_bench_rf(port$track_rec, bench$track_rec, self$rf, freq)
+        r <- list()
+        r$xp <- x$x
+        r$xb <- x$b
+        r$xrf <- x$rf
+        r$p <- p$x
+        r$b <- p$b
+        r$rf <- p$rf
+        res[[i]] <- r
+        rm(port)
+      }
+      rm(bench)
+      return(res)
     }
   )
 )
