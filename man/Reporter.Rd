@@ -16,6 +16,8 @@ Structure to wrangle portfolios and an optional benchmark into reports
 \item{\code{ac}}{ArcticDB datastore object}
 
 \item{\code{rf}}{risk-free time-series}
+
+\item{\code{col}}{vector of colors for charts, leave NULL for standard DTC colors}
 }
 \if{html}{\out{</div>}}
 }
@@ -38,7 +40,7 @@ Structure to wrangle portfolios and an optional benchmark into reports
 \subsection{Method \code{new()}}{
 Create Reporter object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$new(port, bench = NULL, rf = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$new(port, bench = NULL, rf = NULL, col = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -50,6 +52,8 @@ Create Reporter object
 
 \item{\code{rf}}{xts representing risk-free rate, can leave NULL, will default
 to BIL ETF}
+
+\item{\code{col}}{vector of colors, leave NULL for standard DTC colors}
 }
 \if{html}{\out{</div>}}
 }
@@ -76,42 +80,97 @@ Sector summary
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tgt}}{target column: FactsetSector, GicsMacro, or GicsMap}
+
+\item{\code{layer}}{1 for security level, 2 for fund level}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+GicsMacro is from piper sandler macro workbook, GicsMap is a mapping
+of Factset Sectors to GICS sectors
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-country_summ"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-country_summ}{}}}
 \subsection{Method \code{country_summ()}}{
+Country summary
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$country_summ(tgt = "RiskCountry", layer = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$country_summ(tgt = "RiskCountry", layer = 1, rgn = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tgt}}{target column, RiskCountry currently supported}
+
+\item{\code{layer}}{1 for security level, 2 for fund level}
+
+\item{\code{rgn}}{option to include a column with regions}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-cat_summ"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-cat_summ}{}}}
 \subsection{Method \code{cat_summ()}}{
+Summarize category, use sector and country functions to 
+  execute
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Reporter$cat_summ(tbl_cat, tgt_nm, layer = 1)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tbl_cat}}{data.frame with catagories to summarize}
+
+\item{\code{tgt_nm}}{target column name / category in tbl_cat}
+
+\item{\code{layer}}{1 for security level, 2 for fund level}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-fina_summ"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-fina_summ}{}}}
 \subsection{Method \code{fina_summ()}}{
+Financial data summary: PE, PB, PFCF, and DY
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Reporter$fina_summ(layer = 1)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{layer}}{1 for security, 2 for fund}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-ret_combo"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-ret_combo}{}}}
 \subsection{Method \code{ret_combo()}}{
+Clean and lineup portfolio, benchmark, asset, and rf returns
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$ret_combo()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$ret_combo(freq = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{freq}}{option to change frequency}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-clone"></a>}}

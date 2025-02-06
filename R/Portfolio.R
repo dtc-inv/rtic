@@ -9,7 +9,7 @@ Portfolio <- R6::R6Class(
   public = list(
     #' @field name portfolio name
     name = NULL,
-    #' @field tbl_hold id to pull track record
+    #' @field tr_id id to pull track record
     tr_id = NULL,
     #' @field tbl_hold holdings table
     tbl_hold = data.frame(),
@@ -27,6 +27,8 @@ Portfolio <- R6::R6Class(
     #' @description Create new Portfolio
     #' @param ac ArcticDB datastore from Database Object
     #' @param tbl_hold holdings table, see details
+    #' @param name portfolio name
+    #' @param tr_id track record id
     #' @details tbl_hold is gathered with the Database Object method $get_hold().
     initialize = function(ac, tbl_hold, name = NULL, tr_id = NULL) {
       if (is.null(name)) {
@@ -44,12 +46,14 @@ Portfolio <- R6::R6Class(
       self$merge_msl()
     },
 
+    #' @description check specification of arctic db
     check_ac = function() {
       if (!"arcticdb.arctic.Arctic" %in% class(self$ac)) {
         stop("ac not proper arcticdb object")
       } 
     },
     
+    #' @description check specification of holdings table
     check_tbl_hold = function() {
       if (!"data.frame" %in% class(self$tbl_hold)) {
         stop("holdings table is not a data.frame")
@@ -81,6 +85,8 @@ Portfolio <- R6::R6Class(
     },
 
     #' @description Drill down to underlying holdings of funds / CTFs / models
+    #' @param layer what layer to drill down to
+    #' @param latest boolean to truncate to only most recent holdings
     drill_down = function(layer = 1, latest = TRUE) {
       if (latest) {
         self$tbl_hold <- latest_holdings(self$tbl_hold)
@@ -168,6 +174,9 @@ Portfolio <- R6::R6Class(
     },
     
     # returns ----
+    
+    #' @description read track record
+    #' @param id option to pass id, otherwise self$tr_id is used
     read_track_rec = function(id = NULL) {
       if (is.null(id)) {
         id <- self$tr_id
@@ -178,11 +187,13 @@ Portfolio <- R6::R6Class(
       }
     },
     
+    #' @description read asset returns
     read_asset_ret = function() {
       ids <- get_ids(self$tbl_hold)
       read_ret(ids, self$ac)      
     },
     
+    #' @description get rebalance weights from holdings
     read_rebal_wgt = function() {
       rebal_wgt <- tidyr::pivot_wider(
         data = self$tbl_hold, 
@@ -192,6 +203,12 @@ Portfolio <- R6::R6Class(
       dataframe_to_xts(rebal_wgt)
     },
     
+    #' @description execute rebalance
+    #' @param rebal_freq rebalance frequency: D, M, Q, A, or BH (buy and hold)
+    #' @param asset_freq asset return frequency, if left NULL will guess
+    #' @param sum_to_1 force rebalance weights to sum to 100%
+    #' @param clean_ret option to clean returns, find common start dates, 
+    #'   remove missing values, etc
     init_rebal = function(rebal_freq = "M", asset_freq = NULL, sum_to_1 = TRUE,
                           clean_ret = TRUE) {
       asset_ret <- self$read_asset_ret()

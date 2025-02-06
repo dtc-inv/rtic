@@ -23,6 +23,7 @@ Reporter <- R6::R6Class(
     #' @param bench benchmark (Portfolio Object), can leave NULL
     #' @param rf xts representing risk-free rate, can leave NULL, will default
     #'   to BIL ETF
+    #' @param col vector of colors, leave NULL for standard DTC colors
     initialize = function(port, bench = NULL, rf = NULL, col = NULL) {
       self$port <- port
       self$bench <- bench
@@ -58,6 +59,11 @@ Reporter <- R6::R6Class(
     },
     
     #' @description Sector summary
+    #' @param tgt target column: FactsetSector, GicsMacro, or GicsMap
+    #' @param layer 1 for security level, 2 for fund level
+    #' @details
+        #' GicsMacro is from piper sandler macro workbook, GicsMap is a mapping
+        #' of Factset Sectors to GICS sectors
     sector_summ = function(tgt = c("FactsetSector", "GicsMacro", "GicsMap"),
                            layer = 1) {
       lib <- self$ac$get_library("co-qual-data")
@@ -70,7 +76,11 @@ Reporter <- R6::R6Class(
       self$cat_summ(sect, tgt, layer)
     },
     
-    country_summ = function(tgt = "RiskCountry", layer = 1) {
+    #' @description Country summary
+    #' @param tgt target column, RiskCountry currently supported
+    #' @param layer 1 for security level, 2 for fund level
+    #' @param rgn option to include a column with regions
+    country_summ = function(tgt = "RiskCountry", layer = 1, rgn = FALSE) {
       lib <- self$ac$get_library("co-qual-data")
       tgt <- tgt[1]
       country <- lib$read("country")$data
@@ -78,9 +88,21 @@ Reporter <- R6::R6Class(
         warning(paste0(tgt, " not found. Returning NULL"))
         return(NULL)
       }
-      self$cat_summ(country, tgt)
+      res <- self$cat_summ(country, tgt)
+      if (rgn) {
+        lib <- self$ac$get_library("meta-tables")
+        dict <- lib$read("country-map")$data
+        res <- left_merge(res, dict, "RiskCountry")
+        res <- res$union
+      }
+      return(res)
     },
     
+    #' @description Summarize category, use sector and country functions to 
+    #'   execute
+    #' @param tbl_cat data.frame with catagories to summarize
+    #' @param tgt_nm target column name / category in tbl_cat
+    #' @param layer 1 for security level, 2 for fund level
     cat_summ = function(tbl_cat, tgt_nm, layer = 1) {
       tbl_cat <- data.frame(x = na.omit(sort(unique(tbl_cat[, tgt_nm]))))
       colnames(tbl_cat)[1] <- tgt_nm
@@ -121,6 +143,8 @@ Reporter <- R6::R6Class(
       return(res$union)
     },
     
+    #' @description Financial data summary: PE, PB, PFCF, and DY
+    #' @param layer 1 for security, 2 for fund
     fina_summ = function(layer = 1) {
       met <- c("PE", "PB", "PFCF", "DY")
       res <- data.frame(Metric = met)
@@ -177,6 +201,8 @@ Reporter <- R6::R6Class(
     
     # returns ----
     
+    #' @description Clean and lineup portfolio, benchmark, asset, and rf returns
+    #' @param freq option to change frequency
     ret_combo = function(freq = NULL) {
       res <- list()
       bench <- self$bench$clone()
@@ -194,7 +220,7 @@ Reporter <- R6::R6Class(
           port$track_rec <- port$rebal$rebal_ret
         }
         asset_ret <- port$read_asset_ret()
-        x <- clean_asset_bench_rf(asset_ret, b_asset_ret, self$rf, freq)
+        x <- clean_asset_bench_rf(asset_ret, bench$track_rec, self$rf, freq)
         p <- clean_asset_bench_rf(port$track_rec, bench$track_rec, self$rf, freq)
         r <- list()
         r$xp <- x$x

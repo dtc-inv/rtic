@@ -34,6 +34,7 @@ holdings data}
 \itemize{
 \item \href{#method-Database-new}{\code{Database$new()}}
 \item \href{#method-Database-check_api_keys}{\code{Database$check_api_keys()}}
+\item \href{#method-Database-read_msl}{\code{Database$read_msl()}}
 \item \href{#method-Database-write_msl}{\code{Database$write_msl()}}
 \item \href{#method-Database-write_sec}{\code{Database$write_sec()}}
 \item \href{#method-Database-write_cust}{\code{Database$write_cust()}}
@@ -43,7 +44,9 @@ holdings data}
 \item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
+\item \href{#method-Database-ret_workup}{\code{Database$ret_workup()}}
 \item \href{#method-Database-ret_backfill}{\code{Database$ret_backfill()}}
+\item \href{#method-Database-run_backfill}{\code{Database$run_backfill()}}
 \item \href{#method-Database-ret_model}{\code{Database$ret_model()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
@@ -95,9 +98,32 @@ Check if api keys are properly specified
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-read_msl"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-read_msl}{}}}
+\subsection{Method \code{read_msl()}}{
+Read MSL from Excel
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$read_msl(
+  wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx",
+  write = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{wb}}{excel file full path}
+
+\item{\code{write}}{boolean to overwrite MSL in database, default FALSE}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-write_msl"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-write_msl}{}}}
 \subsection{Method \code{write_msl()}}{
+write MSL to database
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$write_msl()}\if{html}{\out{</div>}}
 }
@@ -107,6 +133,7 @@ Check if api keys are properly specified
 \if{html}{\out{<a id="method-Database-write_sec"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-write_sec}{}}}
 \subsection{Method \code{write_sec()}}{
+write SEC table to database
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$write_sec()}\if{html}{\out{</div>}}
 }
@@ -116,6 +143,7 @@ Check if api keys are properly specified
 \if{html}{\out{<a id="method-Database-write_cust"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-write_cust}{}}}
 \subsection{Method \code{write_cust()}}{
+write Custodian table to database
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$write_cust()}\if{html}{\out{</div>}}
 }
@@ -125,6 +153,7 @@ Check if api keys are properly specified
 \if{html}{\out{<a id="method-Database-add_asset"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-add_asset}{}}}
 \subsection{Method \code{add_asset()}}{
+Add an asset to the MSL and other meta tables
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$add_asset(
   dtc_name,
@@ -140,6 +169,31 @@ Check if api keys are properly specified
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{DtcName field}
+
+\item{\code{id}}{Ticker, Cusip, Sedol, Isin, Lei, or Identifier}
+
+\item{\code{id_type}}{specify which kind of id (above)}
+
+\item{\code{layer}}{1 = lowest no holdings, 2 fund manager, 3 asset class, etc}
+
+\item{\code{sec_type}}{security type, e.g., etf, mutual-fund, index}
+
+\item{\code{ret_lib}}{return library name}
+
+\item{\code{hold_tbl}}{table with holdings (for models)}
+
+\item{\code{short_cik}}{if SEC holding, parent company CIK, otherwise leave NA}
+
+\item{\code{long_cik}}{if SEC holding, shareclass CIK, otherwise leave NA}
+
+\item{\code{bd_acct_id}}{if SMA black diamond account id, otherwise leave NA}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_index"></a>}}
@@ -147,7 +201,7 @@ Check if api keys are properly specified
 \subsection{Method \code{ret_index()}}{
 Update index returns from Factset
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_index(ids = NULL, t_minus = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_index(ids = NULL, t_minus_m = 1)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -157,7 +211,7 @@ Update index returns from Factset
 ids to update, note ids will have to first exist in the Master Security
 List `tbl_msl`}
 
-\item{\code{t_minus}}{how many months to download}
+\item{\code{t_minus_m}}{how many months to download}
 }
 \if{html}{\out{</div>}}
 }
@@ -221,7 +275,7 @@ Update Private Asset Indexes from Excel
 \subsection{Method \code{ret_ctf_monthly()}}{
 Update CTF Returns from Factset
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_monthly(ids = NULL, t_minus = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_monthly(ids = NULL, t_minus_m = 1)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -230,8 +284,27 @@ Update CTF Returns from Factset
 \item{\code{ids}}{leave `NULL` to update all CTFs or enter a vector of ids to
 only update specific CTFs}
 
-\item{\code{t_minus}}{integer to indicate how many months back to download new
+\item{\code{t_minus_m}}{integer to indicate how many months back to download new
 data from}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_workup"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_workup}{}}}
+\subsection{Method \code{ret_workup()}}{
+read in manually uploaded returns from Excel
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_workup(
+  xl_file = "N:/Investment Team/DATABASES/CustomRet/workup.xlsx"
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{xl_file}}{full file path of excel workbook}
 }
 \if{html}{\out{</div>}}
 }
@@ -240,19 +313,46 @@ data from}
 \if{html}{\out{<a id="method-Database-ret_backfill"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_backfill}{}}}
 \subsection{Method \code{ret_backfill()}}{
+read in returns to backfill daily and monthly returns
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_backfill(xl_file = NULL, sht = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_backfill()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-run_backfill"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-run_backfill}{}}}
+\subsection{Method \code{run_backfill()}}{
+execute backfill
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$run_backfill(dtc_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{name of return to backfill}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_model"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_model}{}}}
 \subsection{Method \code{ret_model()}}{
+Update returns of models
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_model(dtc_name = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{option to specify specific models to update, leave NULL
+to update all models}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-read_ret"></a>}}
@@ -418,10 +518,21 @@ Download Macro Select Workbook and Save to Library
 \if{html}{\out{<a id="method-Database-create_port"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-create_port}{}}}
 \subsection{Method \code{create_port()}}{
+Create Portfolio from DtcName
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$create_port(dtc_name, latest = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{DtcName}
+
+\item{\code{latest}}{truncate holdings to last update, default is FALSE for 
+entire time-series of holdings}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-clone"></a>}}

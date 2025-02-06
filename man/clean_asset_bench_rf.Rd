@@ -4,9 +4,9 @@
 \alias{clean_asset_bench_rf}
 \title{Handle combing and cleaning asset, rf, and benchmarks}
 \usage{
-clean_asset_bench_rf(x, b, rf = NULL)
+clean_asset_bench_rf(x, b, rf = NULL, freq = NULL)
 
-clean_asset_bench_rf(x, b, rf = NULL)
+clean_asset_bench_rf(x, b, rf = NULL, freq = NULL)
 }
 \arguments{
 \item{x}{asset time-series, xts, multiple columns accepted}

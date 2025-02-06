@@ -11,7 +11,7 @@ Structure to contain and wrangle portfolio holdings and returns
 \describe{
 \item{\code{name}}{portfolio name}
 
-\item{\code{tbl_hold}}{id to pull track record}
+\item{\code{tr_id}}{id to pull track record}
 
 \item{\code{tbl_hold}}{holdings table}
 
@@ -60,6 +60,10 @@ Create new Portfolio
 \item{\code{ac}}{ArcticDB datastore from Database Object}
 
 \item{\code{tbl_hold}}{holdings table, see details}
+
+\item{\code{name}}{portfolio name}
+
+\item{\code{tr_id}}{track record id}
 }
 \if{html}{\out{</div>}}
 }
@@ -72,6 +76,7 @@ tbl_hold is gathered with the Database Object method $get_hold().
 \if{html}{\out{<a id="method-Portfolio-check_ac"></a>}}
 \if{latex}{\out{\hypertarget{method-Portfolio-check_ac}{}}}
 \subsection{Method \code{check_ac()}}{
+check specification of arctic db
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$check_ac()}\if{html}{\out{</div>}}
 }
@@ -81,6 +86,7 @@ tbl_hold is gathered with the Database Object method $get_hold().
 \if{html}{\out{<a id="method-Portfolio-check_tbl_hold"></a>}}
 \if{latex}{\out{\hypertarget{method-Portfolio-check_tbl_hold}{}}}
 \subsection{Method \code{check_tbl_hold()}}{
+check specification of holdings table
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$check_tbl_hold()}\if{html}{\out{</div>}}
 }
@@ -105,6 +111,15 @@ Drill down to underlying holdings of funds / CTFs / models
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$drill_down(layer = 1, latest = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{layer}}{what layer to drill down to}
+
+\item{\code{latest}}{boolean to truncate to only most recent holdings}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Portfolio-get_fina_data"></a>}}
@@ -148,15 +163,24 @@ Get Country Data
 \if{html}{\out{<a id="method-Portfolio-read_track_rec"></a>}}
 \if{latex}{\out{\hypertarget{method-Portfolio-read_track_rec}{}}}
 \subsection{Method \code{read_track_rec()}}{
+read track record
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_track_rec(id = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{option to pass id, otherwise self$tr_id is used}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Portfolio-read_asset_ret"></a>}}
 \if{latex}{\out{\hypertarget{method-Portfolio-read_asset_ret}{}}}
 \subsection{Method \code{read_asset_ret()}}{
+read asset returns
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_asset_ret()}\if{html}{\out{</div>}}
 }
@@ -166,6 +190,7 @@ Get Country Data
 \if{html}{\out{<a id="method-Portfolio-read_rebal_wgt"></a>}}
 \if{latex}{\out{\hypertarget{method-Portfolio-read_rebal_wgt}{}}}
 \subsection{Method \code{read_rebal_wgt()}}{
+get rebalance weights from holdings
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$read_rebal_wgt()}\if{html}{\out{</div>}}
 }
@@ -175,6 +200,7 @@ Get Country Data
 \if{html}{\out{<a id="method-Portfolio-init_rebal"></a>}}
 \if{latex}{\out{\hypertarget{method-Portfolio-init_rebal}{}}}
 \subsection{Method \code{init_rebal()}}{
+execute rebalance
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Portfolio$init_rebal(
   rebal_freq = "M",
@@ -184,6 +210,20 @@ Get Country Data
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{rebal_freq}}{rebalance frequency: D, M, Q, A, or BH (buy and hold)}
+
+\item{\code{asset_freq}}{asset return frequency, if left NULL will guess}
+
+\item{\code{sum_to_1}}{force rebalance weights to sum to 100%}
+
+\item{\code{clean_ret}}{option to clean returns, find common start dates, 
+remove missing values, etc}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Portfolio-clone"></a>}}

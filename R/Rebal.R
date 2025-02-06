@@ -1,23 +1,43 @@
+#' Rebal Object
+#' 
+#' @description
+#' Object to handle rebalancing asset returns into a portfolio time-series of
+#'   returns. Rebalance weights can either be a vector or xts time-series of
+#'   weights. Helper function can add periodic (e.g., monthly) rebalanc weights
+#'   based on the previous specified weights.
+#' 
 #' @export
 Rebal <- R6::R6Class(
   "Rebal",
   public = list(
+    #' @field name column name for returns after rebal
     name = NULL,
+    #' @field rebal_wgt rebalance weights
     rebal_wgt = NULL,
+    #' @field asset_wgt asset weights
     asset_wgt = NULL,
+    #' @field asset_ret asset returns
     asset_ret = NULL,
+    #' @field asset_freq frequency of asset returns
     asset_freq = NULL,
+    #' @field rebal_freq frequency of rebalance
     rebal_freq = NULL,
+    #' @field rebal_ret portfolio returns from 
     rebal_ret = NULL,
+    #' @field ctr_mat contribution to return matrix
     ctr_mat = NULL,
+    #' @field asset_ret_start inception of asset returns
     asset_ret_start = NULL,
+    #' @field asset_ret_end last date of asset returns
     asset_ret_end = NULL,
     
     #' @description Create new rebal object
-    #' @field rebal_wgt vector or xts of rebalance weights
-    #' @field asset_ret xts of asset returns
-    #' @field rebal_freq character: "D", "M", "Q", "A", "BH" for daily, monthly,
+    #' @param rebal_wgt vector or xts of rebalance weights
+    #' @param asset_ret xts of asset returns
+    #' @param asset_freq character for asset_ret frequency, see below
+    #' @param rebal_freq character: "D", "M", "Q", "A", "BH" for daily, monthly,
     #'   quarterly, annual, or buy and hold
+    #' @param name column name for rebalance returns
     initialize = function(rebal_wgt, asset_ret, asset_freq = "D", 
                           rebal_freq = "M", name = "PortRebal") {
       self$rebal_wgt <- rebal_wgt
@@ -28,12 +48,15 @@ Rebal <- R6::R6Class(
       self$name <- name
     },
     
+    #' @description change vector of weights into xts with start date of asset
+    #'   returns
     wrangle_rebal_vect = function() {
       rebal_xts <- xts(matrix(self$rebal_wgt, nrow = 1), self$asset_ret_start)
       colnames(rebal_xts) <- names(self$rebal_wgt)
       self$rebal_wgt <- rebal_xts
     },
     
+    #' @description match columns of rebal weights and asset returns
     align_rebal_wgt = function() {
       # if not colnames or colnames are default X.1 to X.N then check if number
       # of columns between asset_ret and rebal_wgt are equal
@@ -63,6 +86,7 @@ Rebal <- R6::R6Class(
       }
     },
     
+    #' @description fill in periodic rebalance dates if frequency is specified
     fill_rebal_dates = function() {
       # TO-DO: NEED FUNCTION TO CHECK REBAL AND RET FREQ
       # create date vector based on rebalance frequency, exit for BH
@@ -102,6 +126,9 @@ Rebal <- R6::R6Class(
       self$rebal_wgt <- rebal_xts
     },
     
+    #' @description execute rebalance
+    #' @param sum_to_1 boolean to force rebalance weights to equal 100% for each
+    #'   period
     rebal = function(sum_to_1 = TRUE) {
       if (is.vector(self$rebal_wgt)) {
         self$wrangle_rebal_vect()

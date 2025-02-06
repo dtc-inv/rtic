@@ -77,29 +77,53 @@ Database <- R6::R6Class(
     },
 
     # tables ----
-    read_msl = function(wb = "") {
-      
+    #' @description Read MSL from Excel
+    #' @param wb excel file full path
+    #' @param write boolean to overwrite MSL in database, default FALSE
+    read_msl = function(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx",
+                        write = FALSE) {
+      col_types <- rep("text", 11)
+      col_types[3] <- "numeric" 
+      dat <- readxl::read_excel(wb, 1, col_types = col_types)
+      self$tbl_msl <- dat
+      if (write) {
+        self$write_msl()
+      }
     },
     
+    #' @description write MSL to database
     write_msl = function() {
       lib <- self$ac$get_library("meta-tables")
       lib$write("msl", self$tbl_msl)
     },
     
+    #' @description write SEC table to database
     write_sec = function() {
       lib <- self$ac$get_library("meta-tables")
       lib$write("sec", self$tbl_sec)
     },
     
+    #' @description write Custodian table to database
     write_cust = function() {
       lib <- self$ac$get_library("meta-tables")
       lib$write("cust", self$tbl_cust)
     },
     
+    #' @description Add an asset to the MSL and other meta tables
+    #' @param dtc_name DtcName field
+    #' @param id Ticker, Cusip, Sedol, Isin, Lei, or Identifier
+    #' @param id_type specify which kind of id (above)
+    #' @param layer 1 = lowest no holdings, 2 fund manager, 3 asset class, etc
+    #' @param sec_type security type, e.g., etf, mutual-fund, index
+    #' @param ret_lib return library name
+    #' @param hold_tbl table with holdings (for models)
+    #' @param short_cik if SEC holding, parent company CIK, otherwise leave NA
+    #' @param long_cik if SEC holding, shareclass CIK, otherwise leave NA
+    #' @param bd_acct_id if SMA black diamond account id, otherwise leave NA
     add_asset = function(dtc_name, id, id_type, layer, sec_type, ret_lib = NA, 
                          hold_tbl = NA, short_cik = NA, long_cik = NA,
                          bd_acct_id = NA) {
-      if (!id_type %in% c("Ticker", "Layer", "Cusip", "Sedol", "Isin", "Lei", 
+      if (!id_type %in% c("Ticker", "Cusip", "Sedol", "Isin", "Lei", 
                           "Identifier")) {
         stop("id type not found")
       }
@@ -144,8 +168,8 @@ Database <- R6::R6Class(
     #' @param ids leave NULL to update all indexes, or enter specific index
     #'   ids to update, note ids will have to first exist in the Master Security
     #'   List `tbl_msl`
-    #' @param t_minus how many months to download
-    ret_index = function(ids = NULL, t_minus = 1) {
+    #' @param t_minus_m how many months to download
+    ret_index = function(ids = NULL, t_minus_m = 1) {
       if (is.null(ids)) {
         idx <- filter(self$tbl_msl, ReturnLibrary == "index")
         ids <- idx$Ticker
@@ -153,7 +177,7 @@ Database <- R6::R6Class(
       res <- list()
       is_miss <- rep(FALSE, length(ids))
       for (i in 1:length(ids)) {
-        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus, "D"))
+        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "D"))
         if ("try-error" %in% class(dat)) {
           is_miss[i] <- TRUE
         } else {
@@ -292,9 +316,9 @@ Database <- R6::R6Class(
     #' @description Update CTF Returns from Factset
     #' @param ids leave `NULL` to update all CTFs or enter a vector of ids to
     #'   only update specific CTFs
-    #' @param t_minus integer to indicate how many months back to download new
+    #' @param t_minus_m integer to indicate how many months back to download new
     #'   data from
-    ret_ctf_monthly = function(ids = NULL, t_minus = 1) {
+    ret_ctf_monthly = function(ids = NULL, t_minus_m = 1) {
       if (is.null(ids)) {
         ctf <- filter(self$tbl_msl, ReturnLibrary == "ctf")
         ids <- ctf$Isin
@@ -302,7 +326,7 @@ Database <- R6::R6Class(
       res <- list()
       is_miss <- rep(FALSE, length(ids))
       for (i in 1:length(ids)) {
-        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus, "M"))
+        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "M"))
         if ("try-error" %in% class(dat)) {
           is_miss[i] <- TRUE
         } else {
@@ -322,14 +346,18 @@ Database <- R6::R6Class(
       lib$write("ctf", combo_df)
     },
     
-    ret_workup = function() {
-      xl_file <- "N:/Investment Team/DATABASES/CustomRet/workup.xlsx"
+    #' @description read in manually uploaded returns from Excel
+    #' @param xl_file full file path of excel workbook
+    ret_workup = function(
+      xl_file = "N:/Investment Team/DATABASES/CustomRet/workup.xlsx") {
+      
       dat <- read_xts(xl_file)
       dat <- xts_to_arc(dat)
       lib <- self$ac$get_library("returns")
       lib$write("workup", dat)
     },
 
+    #' @description read in returns to backfill daily and monthly returns
     ret_backfill = function() {
       xl_file <- "N:/Investment Team/DATABASES/CustomRet/backfill-daily.xlsx"
       backfill <- read_xts(xl_file)
@@ -344,6 +372,8 @@ Database <- R6::R6Class(
       lib$write("backfill-monthly", backfill)
     },
     
+    #' @description execute backfill
+    #' @param dtc_name name of return to backfill
     run_backfill = function(dtc_name) {
       lib_mt <- self$ac$get_library("meta-tables")
       ret_meta <- lib_mt$read("ret-meta")$data
@@ -392,6 +422,9 @@ Database <- R6::R6Class(
       }
     },
     
+    #' @description Update returns of models
+    #' @param dtc_name option to specify specific models to update, leave NULL
+    #'   to update all models
     ret_model = function(dtc_name = NULL) {
       lib <- self$ac$get_library("meta-tables")
       model <- lib$read("model")$data
@@ -752,6 +785,10 @@ Database <- R6::R6Class(
       }
     },
     
+    #' @description Create Portfolio from DtcName
+    #' @param dtc_name DtcName
+    #' @param latest truncate holdings to last update, default is FALSE for 
+    #'   entire time-series of holdings
     create_port = function(dtc_name, latest = FALSE) {
       tbl_hold <- self$read_hold(dtc_name, latest)
       Portfolio$new(self$ac, tbl_hold, dtc_name, dtc_name)
