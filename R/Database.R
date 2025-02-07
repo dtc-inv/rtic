@@ -792,6 +792,23 @@ Database <- R6::R6Class(
     create_port = function(dtc_name, latest = FALSE) {
       tbl_hold <- self$read_hold(dtc_name, latest)
       Portfolio$new(self$ac, tbl_hold, dtc_name, dtc_name)
+    },
+    
+    create_port_from_ids = function(ids, wgt = NULL, incept = NULL, name = NULL,
+                                    tr_id = NULL) {
+      r <- self$read_ret(ids)
+      if (is.null(incept)) {
+        incept <- first_comm_start(r)
+      }
+      if (is.null(wgt)) {
+        wgt <- rep(1 / ncol(r), ncol(r))
+      }
+      tbl_hold <- data.frame(DtcName = colnames(r), CapWgt = wgt, 
+                             TimeStamp = incept)
+      if (is.null(name) & ncol(r) == 1) {
+        name <- colnames(r)[1]
+      }
+      Portfolio$new(self$ac, tbl_hold, name, tr_id)
     }
   )
 )

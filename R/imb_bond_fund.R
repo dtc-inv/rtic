@@ -1,7 +1,8 @@
 
-write_bond <- function(dtc_name, pres, db, dict, descr, col, locater,
-                       slide_title, bench, is_ctf = FALSE, 
+write_bond <- function(pres, rpt, dict, descr, locater,
+                       slide_title, is_ctf = FALSE, 
                        pie_type = c("Quality", "Sector")) {
+  
   pie_type <- pie_type[1]
   set_flextable_defaults(font.size = 8)
   dict <- dict[dict$Page == dtc_name, ]
@@ -12,21 +13,10 @@ write_bond <- function(dtc_name, pres, db, dict, descr, col, locater,
   if (nrow(dict) == 0) {
     stop(paste0(dtc_name, " not found in description"))
   }
-  rf <- db$pull_ret("BIL")
-  rf <- change_freq(na.omit(rf), "months")
-  if (is_ctf) {
-    fund <- dtc_name_match_ret(dtc_name, db$ret, TRUE)$r
-  } else {
-    fund <- dtc_name_match_ret(dtc_name, db$ret)$r
-  }
-  fund <- change_freq(na.omit(fund))
-  bench <- change_freq(na.omit(bench))
-  combo <- clean_asset_bench_rf(fund, bench, rf)
-  
-  trail_perf_ft <- create_trail_perf_tbl(combo, col) |>
+  trail_perf_ft <- create_trail_perf_tbl(rpt) |>
     width(2.25, j = 1)
-  perf_stat_ft <- create_perf_tbl(combo, col)
-  wealth_cht <- create_wealth_cht(combo, col)
+  perf_stat_ft <- create_perf_tbl(rpt)
+  wealth_cht <- create_wealth_cht(rpt)
   capm_cht <- create_fund_capm_chart(combo, col, legend_loc = "bottom")
 
   char_tbl <- dict[dict$DataType == "Characteristics", 3:4]
