@@ -3,8 +3,10 @@ write_bond <- function(pres, rpt, dict, descr, locater,
                        slide_title, is_ctf = FALSE, 
                        pie_type = c("Quality", "Sector")) {
   
+  col <- rpt$col
   pie_type <- pie_type[1]
   set_flextable_defaults(font.size = 8)
+  dtc_name <- rpt$port[[1]]$name
   dict <- dict[dict$Page == dtc_name, ]
   if (nrow(dict) == 0) {
     stop(paste0(dtc_name, " not found in dictionary"))
@@ -17,7 +19,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
     width(2.25, j = 1)
   perf_stat_ft <- create_perf_tbl(rpt)
   wealth_cht <- create_wealth_cht(rpt)
-  capm_cht <- create_fund_capm_chart(combo, col, legend_loc = "bottom")
+  capm_cht <- create_capm_cht(rpt, funds = FALSE, legend_loc = "bottom")
 
   char_tbl <- dict[dict$DataType == "Characteristics", 3:4]
   char_tbl <- as.data.frame(char_tbl)
@@ -25,9 +27,9 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   is_per <- char_tbl$CHARACTERISTICS %in% c("Expense Ratio", "SEC Yield", "YTM")
   is_cur <- char_tbl$CHARACTERISTICS %in% "AUM (MMs)"
   is_num <- char_tbl$CHARACTERISTICS %in% "Duration"
-  char_tbl[is_per, 2] <- percent(as.numeric(char_tbl[is_per, 2]), 0.01)
-  char_tbl[is_cur, 2] <- number(as.numeric(char_tbl[is_cur, 2]), big.mark = ",")
-  char_tbl[is_num, 2] <- number(as.numeric(char_tbl[is_num, 2]), 0.1)
+  char_tbl[is_per, 2] <- scales::percent(as.numeric(char_tbl[is_per, 2]), 0.01)
+  char_tbl[is_cur, 2] <- scales::number(as.numeric(char_tbl[is_cur, 2]), big.mark = ",")
+  char_tbl[is_num, 2] <- scales::number(as.numeric(char_tbl[is_num, 2]), 0.1)
   char_ft <- flextable(char_tbl) |>
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
@@ -63,7 +65,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   
   bar_tbl <- dict[dict$DataType == "Maturity", ]
   bar_tbl$Value <- as.numeric(bar_tbl$Value) / 100
-  bar_tbl$Lbl <- percent(bar_tbl$Value, 0.1)
+  bar_tbl$Lbl <- scales::percent(bar_tbl$Value, 0.1)
   bar_tbl$Field <- factor(bar_tbl$Field, unique(bar_tbl$Field))
   sect_cht <- ggplot(bar_tbl, aes(x = Field, y = Value, label = Lbl, fill = Field)) +
     geom_bar(stat = "identity", position = "dodge") +
@@ -96,7 +98,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
             color = "grey40"
           ))
   
-  descr_tbl <- create_descr_tbl(descr)
+  descr_tbl <- create_descr_tbl(descr, col)
   
   pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>

@@ -355,7 +355,7 @@ create_country_cht <- function(rpt) {
 }
 
 #' @export
-create_alloc_tbl <- function(dict) {
+create_alloc_tbl <- function(dict, col) {
   wgt <- dict[dict$DataType == "Allocation", c("Field", "Value")]  
   style <- dict[dict$DataType == "Style", c("Field", "Value")]
   tbl <- left_join(wgt, style, by = "Field")
@@ -376,7 +376,7 @@ create_alloc_tbl <- function(dict) {
 }
 
 #' @export
-create_descr_tbl <- function(descr) {
+create_descr_tbl <- function(descr, col) {
   tbl <- data.frame(DESCRIPTION = descr$Description)
   flextable(tbl) |>
     theme_alafoli() |>

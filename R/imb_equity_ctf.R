@@ -2,6 +2,7 @@
 
 write_equity <- function(pres, rpt, dict, descr, locater, slide_title) {
   
+  col <- rpt$col
   set_flextable_defaults(font.size = 8)
   dtc_name <- rpt$port[[1]]$name
   dict <- dict[dict$Page == dtc_name, ]
@@ -18,8 +19,8 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title) {
   sect_cht <- create_sector_cht(rpt)
   
   
-  alloc_tbl <- create_alloc_tbl(dict)
-  descr_tbl <- create_descr_tbl(descr)
+  alloc_tbl <- create_alloc_tbl(dict, col)
+  descr_tbl <- create_descr_tbl(descr, col)
   
   pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>

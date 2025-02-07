@@ -40,29 +40,28 @@ write_imb <- function() {
   
   # start pres
   pres <- read_pptx("N:/Investment Team/REPORTING/IMB/imb-writer/template.pptx")
+  
   p1 <- db$create_port_from_ids("VWSUX")
   b <- db$create_port_from_ids("BofAML Municipals 1-3 Yr") 
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Vanguard Short-Term Tax Exempt (VWSUX)",
-    bench = ind$`BofAML Municipals 1-3 Yr`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
     locater = bond_pos,
     slide_title = "Vanguard Short-Term Tax Exempt",
     is_ctf = FALSE)
+  rm(p1, b, rpt)
   
+  p1 <- db$create_port_from_ids("FLTMX")
+  b <- db$create_port_from_ids("BofAML Municipals 1-12 Yr")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Fidelity Intermediate Muni (FLTMX)",
-    bench = ind$`BofAML Municipals 1-12 Yr`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
     locater = bond_pos,
     slide_title = "Fidelity Intermediate Muni",
     is_ctf = FALSE)
