@@ -40,6 +40,8 @@ write_imb <- function() {
   bond_pos$capm_cht <- c(left = 6.17, top = 3.28, height = 2.83, width = 3.36)
   bond_pos$trail_perf_ft <- c(left = 0.34, top = 6.05)
   
+  core_eq_loc <- locater
+  core_eq_loc$alloct_tbl["top"] <- 2.2
   
   # start pres
   pres <- read_pptx("N:/Investment Team/REPORTING/IMB/imb-writer/template.pptx")
@@ -167,41 +169,86 @@ write_imb <- function() {
   rm(p1, b, rpt)
   
   print("VTIP")
-  
+  p1 <- db$create_port_from_ids("VTIP")
+  b <- db$create_port_from_ids("Bloomberg Barclays U.S. TIPS 0-5 Yr")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Vanguard Short Term Inflation Protected (VTIP)",
-    bench = ind$`Bloomberg Barclays U.S. TIPS 0-5 Yr`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
-    locater = bond_pos,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = bond_pos,    
     slide_title = "TIPS",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector"
   )
+  rm(p1, b, rpt)
   
+  print("TLT")
+  p1 <- db$create_port_from_ids("TLT")
+  b <- db$create_port_from_ids("Bloomberg U.S. Treasury 20+ Yr")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "iShares 20 Year Treasury (TLT)",
-    bench = ind$`Bloomberg Barclays U.S. Treasury 20+ Yr`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
     locater = bond_pos,
     slide_title = "Long Treasuries",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector"
   )
+  rm(p1, b, rpt)
+  
+  # equity ----
+  
+  print("US Core Equity")
+  p1 <- db$create_port("US Core Equity", TRUE)
+  b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_equity(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = core_eq_loc,
+    slide_title = "U.S. Core Equity CTF",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
   
   
-  # us active equity ctf
-  pres <- write_equity("US Active Equity", ind$`Russell 3000`,  pres, db, dict,
-                        descr, col, locater, "U.S. Active Equity CTF")
-  core_loc <- locater
-  core_loc$alloct_tbl["top"] <- 2.2
+  print("US Active Equity")
+  p1 <- db$create_port("US Active Equity", TRUE)
+  b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_equity(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = locater,
+    slide_title = "U.S. Active Equity CTF",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
+  
+  print("US Active Equity MF")
+  p1 <- db$create_port("US Active Equity MF", TRUE)
+  b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_equity(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = locater,
+    slide_title = "U.S. Active Equity Strategy",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
+  
+
   pres <- write_equity("US Core Equity", ind$`Russell 3000`, pres, db, dict,
                         descr, col, core_loc, "U.S. Core Equity CTF")
   pres <- write_equity("International Equity", ind$`MSCI ACWI ex-US`, pres, db, dict,

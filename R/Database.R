@@ -80,7 +80,7 @@ Database <- R6::R6Class(
     #' @description Read MSL from Excel
     #' @param wb excel file full path
     #' @param write boolean to overwrite MSL in database, default FALSE
-    read_msl = function(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx",
+    read_msl_xl = function(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx",
                         write = FALSE) {
       col_types <- rep("text", 11)
       col_types[3] <- "numeric" 

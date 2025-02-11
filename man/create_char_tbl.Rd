@@ -8,8 +8,6 @@ create_char_tbl(rpt)
 }
 \arguments{
 \item{rpt}{Reporter Object}
-
-\item{freq}{Frequency of returns}
 }
 \description{
 Create Characteristics Table

@@ -34,7 +34,7 @@ holdings data}
 \itemize{
 \item \href{#method-Database-new}{\code{Database$new()}}
 \item \href{#method-Database-check_api_keys}{\code{Database$check_api_keys()}}
-\item \href{#method-Database-read_msl}{\code{Database$read_msl()}}
+\item \href{#method-Database-read_msl_xl}{\code{Database$read_msl_xl()}}
 \item \href{#method-Database-write_msl}{\code{Database$write_msl()}}
 \item \href{#method-Database-write_sec}{\code{Database$write_sec()}}
 \item \href{#method-Database-write_cust}{\code{Database$write_cust()}}
@@ -99,12 +99,12 @@ Check if api keys are properly specified
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Database-read_msl"></a>}}
-\if{latex}{\out{\hypertarget{method-Database-read_msl}{}}}
-\subsection{Method \code{read_msl()}}{
+\if{html}{\out{<a id="method-Database-read_msl_xl"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-read_msl_xl}{}}}
+\subsection{Method \code{read_msl_xl()}}{
 Read MSL from Excel
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$read_msl(
+\if{html}{\out{<div class="r">}}\preformatted{Database$read_msl_xl(
   wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx",
   write = FALSE
 )}\if{html}{\out{</div>}}

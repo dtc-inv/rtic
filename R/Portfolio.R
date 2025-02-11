@@ -86,7 +86,7 @@ Portfolio <- R6::R6Class(
     #' @param layer what layer to drill down to
     #' @param latest boolean to truncate to only most recent holdings
     drill_down = function(layer = 1, latest = TRUE) {
-      tbl_msl <- load_msl(self$ac)
+      tbl_msl <- read_msl(self$ac)
       if (latest) {
         self$tbl_hold <- latest_holdings(self$tbl_hold)
       }

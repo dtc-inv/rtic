@@ -9,6 +9,8 @@ create_perf_tbl(rpt, tm10, freq = "M")
 \arguments{
 \item{rpt}{Reporter Object}
 
+\item{tm10}{t minus 10 years date to truncate return start}
+
 \item{freq}{Frequency of returns}
 }
 \value{

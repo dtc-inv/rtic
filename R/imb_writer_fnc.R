@@ -1,5 +1,6 @@
 #' @title Performance Table
 #' @param rpt Reporter Object
+#' @param tm10 t minus 10 years date to truncate return start
 #' @param freq Frequency of returns
 #' @return flextable with formatted performance stats: alpha, beta, sharpe, TE,
 #'   and up / down capture
@@ -108,7 +109,6 @@ create_trail_perf_tbl <- function(rpt, freq = "M") {
 
 #' @title Create Characteristics Table
 #' @param rpt Reporter Object
-#' @param freq Frequency of returns
 #' @export
 create_char_tbl <- function(rpt) {
   col <- rpt$col
@@ -129,6 +129,10 @@ create_char_tbl <- function(rpt) {
     width(j = 1, width = 1.2)
 }
 
+#' @title Create Cumulative Return Chart
+#' @param rpt Reporter Object
+#' @param tm10 t minus 10 years date to truncate return start
+#' @param freq return frequency
 #' @export
 create_wealth_cht <- function(rpt, tm10, freq = "M") {
   col <- rpt$col
@@ -376,7 +380,7 @@ create_alloc_tbl <- function(dict, col) {
   tbl <- left_join(wgt, style, by = "Field")
   colnames(tbl) <- c("ALLOCATION", "Target Weight", "Style")
   tbl <- tbl[, c(1, 3, 2)]
-  tbl$`Target Weight` <- percent(as.numeric(tbl$`Target Weight`) / 100, 0.1)
+  tbl$`Target Weight` <- scales::percent(as.numeric(tbl$`Target Weight`) / 100, 0.1)
   flextable(tbl) |>
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>

@@ -294,6 +294,9 @@ wgt_avg <- function(w, x) {
   sum(x * w, na.rm = TRUE) / sum(w, na.rm = TRUE)
 }
 
+#' @title Read MSL from Database
+#' @param ac ArcticDB object
+#' @return data.frame of MSL
 #' @export
 read_msl <- function(ac) {
   lib <- ac$get_library("meta-tables")
