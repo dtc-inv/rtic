@@ -336,7 +336,13 @@ create_sector_cht <- function(rpt) {
 create_country_cht <- function(rpt) {
   col <- rpt$col
   dat <- rpt$country_summ(rgn = TRUE)
-  plotdat <- tidyr::pivot_longer(dat[, -1], -Region)
+  rgn <- group_by(dat[, -1], Region) |>
+    summarize_all(sum, na.rm = TRUE)
+  rgn[, 2:ncol(rgn)] <- apply(
+    rgn[, 2:ncol(rgn)], 
+    2, 
+    function(x) {x / sum(x, na.rm = TRUE)})
+  plotdat <- tidyr::pivot_longer(rgn, -Region)
   plotdat$lbl <- scales::percent(plotdat$value, 0.1)
   ggplot(plotdat, aes(y = value, x = Region, fill = name, label = lbl)) + 
     geom_bar(stat = "identity", position = "dodge") +
@@ -346,7 +352,7 @@ create_country_cht <- function(rpt) {
       position = position_dodge(0.9),
       color = "grey40") +
     scale_fill_manual(values = col[c(4, 1)]) +
-    xlab("") + ylab("") + labs(title = "SECTOR", fill = "") +
+    xlab("") + ylab("") + labs(title = "REGION", fill = "") +
     theme_minimal() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),

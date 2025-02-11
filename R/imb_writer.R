@@ -9,6 +9,7 @@ load_imb_dict <- function() {
   return(res)
 }
   
+#' @export
 write_imb <- function() {  
   
   as_of <- floor_date(Sys.Date(), "months") - 1
@@ -154,7 +155,7 @@ write_imb <- function() {
   
   print("CPHUX")
   p1 <- db$create_port_from_ids("CPHUX")
-  b < -db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
+  b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
     pres = pres,
@@ -186,7 +187,7 @@ write_imb <- function() {
   
   print("TLT")
   p1 <- db$create_port_from_ids("TLT")
-  b <- db$create_port_from_ids("Bloomberg U.S. Treasury 20+ Yr")
+  b <- db$create_port_from_ids("Bloomberg Barclays U.S. Treasury 20+ Yr")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
     pres = pres,
@@ -216,7 +217,21 @@ write_imb <- function() {
     tm10 = tm10
   )
   rm(p1, b, rpt)
-  
+
+  print("US Core Equity MF")
+  p1 <- db$create_port("US Core Equity MF", TRUE)
+  b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_equity(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = core_eq_loc,
+    slide_title = "U.S. Core Equity Strategy",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
   
   print("US Active Equity")
   p1 <- db$create_port("US Active Equity", TRUE)
@@ -248,11 +263,38 @@ write_imb <- function() {
   )
   rm(p1, b, rpt)
   
+  print("International Equity")
+  p1 <- db$create_port("International Equity", TRUE)
+  b <- db$create_port_from_ids("ACWX", tr_id = "MSCI ACWI ex US")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_equity(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = locater,
+    slide_title = "International Equity CTF",
+    tm10 = tm10,
+    bar_cht_opt = "region"
+  )
+  rm(p1, b, rpt)
+  
+  print("International Equity MF")
+  p1 <- db$create_port("International Equity MF", TRUE)
+  b <- db$create_port_from_ids("ACWX", tr_id = "MSCI ACWI ex US")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_equity(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = locater,
+    slide_title = "International Equity Strategy",
+    tm10 = tm10,
+    bar_cht_opt = "region"
+  )
+  rm(p1, b, rpt)
 
-  pres <- write_equity("US Core Equity", ind$`Russell 3000`, pres, db, dict,
-                        descr, col, core_loc, "U.S. Core Equity CTF")
-  pres <- write_equity("International Equity", ind$`MSCI ACWI ex-US`, pres, db, dict,
-                       descr, col, locater, "International Equity CTF")
   # write out
   print(pres, "C:/Users/asotolongo/Downloads/test.pptx")
 }

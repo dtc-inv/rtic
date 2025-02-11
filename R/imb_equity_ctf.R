@@ -7,10 +7,13 @@
 #' @param locator list with chart and table locations
 #' @param slide_title string for title
 #' @param tm10 t-minus 10 years date
+#' @param bar_cht_opt option for bar chart: sector or region
 #' @return pres with added slide
 #' @export
-write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10) {
+write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10,
+                         bar_cht_opt = c("sector", "region")) {
   
+  bar_cht_opt <- bar_cht_opt[1]
   col <- rpt$col
   set_flextable_defaults(font.size = 8)
   dtc_name <- rpt$port[[1]]$name
@@ -24,9 +27,14 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10) {
   char_ft <- create_char_tbl(rpt)
   wealth_cht <- create_wealth_cht(rpt, tm10)
   capm_cht <- create_capm_cht(rpt, tm10)
-  # country / sector chart switch
-  sect_cht <- create_sector_cht(rpt)
-  
+  if (bar_cht_opt == "sector") {
+    bar_cht <- create_sector_cht(rpt)
+  } else if (bar_cht_opt == "region") {
+    bar_cht <- create_country_cht(rpt)
+  } else {
+    warning("bar_cht_option misspecified, plotting sector chart")
+    bar_cht <- create_sector_cht(rpt)
+  }
   
   alloc_tbl <- create_alloc_tbl(dict, col)
   descr_tbl <- create_descr_tbl(descr, col)
@@ -63,7 +71,7 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10) {
         height = locater$capm_cht["height"],
         width = locater$capm_cht["width"])) |>
     ph_with(
-      sect_cht, 
+      bar_cht, 
       ph_location(
         left = locater$sect_cht["left"], 
         top = locater$sect_cht["top"], 

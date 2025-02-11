@@ -4,7 +4,16 @@
 \alias{write_equity}
 \title{Write IMB Equity Slide}
 \usage{
-write_equity(pres, rpt, dict, descr, locater, slide_title, tm10)
+write_equity(
+  pres,
+  rpt,
+  dict,
+  descr,
+  locater,
+  slide_title,
+  tm10,
+  bar_cht_opt = c("sector", "region")
+)
 }
 \arguments{
 \item{pres}{presentation object from officer}
@@ -18,6 +27,8 @@ write_equity(pres, rpt, dict, descr, locater, slide_title, tm10)
 \item{slide_title}{string for title}
 
 \item{tm10}{t-minus 10 years date}
+
+\item{bar_cht_opt}{option for bar chart: sector or region}
 
 \item{locator}{list with chart and table locations}
 }
