@@ -293,3 +293,9 @@ wgt_avg <- function(w, x) {
   w[is_miss] <- NA
   sum(x * w, na.rm = TRUE) / sum(w, na.rm = TRUE)
 }
+
+#' @export
+read_msl <- function(ac) {
+  lib <- ac$get_library("meta-tables")
+  lib$read("msl")$data
+}

@@ -17,8 +17,6 @@ Structure to contain and wrangle portfolio holdings and returns
 
 \item{\code{tbl_miss}}{holdings that are missing from MSL}
 
-\item{\code{tbl_msl}}{table containing master security list}
-
 \item{\code{ac}}{ArcticDB datastore}
 
 \item{\code{rebal}}{Rebalance object}

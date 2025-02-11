@@ -4,9 +4,9 @@
 #' @return flextable with formatted performance stats: alpha, beta, sharpe, TE,
 #'   and up / down capture
 #' @export
-create_perf_tbl <- function(rpt, freq = "M") {
+create_perf_tbl <- function(rpt, tm10, freq = "M") {
   col <- rpt$col
-  combo <- rpt$ret_combo(freq)
+  combo <- rpt$ret_combo(freq = freq, date_start = tm10)
   combo <- combo[[1]]
   fund <- combo$p
   bench <- combo$b
@@ -47,7 +47,7 @@ create_perf_tbl <- function(rpt, freq = "M") {
 #' @export
 create_trail_perf_tbl <- function(rpt, freq = "M") {
   col <- rpt$col
-  combo <- rpt$ret_combo(freq)[[1]]
+  combo <- rpt$ret_combo(freq = freq)[[1]]
   fund <- combo$p
   bench <- combo$b
   rf <- combo$rf
@@ -130,9 +130,9 @@ create_char_tbl <- function(rpt) {
 }
 
 #' @export
-create_wealth_cht <- function(rpt, freq = "M") {
+create_wealth_cht <- function(rpt, tm10, freq = "M") {
   col <- rpt$col
-  combo <- rpt$ret_combo(freq)[[1]]
+  combo <- rpt$ret_combo(freq = freq, date_start = tm10)[[1]]
   fund <- combo$p
   bench <- combo$b
   viz_wealth_index(xts_cbind(fund, bench)) +
@@ -157,11 +157,10 @@ create_wealth_cht <- function(rpt, freq = "M") {
 }
 
 #' @export
-create_capm_cht <- function(rpt, freq = "M", funds = TRUE, 
-                            legend_loc = "right") {
+create_capm_cht <- function(rpt, tm10, freq = "M", funds = TRUE,
+                            adj_scale = TRUE, legend_loc = "right") {
   col <- rpt$col
-  
-  combo <- rpt$ret_combo(freq)[[1]]
+  combo <- rpt$ret_combo(freq = freq, date_start = tm10)[[1]]
   asset <- combo$xp
   bench <- combo$xb
   rf <- combo$xrf
@@ -184,7 +183,7 @@ create_capm_cht <- function(rpt, freq = "M", funds = TRUE,
   plot_dat$Bench <- plot_dat$name %in% colnames(bench)
   plot_dat$shape <- ifelse(plot_dat$Bench, 17, 16)
   plot_dat$name <- factor(plot_dat$name, unique(plot_dat$name))
-  ggplot(plot_dat, aes(x = x, y = y, col = name)) +
+  res <- ggplot(plot_dat, aes(x = x, y = y, col = name)) +
     geom_point(size = 3, shape =plot_dat$shape) +
     geom_vline(xintercept = plot_dat$x[plot_dat$Bench], color = "grey") + 
     geom_hline(yintercept = plot_dat$y[plot_dat$Bench], color = "grey") +
@@ -211,6 +210,22 @@ create_capm_cht <- function(rpt, freq = "M", funds = TRUE,
       ),
       legend.position = legend_loc
     )
+  if (adj_scale) {
+    x_max <- max(plot_dat$x + 0.01, 0.04)
+    x_min <- 0
+    y_max <- max(plot_dat$y)
+    if (y_max < 0) {
+      y_min <- min(y_max - 0.01, -0.04)
+      y_max <- -y_min
+    } else {
+      y_max <- y_max + 0.01
+      y_min <- -0.02
+    }
+    res <- res + 
+      scale_x_continuous(limits = c(x_min, x_max), labels = scales::percent) +
+      scale_y_continuous(limits = c(y_min, y_max), labels = scales::percent)
+  }
+  return(res)
 }
 
 

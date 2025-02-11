@@ -56,6 +56,7 @@ holdings data}
 \item \href{#method-Database-download_sectors}{\code{Database$download_sectors()}}
 \item \href{#method-Database-update_ps_macro_select}{\code{Database$update_ps_macro_select()}}
 \item \href{#method-Database-create_port}{\code{Database$create_port()}}
+\item \href{#method-Database-create_port_from_ids}{\code{Database$create_port_from_ids()}}
 \item \href{#method-Database-clone}{\code{Database$clone()}}
 }
 }
@@ -518,7 +519,7 @@ Download Macro Select Workbook and Save to Library
 \if{html}{\out{<a id="method-Database-create_port"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-create_port}{}}}
 \subsection{Method \code{create_port()}}{
-Create Portfolio from DtcName
+Create Portfolio from DtcName (holdings table)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$create_port(dtc_name, latest = FALSE)}\if{html}{\out{</div>}}
 }
@@ -530,6 +531,36 @@ Create Portfolio from DtcName
 
 \item{\code{latest}}{truncate holdings to last update, default is FALSE for 
 entire time-series of holdings}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-create_port_from_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-create_port_from_ids}{}}}
+\subsection{Method \code{create_port_from_ids()}}{
+Create Portfolio from ids (quick set up)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$create_port_from_ids(
+  ids,
+  wgt = NULL,
+  incept = NULL,
+  name = NULL,
+  tr_id = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{Ticker, Cusip, Sedol, etc}
+
+\item{\code{wgt}}{optional vector of corresponding weights, default is 1/n}
+
+\item{\code{name}}{optional string to name portfolio}
+
+\item{\code{tr_id}}{optional string for id to pull track record, default will
+be rebalance of weights and returns from ids}
 }
 \if{html}{\out{</div>}}
 }

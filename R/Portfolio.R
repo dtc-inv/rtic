@@ -15,8 +15,6 @@ Portfolio <- R6::R6Class(
     tbl_hold = data.frame(),
     #' @field tbl_miss holdings that are missing from MSL
     tbl_miss = data.frame(),
-    #' @field tbl_msl table containing master security list
-    tbl_msl = data.frame(),
     #' @field ac ArcticDB datastore
     ac = NULL,
     #' @field rebal Rebalance object
@@ -39,7 +37,6 @@ Portfolio <- R6::R6Class(
       self$ac <- ac
       self$check_ac()
       lib <- self$ac$get_library("meta-tables")
-      self$tbl_msl <- lib$read("msl")$data
       self$tbl_hold <- tbl_hold
       self$check_tbl_hold()
       self$tbl_miss <- data.frame()
@@ -69,9 +66,10 @@ Portfolio <- R6::R6Class(
     
     #' @description Merge MSL with Holdings Table
     merge_msl = function() {
+      tbl_msl <- read_msl(self$ac)
       res <- left_merge(
         x = self$tbl_hold,
-        y = self$tbl_msl,
+        y = tbl_msl,
         match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
                      "Identifier")
       )
@@ -88,6 +86,7 @@ Portfolio <- R6::R6Class(
     #' @param layer what layer to drill down to
     #' @param latest boolean to truncate to only most recent holdings
     drill_down = function(layer = 1, latest = TRUE) {
+      tbl_msl <- load_msl(self$ac)
       if (latest) {
         self$tbl_hold <- latest_holdings(self$tbl_hold)
       }
@@ -111,7 +110,7 @@ Portfolio <- R6::R6Class(
         }
         res <- left_merge(
           x = lay_1,
-          y = self$tbl_msl,
+          y = tbl_msl,
           match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
                        "Identifier"),
           keep_x_dup_col = FALSE

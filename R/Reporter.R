@@ -203,7 +203,7 @@ Reporter <- R6::R6Class(
     
     #' @description Clean and lineup portfolio, benchmark, asset, and rf returns
     #' @param freq option to change frequency
-    ret_combo = function(freq = NULL) {
+    ret_combo = function(freq = NULL, date_start = NULL, date_end = NULL) {
       res <- list()
       bench <- self$bench$clone()
       bench$read_track_rec()
@@ -220,8 +220,10 @@ Reporter <- R6::R6Class(
           port$track_rec <- port$rebal$rebal_ret
         }
         asset_ret <- port$read_asset_ret()
-        x <- clean_asset_bench_rf(asset_ret, bench$track_rec, self$rf, freq)
-        p <- clean_asset_bench_rf(port$track_rec, bench$track_rec, self$rf, freq)
+        x <- clean_asset_bench_rf(asset_ret, bench$track_rec, self$rf, freq,
+                                  date_start, date_end)
+        p <- clean_asset_bench_rf(port$track_rec, bench$track_rec, self$rf, 
+                                  freq, date_start, date_end)
         r <- list()
         r$xp <- x$x
         r$xb <- x$b

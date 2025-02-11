@@ -1,6 +1,17 @@
 
+#' @title Write IMB Bond Slide
+#' @param pres presentation object from officer
+#' @param rpt report object
+#' @param dict dictionary table from excel
+#' @param descr description table from excel
+#' @param locator list with chart and table locations
+#' @param slide_title string for title
+#' @param tm10 t-minus 10 years date
+#' @param pie_type plot quality or sector pie chart
+#' @return pres with added slide
+#' @export
 write_bond <- function(pres, rpt, dict, descr, locater,
-                       slide_title, is_ctf = FALSE, 
+                       slide_title, tm10,
                        pie_type = c("Quality", "Sector")) {
   
   col <- rpt$col
@@ -17,9 +28,9 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   }
   trail_perf_ft <- create_trail_perf_tbl(rpt) |>
     width(2.25, j = 1)
-  perf_stat_ft <- create_perf_tbl(rpt)
-  wealth_cht <- create_wealth_cht(rpt)
-  capm_cht <- create_capm_cht(rpt, funds = FALSE, legend_loc = "bottom")
+  perf_stat_ft <- create_perf_tbl(rpt, tm10)
+  wealth_cht <- create_wealth_cht(rpt, tm10)
+  capm_cht <- create_capm_cht(rpt, tm10, funds = FALSE, legend_loc = "bottom")
 
   char_tbl <- dict[dict$DataType == "Characteristics", 3:4]
   char_tbl <- as.data.frame(char_tbl)

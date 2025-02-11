@@ -11,6 +11,9 @@ load_imb_dict <- function() {
   
 write_imb <- function() {  
   
+  as_of <- floor_date(Sys.Date(), "months") - 1
+  tm10 <- as_of - years(10)
+  
   res <- load_imb_dict()
   
   db <- Database$new("~/api_keys.RData", 
@@ -41,8 +44,9 @@ write_imb <- function() {
   # start pres
   pres <- read_pptx("N:/Investment Team/REPORTING/IMB/imb-writer/template.pptx")
   
+  print("VWSUX")
   p1 <- db$create_port_from_ids("VWSUX")
-  b <- db$create_port_from_ids("BofAML Municipals 1-3 Yr") 
+  b <- db$create_port_from_ids("BofAML Municipals 1-2 Yr") 
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
     pres = pres,
@@ -51,9 +55,10 @@ write_imb <- function() {
     descr = res$descr,
     locater = bond_pos,
     slide_title = "Vanguard Short-Term Tax Exempt",
-    is_ctf = FALSE)
+    tm10 = tm10)
   rm(p1, b, rpt)
   
+  print("FLTMX")
   p1 <- db$create_port_from_ids("FLTMX")
   b <- db$create_port_from_ids("BofAML Municipals 1-12 Yr")
   rpt <- Reporter$new(list(p1), b)
@@ -64,89 +69,104 @@ write_imb <- function() {
     descr = res$descr,
     locater = bond_pos,
     slide_title = "Fidelity Intermediate Muni",
-    is_ctf = FALSE)
-  
+    tm10 = tm10)
+  rm(p1, b, rpt)
+
+  print("Short Duration")
+  p1 <- db$create_port_from_ids("Short Duration")
+  b <- db$create_port_from_ids("BofAML U.S. Treasuries 1-3 Yr")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Short Duration",
-    bench = ind$`BofAML U.S. Treasuries 1-3 Yr`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
     locater = bond_pos,
     slide_title = "Short Duration CTF",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector")
+  rm(p1, b, rpt)
   
+  print("TCPNX")
+  p1 <- db$create_port_from_ids("TCPNX")
+  b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Touchstone Total Return Bond (TCPNX)",
-    bench = ind$`Bloomberg Barclays U.S. Aggregate`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
-    locater = bond_pos,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = bond_pos,    
     slide_title = "Touchstone Total Return Bond",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector"
   )
+  rm(p1, b, rpt)
   
+  print("PLDTX")
+  p1 <- db$create_port_from_ids("PLDTX")
+  b <- db$create_port_from_ids("BofAML Municipals 1-12 Yr")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Pimco Low Duration II (PLDTX)",
-    bench = ind$`BofAML Municipals 1-12 Yr`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
-    locater = bond_pos,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = bond_pos,    
     slide_title = "Pimco Low Duration II",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector")
+  rm(p1, b, rpt)
   
+  print("PTTRX")
+  p1 <- db$create_port_from_ids("PTTRX")
+  b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Pimco Total Return (PTTRX)",
-    bench = ind$`Bloomberg Barclays U.S. Aggregate`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
-    locater = bond_pos,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = bond_pos,    
     slide_title = "Pimco Total Return",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector"
   )
+  rm(p1, b, rpt)
   
+  print("LSFYX")
+  p1 <- db$create_port_from_ids("LSFYX")
+  b <- db$create_port_from_ids("S&P / LSTA Leveraged Loan")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Loomis Sayles Floating Rate (LSFYX)",
-    bench = ind$`S&P / LSTA Leveraged Loan`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
-    locater = bond_pos,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = bond_pos,    
     slide_title = "Loomis Sayles Floating Rate",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector"
   )
+  rm(p1, b, rpt)
   
+  print("CPHUX")
+  p1 <- db$create_port_from_ids("CPHUX")
+  b < -db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
+  rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
-    dtc_name = "Columbia Strategic Income (CPHUX)",
-    bench = ind$`Bloomberg Barclays U.S. Aggregate`,
     pres = pres,
-    db = db,
-    dict = dict,
-    descr = descr,
-    col = col,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
     locater = bond_pos,
     slide_title = "Columbia Strategic Income",
-    is_ctf = FALSE,
+    tm10 = tm10,
     pie_type = "Sector"
   )
+  rm(p1, b, rpt)
+  
+  print("VTIP")
   
   pres <- write_bond(
     dtc_name = "Vanguard Short Term Inflation Protected (VTIP)",

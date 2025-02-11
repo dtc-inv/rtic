@@ -1,6 +1,6 @@
 
 
-write_equity <- function(pres, rpt, dict, descr, locater, slide_title) {
+write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10) {
   
   col <- rpt$col
   set_flextable_defaults(font.size = 8)
@@ -10,11 +10,11 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title) {
     stop(paste0(dtc_name, " not found in dictionary"))
   }
   descr <- descr[descr$Page == dtc_name, ]
-  trail_perf_ft <- create_trail_perf_tbl(rpt)
+  trail_perf_ft <- create_trail_perf_tbl(rpt, tm10)
   perf_stat_ft <- create_perf_tbl(rpt)
   char_ft <- create_char_tbl(rpt)
-  wealth_cht <- create_wealth_cht(rpt)
-  capm_cht <- create_capm_cht(rpt)
+  wealth_cht <- create_wealth_cht(rpt, tm10)
+  capm_cht <- create_capm_cht(rpt, tm10)
   # country / sector chart switch
   sect_cht <- create_sector_cht(rpt)
   

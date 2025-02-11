@@ -161,7 +161,7 @@ Financial data summary: PE, PB, PFCF, and DY
 \subsection{Method \code{ret_combo()}}{
 Clean and lineup portfolio, benchmark, asset, and rf returns
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Reporter$ret_combo(freq = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$ret_combo(freq = NULL, date_start = NULL, date_end = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -354,7 +354,8 @@ read_xts <- function(wb, sht = 1, skip = 0) {
 #' @param rf risk-free time-series, optional, one column accepted
 #' @return list with `x`, `b`, and `rf` aligned for common dates
 #' @export
-clean_asset_bench_rf <- function(x, b, rf = NULL, freq = NULL) {
+clean_asset_bench_rf <- function(x, b, rf = NULL, freq = NULL, 
+                                 date_start = NULL, date_end = NULL) {
   if (is.null(freq)) {
     freq <- sort(c(guess_freq(x), guess_freq(b), guess_freq(rf)), na.last = TRUE,
                  decreasing = TRUE)
@@ -379,6 +380,12 @@ clean_asset_bench_rf <- function(x, b, rf = NULL, freq = NULL) {
         stop('rf is missing')
       }
     }
+  }
+  if (!is.null(date_start)) {
+    combo$ret <- cut_time(combo$ret, date_start = date_start)
+  }
+  if (!is.null(date_end)) {
+    combo$ret <- cut_time(combo$ret, date_end = date_end)
   }
   res <- list()
   if (!is.null(rf)) {

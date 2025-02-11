@@ -785,7 +785,7 @@ Database <- R6::R6Class(
       }
     },
     
-    #' @description Create Portfolio from DtcName
+    #' @description Create Portfolio from DtcName (holdings table)
     #' @param dtc_name DtcName
     #' @param latest truncate holdings to last update, default is FALSE for 
     #'   entire time-series of holdings
@@ -794,6 +794,12 @@ Database <- R6::R6Class(
       Portfolio$new(self$ac, tbl_hold, dtc_name, dtc_name)
     },
     
+    #' @description Create Portfolio from ids (quick set up)
+    #' @param ids Ticker, Cusip, Sedol, etc
+    #' @param wgt optional vector of corresponding weights, default is 1/n
+    #' @param name optional string to name portfolio
+    #' @param tr_id optional string for id to pull track record, default will
+    #'   be rebalance of weights and returns from ids
     create_port_from_ids = function(ids, wgt = NULL, incept = NULL, name = NULL,
                                     tr_id = NULL) {
       r <- self$read_ret(ids)
