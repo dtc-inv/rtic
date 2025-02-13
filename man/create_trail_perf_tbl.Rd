@@ -4,7 +4,7 @@
 \alias{create_trail_perf_tbl}
 \title{Trailing Periodic Performance}
 \usage{
-create_trail_perf_tbl(rpt, freq = "M")
+create_trail_perf_tbl(rpt, freq = "M", p_or = NULL, b_or = NULL)
 }
 \arguments{
 \item{rpt}{Reporter Object}

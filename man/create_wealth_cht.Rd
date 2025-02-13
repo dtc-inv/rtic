@@ -4,7 +4,7 @@
 \alias{create_wealth_cht}
 \title{Create Cumulative Return Chart}
 \usage{
-create_wealth_cht(rpt, tm10, freq = "M")
+create_wealth_cht(rpt, tm10, freq = "M", p_or = NULL, b_or = NULL)
 }
 \arguments{
 \item{rpt}{Reporter Object}
@@ -12,6 +12,10 @@ create_wealth_cht(rpt, tm10, freq = "M")
 \item{tm10}{t minus 10 years date to truncate return start}
 
 \item{freq}{return frequency}
+
+\item{p_or}{portfolio return override}
+
+\item{b_or}{benchmark return override}
 }
 \description{
 Create Cumulative Return Chart

@@ -44,6 +44,9 @@ write_imb <- function() {
   core_eq_loc <- locater
   core_eq_loc$alloct_tbl["top"] <- 2.2
   
+  ms_pos <- locater
+  ms_pos$alloct_tbl <- locater$sect_cht
+  
   # start pres
   pres <- read_pptx("N:/Investment Team/REPORTING/IMB/imb-writer/template.pptx")
   
@@ -295,6 +298,51 @@ write_imb <- function() {
   )
   rm(p1, b, rpt)
 
+  print("Multi-Strategy")
+  p1 <- db$create_port_from_ids("Multi-Strategy")
+  b <- db$create_port_from_ids("MSCI ACWI")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_multi_strat(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = ms_pos,
+    slide_title = "Multi-Strategy CTF",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
+  
+  print("Multi-Strategy MF")
+  p1 <- db$create_port_from_ids("Multi-Strategy MF")
+  b <- db$create_port_from_ids("MSCI ACWI")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_multi_strat(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = ms_pos,
+    slide_title = "Multi-Strategy Liquid",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
+  
+  print("Private Diversifiers")
+  p1 <- db$create_port_from_ids("Private Diversifiers")
+  b <- db$create_port_from_ids("MSCI ACWI")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_pdf(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = ms_pos,
+    slide_title = "Private Diversifiers",
+    tm10 = tm10
+  )
+  rm(p1, b, rpt)
+  
   # write out
   print(pres, "C:/Users/asotolongo/Downloads/test.pptx")
 }
