@@ -76,6 +76,7 @@ read_ret = function(ids, ac) {
     ret <- do.call("cbind", res)
     nm <- unlist(lapply(res, colnames))
     colnames(ret) <- nm
+    
     return(ret)
   }
 }
@@ -301,4 +302,20 @@ wgt_avg <- function(w, x) {
 read_msl <- function(ac) {
   lib <- ac$get_library("meta-tables")
   lib$read("msl")$data
+}
+
+#' @title Check Holdings Table Specification
+#' @param tbl_hold data.frame with holdings, need id, CapWgt, and TimeStamp
+#' @export
+check_tbl_hold <- function(tbl_hold) {
+  if (!"data.frame" %in% class(tbl_hold)) {
+    stop("holdings table is not a data.frame")
+  }
+  id_check <- any(c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
+                    "Identifier") %in% colnames(tbl_hold))
+  wgt_check <- "CapWgt" %in% colnames(tbl_hold)
+  time_check <- "TimeStamp" %in% colnames(tbl_hold)
+  if (!id_check | !wgt_check | !time_check) {
+    stop("Holdings table not properly specified. Need id, weight, and date")
+  }
 }

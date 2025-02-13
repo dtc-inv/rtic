@@ -30,7 +30,7 @@ Structure to contain and wrangle portfolio holdings and returns
 \itemize{
 \item \href{#method-Portfolio-new}{\code{Portfolio$new()}}
 \item \href{#method-Portfolio-check_ac}{\code{Portfolio$check_ac()}}
-\item \href{#method-Portfolio-check_tbl_hold}{\code{Portfolio$check_tbl_hold()}}
+\item \href{#method-Portfolio-tbl_hold_check}{\code{Portfolio$tbl_hold_check()}}
 \item \href{#method-Portfolio-merge_msl}{\code{Portfolio$merge_msl()}}
 \item \href{#method-Portfolio-drill_down}{\code{Portfolio$drill_down()}}
 \item \href{#method-Portfolio-get_fina_data}{\code{Portfolio$get_fina_data()}}
@@ -81,12 +81,12 @@ check specification of arctic db
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Portfolio-check_tbl_hold"></a>}}
-\if{latex}{\out{\hypertarget{method-Portfolio-check_tbl_hold}{}}}
-\subsection{Method \code{check_tbl_hold()}}{
+\if{html}{\out{<a id="method-Portfolio-tbl_hold_check"></a>}}
+\if{latex}{\out{\hypertarget{method-Portfolio-tbl_hold_check}{}}}
+\subsection{Method \code{tbl_hold_check()}}{
 check specification of holdings table
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Portfolio$check_tbl_hold()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Portfolio$tbl_hold_check()}\if{html}{\out{</div>}}
 }
 
 }

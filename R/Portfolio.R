@@ -38,7 +38,7 @@ Portfolio <- R6::R6Class(
       self$check_ac()
       lib <- self$ac$get_library("meta-tables")
       self$tbl_hold <- tbl_hold
-      self$check_tbl_hold()
+      self$tbl_hold_check()
       self$tbl_miss <- data.frame()
       self$merge_msl()
     },
@@ -51,17 +51,8 @@ Portfolio <- R6::R6Class(
     },
     
     #' @description check specification of holdings table
-    check_tbl_hold = function() {
-      if (!"data.frame" %in% class(self$tbl_hold)) {
-        stop("holdings table is not a data.frame")
-      }
-      id_check <- any(c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
-                        "Identifier") %in% colnames(self$tbl_hold))
-      wgt_check <- "CapWgt" %in% colnames(self$tbl_hold)
-      time_check <- "TimeStamp" %in% colnames(self$tbl_hold)
-      if (!id_check | !wgt_check | !time_check) {
-        stop("Holdings table not properly specified. Need id, weight, and date")
-      }
+    tbl_hold_check = function() {
+      check_tbl_hold(self$tbl_hold)
     },
     
     #' @description Merge MSL with Holdings Table

@@ -80,21 +80,20 @@ Database <- R6::R6Class(
     #' @description Read MSL from Excel
     #' @param wb excel file full path
     #' @param write boolean to overwrite MSL in database, default FALSE
-    read_msl_xl = function(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx",
-                        write = FALSE) {
+    read_msl_xl = function(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx") {
+      prev_msl <- read_msl(self$ac)
+      lib <- self$ac$get_library("meta-tables")
+      lib$write("z-msl", prev_msl)
       col_types <- rep("text", 11)
       col_types[3] <- "numeric" 
       dat <- readxl::read_excel(wb, 1, col_types = col_types)
-      self$tbl_msl <- dat
-      if (write) {
-        self$write_msl()
-      }
+      self$write_msl(dat)
     },
     
     #' @description write MSL to database
-    write_msl = function() {
+    write_msl = function(tbl_msl) {
       lib <- self$ac$get_library("meta-tables")
-      lib$write("msl", self$tbl_msl)
+      lib$write("msl", tbl_msl)
     },
     
     #' @description write SEC table to database
@@ -425,48 +424,93 @@ Database <- R6::R6Class(
     #' @description Update returns of models
     #' @param dtc_name option to specify specific models to update, leave NULL
     #'   to update all models
-    ret_model = function(dtc_name = NULL) {
+    ret_model = function(dtc_name = NULL, months_back = 1) {
+      lib_ret <- self$ac$get_library("returns")
+      msl <- read_msl(self$ac)
       lib <- self$ac$get_library("meta-tables")
       model <- lib$read("model")$data
       if (!is.null(dtc_name)) {
         model <- filter(model, DtcName %in% dtc_name)
       }
-      model <- model[order(model$Layer), ]
-      ret_m <- list()
-      ret_d <- list()
-      for (i in 1:nrow(model)) {
-        h <- self$read_hold(model$DtcName[i], FALSE)
-        p <- Portfolio$new(self$ac, h)
-        p$init_rebal(model$RebFreq[i], model$RetFreq[i], clean_ret = FALSE)
-        colnames(p$rebal$rebal_ret) <- model$DtcName[i]
-        if (model$ReturnLibrary[i] == "model-daily") {
-          ret_d[[length(ret_d)+1]] <- p$rebal$rebal_ret
-        } else if (model$ReturnLibrary[i] == "model-monthly") {
-          ret_m[[length(ret_m)+1]] <- p$rebal$rebal_ret
-        } else {
-          warning(paste0(model$DtcName[i], " invalid ReturnLibrary"))
-          next
+      d <- filter(model, ReturnLibrary == "model-daily")
+      d_id <- filter(msl, DtcName %in% d$DtcName)
+      if (nrow(d_id) > 0) {
+        dat <- list()
+        found <- rep(TRUE, nrow(d_id))
+        for (i in 1:nrow(d_id)) {
+          x <- try(download_fs_ra_ret(d_id$Identifier[i], self$api_keys, 
+                                      months_back))
+          if ("try-error" %in% class(x)) {
+            found[i] <- FALSE
+          } else {
+            dat[[i]] <- x
+          }
         }
+        r <- do.call(cbind, dat)
+        colnames(r) <- d_id$DtcName[found]
+        new <- xts_to_arc(r)
+        old <- lib$read("model-daily")
+        combo <- xts_rbind(new, old, FALSE)
+        lib_ret$write("model-daily", xts_to_arc(combo))
       }
-      ret_lib <- self$ac$get_library("returns")
-      if (length(ret_d) >= 1) {
-        colnm <- unlist(lapply(ret_d, "colnames"))
-        ret_d <- do.call("cbind", ret_d)
-        colnames(ret_d) <- colnm
-        old <- ret_lib$read("model-daily")$data
-        new <- xts_to_arc(ret_d)
-        combo <- xts_rbind(new, old, is_xts = FALSE)
-        ret_lib$write("model-daily", xts_to_arc(combo))
+      m <- filter(model, ReturnLibrary == "model-monthly")
+      m_id <- filter(msl, DtcName %in% m$DtcName)
+      if (nrow(m_id) > 0) {
+        dat <- list()
+        found <- rep(TRUE, nrow(m_id))
+        for (i in 1:nrow(m_id)) {
+          x <- try(download_fs_ra_ret(d_id$Identifier[i], self$api_keys, 
+                                      months_back, "M"))
+          if ("try-error" %in% class(x)) {
+            found[i] <- FALSE
+          } else {
+            dat[[i]] <- x
+          }
+        }
+        r <- do.call(cbind, dat)
+        colnames(r) <- m_id$DtcName[found]
+        new <- xts_to_arc(r)
+        old <- lib$read("model-monthly")
+        combo <- xts_rbind(new, old, FALSE)
+        lib_ret$write("model-monthly", xts_to_arc(combo))
       }
-      if (length(ret_m) >= 1) {
-        colnm <- unlist(lapply(ret_m, "colnames"))
-        ret_m <- do.call("cbind", ret_m)
-        colnames(ret_m) <- colnm
-        old <- ret_lib$read("model-monthly")$data
-        new <- xts_to_arc(ret_m)
-        combo <- xts_rbind(new, old, is_xts = FALSE)
-        ret_lib$write("model-monthly", xts_to_arc(combo))
-      }
+      
+      # model <- model[order(model$Layer), ]
+      # ret_m <- list()
+      # ret_d <- list()
+      # for (i in 1:nrow(model)) {
+      #   h <- self$read_hold(model$DtcName[i], FALSE)
+      #   p <- Portfolio$new(self$ac, h)
+      #   p$init_rebal(model$RebFreq[i], model$RetFreq[i], clean_ret = FALSE)
+      #   colnames(p$rebal$rebal_ret) <- model$DtcName[i]
+      #   if (model$ReturnLibrary[i] == "model-daily") {
+      #     ret_d[[length(ret_d)+1]] <- p$rebal$rebal_ret
+      #   } else if (model$ReturnLibrary[i] == "model-monthly") {
+      #     ret_m[[length(ret_m)+1]] <- p$rebal$rebal_ret
+      #   } else {
+      #     warning(paste0(model$DtcName[i], " invalid ReturnLibrary"))
+      #     next
+      #   }
+      # }
+      # ret_lib <- self$ac$get_library("returns")
+      # if (length(ret_d) >= 1) {
+      #   colnm <- unlist(lapply(ret_d, "colnames"))
+      #   ret_d <- do.call("cbind", ret_d)
+      #   colnames(ret_d) <- colnm
+      #   old <- ret_lib$read("model-daily")$data
+      #   new <- xts_to_arc(ret_d)
+      #   combo <- xts_rbind(new, old, is_xts = FALSE)
+      #   ret_lib$write("model-daily", xts_to_arc(combo))
+      # }
+      # if (length(ret_m) >= 1) {
+      #   colnm <- unlist(lapply(ret_m, "colnames"))
+      #   ret_m <- do.call("cbind", ret_m)
+      #   colnames(ret_m) <- colnm
+      #   old <- ret_lib$read("model-monthly")$data
+      #   new <- xts_to_arc(ret_m)
+      #   combo <- xts_rbind(new, old, is_xts = FALSE)
+      #   ret_lib$write("model-monthly", xts_to_arc(combo))
+      # }
     },
     
     # ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
@@ -635,6 +679,25 @@ Database <- R6::R6Class(
         return(res)
       }
     },
+    
+    hold_model = function(dtc_name, tbl_hold = NULL, xl_file = NULL, 
+                          sum_to_1 = TRUE) {
+      if (!is.null(xl_file)) {
+        tbl_hold <- readxl::read_excel(xl_file)
+      }
+      check_tbl_hold(tbl_hold)
+      tbl_hold$TimeStamp <- as.character(tbl_hold$TimeStamp)
+      if (sum_to_1) {
+        s <- split(tbl_hold, tbl_hold$TimeStamp)
+        for (i in 1:length(s)) {
+          s[[i]]$CapWgt <- s[[i]]$CapWgt / sum(s[[i]]$CapWgt, na.rm = TRUE)
+        }
+        tbl_hold <- do.call(rbind, s)
+      }
+      lib <- self$ac$get_library("holdings")
+      lib$write(dtc_name, tbl_hold)
+        
+    }, 
 
     #' @description Read Holdings Data
     #' @param dtc_name DtcName field in MSL to pull holdings
