@@ -343,6 +343,22 @@ write_imb <- function() {
   )
   rm(p1, b, rpt)
   
+  print("Private Diversifiers II")
+  p1 <- db$create_port_from_ids("Private Diversifiers II")
+  b <- db$create_port_from_ids("MSCI ACWI")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_pdf(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = ms_pos,
+    slide_title = "Private Diversifiers",
+    tm10 = tm10,
+    lgnd_pos = "bottom"
+  )
+  rm(p1, b, rpt)
+  
   # write out
   print(pres, "C:/Users/asotolongo/Downloads/test.pptx")
 }

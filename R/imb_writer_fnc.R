@@ -301,7 +301,7 @@ create_sector_cht <- function(rpt) {
 }
 
 #' @export
-create_country_cht <- function(rpt) {
+create_country_cht <- function(rpt, lgnd_pos = "bottom") {
   col <- rpt$col
   dat <- rpt$country_summ(rgn = TRUE)
   rgn <- group_by(dat[, -1], Region) |>
@@ -335,7 +335,7 @@ create_country_cht <- function(rpt) {
             color = col[4], 
             size = 8
           ),
-          legend.position = "bottom",
+          legend.position = lgnd_pos,
           axis.text.y = element_blank(),
           axis.text.x = element_text(
             size = 5, 
@@ -385,7 +385,8 @@ create_descr_tbl <- function(descr, col) {
     border_remove()
 }
 
-create_bar_wgt_cht <- function(dict, col) {
+#' @export
+create_bar_wgt_cht <- function(dict, col, lgnd_pos = "right") {
 
   dict <- filter(dict, DataType == "Allocation")
   dict$Field <- factor(dict$Field, unique(dict$Field))
@@ -401,7 +402,7 @@ create_bar_wgt_cht <- function(dict, col) {
     geom_bar(stat = "identity", position = position_stack()) +
     scale_fill_manual(values = col) +
     xlab("") + ylab("") + labs(fill = "Manager") +
-    geom_text(aes(label = Lbl, group = Field, y = LblPos), col = "grey", 
+    geom_text(aes(label = Lbl, group = Field, y = LblPos), col = "black", 
               size = 2) +
     coord_flip() +
     theme_minimal() +
@@ -418,7 +419,7 @@ create_bar_wgt_cht <- function(dict, col) {
             color = col[4], 
             size = 8
           ),
-          legend.position = "right",
+          legend.position = lgnd_pos,
           axis.text.y = element_blank(),
           axis.text.x = element_text(
             size = 5, 
@@ -765,7 +766,7 @@ write_multi_strat <- function(pres, rpt, dict, descr, locater,
 
 #' @export
 write_pdf <- function(pres, rpt, dict, descr, locater,
-                              slide_title, tm10) {
+                              slide_title, tm10, lgnd_pos = "bottom") {
   
   cash_plus <- rpt$rf + 0.04 / 252
   colnames(cash_plus) <- "Cash + 4%"
@@ -787,7 +788,7 @@ write_pdf <- function(pres, rpt, dict, descr, locater,
   
   wealth_cht <- create_wealth_cht(rpt, tm10, b_or = cash_plus)
   descr_tbl <- create_descr_tbl(descr, col)
-  alloc_cht <- create_bar_wgt_cht(dict, col)
+  alloc_cht <- create_bar_wgt_cht(dict, col, lgnd_pos)
   
   pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
@@ -795,7 +796,7 @@ write_pdf <- function(pres, rpt, dict, descr, locater,
       alloc_cht,
       ph_location(
         left = locater$alloct_tbl["left"],
-        top = 4.8,
+        top = 0.77,
         height = 2.2,
         width = 4.9)) |>
     ph_with(
