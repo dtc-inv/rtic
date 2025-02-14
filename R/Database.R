@@ -450,7 +450,7 @@ Database <- R6::R6Class(
         r <- do.call(cbind, dat)
         colnames(r) <- d_id$DtcName[found]
         new <- xts_to_arc(r)
-        old <- lib$read("model-daily")
+        old <- lib_ret$read("model-daily")$data
         combo <- xts_rbind(new, old, FALSE)
         lib_ret$write("model-daily", xts_to_arc(combo))
       }
@@ -471,7 +471,7 @@ Database <- R6::R6Class(
         r <- do.call(cbind, dat)
         colnames(r) <- m_id$DtcName[found]
         new <- xts_to_arc(r)
-        old <- lib$read("model-monthly")
+        old <- lib_ret$read("model-monthly")$data
         combo <- xts_rbind(new, old, FALSE)
         lib_ret$write("model-monthly", xts_to_arc(combo))
       }
