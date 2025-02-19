@@ -108,16 +108,17 @@ Portfolio <- R6::R6Class(
         )
         lay_1 <- res$inter
         self$tbl_miss <- rob_rbind(self$tbl_miss, res$miss)
-        is_lay_1 <- lay_1$Layer <= layer
+        is_lay_1 <- lay_1$Layer <= layer + i - 1
         if (any(is.na(is_lay_1))) {
           warning("some layer observations missing in tbl_msl")
           is_lay_1[is.na(is_lay_1)] <- TRUE
         }
-        x <- lay_1[!is_lay_1, ]
+        x <- lay_1[!is_lay_1, ] # case where lay 2 invests in lay 2
         if (nrow(x) == 0) {
           break
         }
       }
+      lay_1 <- lay_1[lay_1$Layer == 1, ]
       self$tbl_hold <- lay_1
     },
 

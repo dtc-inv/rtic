@@ -514,39 +514,39 @@ Database <- R6::R6Class(
       # }
     },
     
-    # ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
-    #                      freq = "D") {
-    #   if (is.null(ids)) {
-    #     stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
-    #     ids <- create_ids(stock)
-    #   }
-    #   lib <- self$ac$get_library("returns")
-    #   old_dat <- lib$read("stock")$data
-    #   if (is.null(date_start)) {
-    #     date_start <- old_dat$Date[nrow(old_dat)]
-    #   }
-    #   iter <- space_ids(ids)
-    #   xdf <- data.frame()
-    #   for (i in 1:(length(iter)-1)) {
-    #     json <- download_fs_global_prices(
-    #       api_keys = self$api_keys,
-    #       ids = ids[iter[i]:iter[i+1]],
-    #       date_start = date_start,
-    #       date_end = date_end,
-    #       freq = freq
-    #     )
-    #     xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
-    #     print(iter[i])
-    #   }
-    #   ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
-    #   dtc_name <- self$tbl_msl$DtcName[ix]
-    #   xdf$DtcName <- dtc_name
-    #   is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
-    #   xdf <- xdf[!is_dup, ]
-    #   new_dat <- pivot_wider(xdf, id_cols = date, values_from = totalReturn,
-    #                          names_from = DtcName)
-    #
-    # },
+    ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
+                         freq = "D") {
+      if (is.null(ids)) {
+        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        ids <- create_ids(stock)
+      }
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("stock")$data
+      if (is.null(date_start)) {
+        date_start <- old_dat$Date[nrow(old_dat)]
+      }
+      iter <- space_ids(ids)
+      xdf <- data.frame()
+      for (i in 1:(length(iter)-1)) {
+        json <- download_fs_global_prices(
+          api_keys = self$api_keys,
+          ids = ids[iter[i]:iter[i+1]],
+          date_start = date_start,
+          date_end = date_end,
+          freq = freq
+        )
+        xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
+        print(iter[i])
+      }
+      ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
+      dtc_name <- self$tbl_msl$DtcName[ix]
+      xdf$DtcName <- dtc_name
+      is_dup <- duplicated(paste0(xdf$DtcName, xdf$Date))
+      xdf <- xdf[!is_dup, ]
+      new_dat <- pivot_wider(xdf, id_cols = Date, values_from = TotalReturn,
+                             names_from = DtcName)
+
+    },
 
     # read returns ----
     #' @description Read Returns by ids
