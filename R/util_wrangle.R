@@ -36,7 +36,7 @@ read_macro_wb <- function(wb, idx_nm) {
 #' @param ac arcticdb datastore
 #' @return xts of time-series of ids, will warn if some ids are not found
 #' @export
-read_ret = function(ids, ac) {
+read_ret <- function(ids, ac) {
   lib_ret <- ac$get_library("returns")
   lib_tbl <- ac$get_library("meta-tables")
   tbl_msl <- lib_tbl$read("msl")$data
@@ -308,10 +308,6 @@ check_tbl_hold <- function(tbl_hold) {
 }
 
 
-drill_down = function(ac, tbl_hold, layer = 1, latest = TRUE) {
-  
-  
-  
+drill_down <- function(ac, tbl_hold, layer = 1, latest = TRUE) {
   
 }
-
