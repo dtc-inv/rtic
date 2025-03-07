@@ -13,21 +13,23 @@ Database <- R6::R6Class(
     bucket = NULL,
     #' @field ac ArcticDB object store
     ac = NULL,
-    #' @field tbl_msl master security list: table of meta data for all investments
+    #' @field tbl_msl master security list: table of meta data for all 
+    #'   investments
     tbl_msl = NULL,
     #' @field tbl_cust custodian list: table of meta data for CTFs and SMAs
     tbl_cust = NULL,
     #' @field tbl_sec SEC list: table of meta data for mutual funds and ETFs
     tbl_sec = NULL,
-    #' @field tbl_xl_mod excel model list: table of meta data for model portfolios
+    #' @field tbl_xl_mod excel model list: table of meta data for model 
+    #'   portfolios
     tbl_xl_mod = NULL,
     #' @field tbl_hold_field holdings fields: table of fields / columns for
     #'  holdings data
     tbl_hold_field = NULL,
 
     #' @description Create a db object
-    #' @param api_keys list of api keys or `.RData` file location to load the list
-    #'   of keys
+    #' @param api_keys list of api keys or `.RData` file location to load the 
+    #' list of keys
     #' @param py_loc optional file path where python is installed to be used
     #'   with `reticulate`
     initialize = function(api_keys, py_loc) {
@@ -460,7 +462,7 @@ Database <- R6::R6Class(
         dat <- list()
         found <- rep(TRUE, nrow(m_id))
         for (i in 1:nrow(m_id)) {
-          x <- try(download_fs_ra_ret(d_id$Identifier[i], self$api_keys, 
+          x <- try(download_fs_ra_ret(m_id$Identifier[i], self$api_keys, 
                                       months_back, "M"))
           if ("try-error" %in% class(x)) {
             found[i] <- FALSE
@@ -514,39 +516,39 @@ Database <- R6::R6Class(
       # }
     },
     
-    # ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
-    #                      freq = "D") {
-    #   if (is.null(ids)) {
-    #     stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
-    #     ids <- create_ids(stock)
-    #   }
-    #   lib <- self$ac$get_library("returns")
-    #   old_dat <- lib$read("stock")$data
-    #   if (is.null(date_start)) {
-    #     date_start <- old_dat$Date[nrow(old_dat)]
-    #   }
-    #   iter <- space_ids(ids)
-    #   xdf <- data.frame()
-    #   for (i in 1:(length(iter)-1)) {
-    #     json <- download_fs_global_prices(
-    #       api_keys = self$api_keys,
-    #       ids = ids[iter[i]:iter[i+1]],
-    #       date_start = date_start,
-    #       date_end = date_end,
-    #       freq = freq
-    #     )
-    #     xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
-    #     print(iter[i])
-    #   }
-    #   ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
-    #   dtc_name <- self$tbl_msl$DtcName[ix]
-    #   xdf$DtcName <- dtc_name
-    #   is_dup <- duplicated(paste0(xdf$DtcName, xdf$date))
-    #   xdf <- xdf[!is_dup, ]
-    #   new_dat <- pivot_wider(xdf, id_cols = date, values_from = totalReturn,
-    #                          names_from = DtcName)
-    #
-    # },
+    ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
+                         freq = "D") {
+      if (is.null(ids)) {
+        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        ids <- create_ids(stock)
+      }
+      lib <- self$ac$get_library("returns")
+      old_dat <- lib$read("stock")$data
+      if (is.null(date_start)) {
+        date_start <- old_dat$Date[nrow(old_dat)]
+      }
+      iter <- space_ids(ids)
+      xdf <- data.frame()
+      for (i in 1:(length(iter)-1)) {
+        json <- download_fs_global_prices(
+          api_keys = self$api_keys,
+          ids = ids[iter[i]:iter[i+1]],
+          date_start = date_start,
+          date_end = date_end,
+          freq = freq
+        )
+        xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
+        print(iter[i])
+      }
+      ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
+      dtc_name <- self$tbl_msl$DtcName[ix]
+      xdf$DtcName <- dtc_name
+      is_dup <- duplicated(paste0(xdf$DtcName, xdf$Date))
+      xdf <- xdf[!is_dup, ]
+      new_dat <- pivot_wider(xdf, id_cols = Date, values_from = TotalReturn,
+                             names_from = DtcName)
+
+    },
 
     # read returns ----
     #' @description Read Returns by ids

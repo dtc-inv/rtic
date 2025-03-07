@@ -255,19 +255,6 @@ get_list_fld <- function(x, fld) {
   }
 }
 
-#' @export
-month_end <- function(dt) {
-  lubridate::ceiling_date(as.Date(dt), 'months') - 1
-}
-
-#' @export
-guess_freq <- function(x) {
-  freq <- try(periodicity(x))
-  if ("try-error" %in% class(x)) {
-    return(NA)
-  }
-  toupper(substr(freq$scale, 1, 1))
-}
 
 #' @export
 remove_holding_dup <- function(tbl_hold, id = "Name") {
@@ -319,3 +306,12 @@ check_tbl_hold <- function(tbl_hold) {
     stop("Holdings table not properly specified. Need id, weight, and date")
   }
 }
+
+
+drill_down = function(ac, tbl_hold, layer = 1, latest = TRUE) {
+  
+  
+  
+  
+}
+

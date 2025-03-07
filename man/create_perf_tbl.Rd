@@ -4,7 +4,7 @@
 \alias{create_perf_tbl}
 \title{Performance Table}
 \usage{
-create_perf_tbl(rpt, tm10, freq = "M")
+create_perf_tbl(rpt, tm10, freq = "months")
 }
 \arguments{
 \item{rpt}{Reporter Object}

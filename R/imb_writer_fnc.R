@@ -5,7 +5,7 @@
 #' @return flextable with formatted performance stats: alpha, beta, sharpe, TE,
 #'   and up / down capture
 #' @export
-create_perf_tbl <- function(rpt, tm10, freq = "M") {
+create_perf_tbl <- function(rpt, tm10, freq = "months") {
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_start = tm10)
   combo <- combo[[1]]
@@ -38,6 +38,7 @@ create_perf_tbl <- function(rpt, tm10, freq = "M") {
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
     color(i = 1, color = col[4], part = "header") |>
+    color(part = "body", color = "black") |>
     height(0.18, i = 1:nrow(perf_tbl)) |>
     width(j = 1, width = 1.2)
 }
@@ -46,7 +47,7 @@ create_perf_tbl <- function(rpt, tm10, freq = "M") {
 #' @param rpt Reporter Object
 #' @param freq Frequency of returns
 #' @export
-create_trail_perf_tbl <- function(rpt, freq = "M", p_or = NULL, b_or = NULL) {
+create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, b_or = NULL) {
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq)[[1]]
   fund <- combo$p
@@ -106,6 +107,7 @@ create_trail_perf_tbl <- function(rpt, freq = "M", p_or = NULL, b_or = NULL) {
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
     color(i = 1, color = col[4], part = "header") |>
+    color(part = "body", color = "black") |>
     width(1.75, j = 1) |>
     width(0.525, j = 2:ncol(cr)) |>
     height(0.18, i = 1:nrow(cr)) |> 
@@ -142,7 +144,7 @@ create_char_tbl <- function(rpt) {
 #' @param p_or portfolio return override
 #' @param b_or benchmark return override
 #' @export
-create_wealth_cht <- function(rpt, tm10, freq = "M", p_or = NULL, b_or = NULL) {
+create_wealth_cht <- function(rpt, tm10, freq = "months", p_or = NULL, b_or = NULL) {
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_start = tm10)[[1]]
   fund <- combo$p
@@ -180,7 +182,7 @@ create_wealth_cht <- function(rpt, tm10, freq = "M", p_or = NULL, b_or = NULL) {
 }
 
 #' @export
-create_capm_cht <- function(rpt, tm10, freq = "M", funds = TRUE,
+create_capm_cht <- function(rpt, tm10, freq = "months", funds = TRUE,
                             adj_scale = TRUE, legend_loc = "right") {
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_start = tm10)[[1]]
@@ -365,6 +367,7 @@ create_alloc_tbl <- function(dict, col) {
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
     color(i = 1, color = col[4], part = "header") |>
+    color(part = "body", color = "black") |>
     height(0.025, i = 1:nrow(tbl)) |>
     line_spacing(space = 0.5) |>
     line_spacing(space = 0.75, i = 1) |>
@@ -381,6 +384,7 @@ create_descr_tbl <- function(descr, col) {
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
     color(i = 1, color = col[4], part = "header") |>
+    color(part = "body", color = "black") |>
     width(j = 1, width = 4.25) |>
     border_remove()
 }
@@ -449,7 +453,7 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10,
   
   bar_cht_opt <- bar_cht_opt[1]
   col <- rpt$col
-  set_flextable_defaults(font.size = 8)
+  set_flextable_defaults(font.size = 8, font.color = "black")
   dtc_name <- rpt$port[[1]]$name
   dict <- dict[dict$Page == dtc_name, ]
   if (nrow(dict) == 0) {
@@ -545,7 +549,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   
   col <- rpt$col
   pie_type <- pie_type[1]
-  set_flextable_defaults(font.size = 8)
+  set_flextable_defaults(font.size = 8, font.color = "black")
   dtc_name <- rpt$port[[1]]$name
   dict <- dict[dict$Page == dtc_name, ]
   if (nrow(dict) == 0) {
@@ -706,7 +710,7 @@ write_multi_strat <- function(pres, rpt, dict, descr, locater,
   colnames(cash_plus_2) <- "Cash + 2%"
   cash_plus_2 <- change_freq(cash_plus_2)
   col <- rpt$col
-  set_flextable_defaults(font.size = 8)
+  set_flextable_defaults(font.size = 8, font.color = "black")
   dtc_name <- rpt$port[[1]]$name
   dict <- dict[dict$Page == dtc_name, ]
   if (nrow(dict) == 0) {
@@ -772,7 +776,7 @@ write_pdf <- function(pres, rpt, dict, descr, locater,
   colnames(cash_plus) <- "Cash + 4%"
   cash_plus <- change_freq(cash_plus)
   col <- rpt$col
-  set_flextable_defaults(font.size = 8)
+  set_flextable_defaults(font.size = 8, font.color = "black")
   dtc_name <- rpt$port[[1]]$name
   dict <- dict[dict$Page == dtc_name, ]
   if (nrow(dict) == 0) {

@@ -16,13 +16,15 @@ Download and store holdings and price time-series data in s3 from various
 
 \item{\code{ac}}{ArcticDB object store}
 
-\item{\code{tbl_msl}}{master security list: table of meta data for all investments}
+\item{\code{tbl_msl}}{master security list: table of meta data for all 
+investments}
 
 \item{\code{tbl_cust}}{custodian list: table of meta data for CTFs and SMAs}
 
 \item{\code{tbl_sec}}{SEC list: table of meta data for mutual funds and ETFs}
 
-\item{\code{tbl_xl_mod}}{excel model list: table of meta data for model portfolios}
+\item{\code{tbl_xl_mod}}{excel model list: table of meta data for model 
+portfolios}
 
 \item{\code{tbl_hold_field}}{holdings fields: table of fields / columns for
 holdings data}
@@ -48,6 +50,7 @@ holdings data}
 \item \href{#method-Database-ret_backfill}{\code{Database$ret_backfill()}}
 \item \href{#method-Database-run_backfill}{\code{Database$run_backfill()}}
 \item \href{#method-Database-ret_model}{\code{Database$ret_model()}}
+\item \href{#method-Database-ret_stock}{\code{Database$ret_stock()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
@@ -73,8 +76,8 @@ Create a db object
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{api_keys}}{list of api keys or `.RData` file location to load the list
-of keys}
+\item{\code{api_keys}}{list of api keys or `.RData` file location to load the 
+list of keys}
 
 \item{\code{py_loc}}{optional file path where python is installed to be used
 with `reticulate`}
@@ -352,6 +355,20 @@ to update all models}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_stock"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_stock}{}}}
+\subsection{Method \code{ret_stock()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_stock(
+  ids = NULL,
+  date_start = NULL,
+  date_end = Sys.Date(),
+  freq = "D"
+)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-read_ret"></a>}}

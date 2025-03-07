@@ -4,7 +4,7 @@
 \alias{create_wealth_cht}
 \title{Create Cumulative Return Chart}
 \usage{
-create_wealth_cht(rpt, tm10, freq = "M", p_or = NULL, b_or = NULL)
+create_wealth_cht(rpt, tm10, freq = "months", p_or = NULL, b_or = NULL)
 }
 \arguments{
 \item{rpt}{Reporter Object}
