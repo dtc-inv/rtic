@@ -30,6 +30,7 @@ Structure to wrangle portfolios and an optional benchmark into reports
 \item \href{#method-Reporter-country_summ}{\code{Reporter$country_summ()}}
 \item \href{#method-Reporter-cat_summ}{\code{Reporter$cat_summ()}}
 \item \href{#method-Reporter-fina_summ}{\code{Reporter$fina_summ()}}
+\item \href{#method-Reporter-macro_sel}{\code{Reporter$macro_sel()}}
 \item \href{#method-Reporter-ret_combo}{\code{Reporter$ret_combo()}}
 \item \href{#method-Reporter-clone}{\code{Reporter$clone()}}
 }
@@ -154,6 +155,15 @@ Financial data summary: PE, PB, PFCF, and DY
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Reporter-macro_sel"></a>}}
+\if{latex}{\out{\hypertarget{method-Reporter-macro_sel}{}}}
+\subsection{Method \code{macro_sel()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Reporter$macro_sel(is_us = TRUE, layer = 1)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-ret_combo"></a>}}

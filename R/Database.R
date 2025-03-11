@@ -550,6 +550,14 @@ Database <- R6::R6Class(
 
     },
 
+    #' HFRI Return index from csv file
+    ret_hfr_index = function(file_nm) {
+      dat <- read_hfr_csv(file_nm)
+      dat <- dat / 100
+      lib <- self$ac$get_library("returns")
+      lib$write("hfr-index", xts_to_arc(dat))
+    },
+    
     # read returns ----
     #' @description Read Returns by ids
     #' @param ids ids to read in, search in order of Ticker, Cusip, Sedol,

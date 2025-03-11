@@ -199,6 +199,22 @@ Reporter <- R6::R6Class(
       return(res)
     },
     
+    macro_sel = function(is_us = TRUE, layer = 1) {
+      res <- data.frame(Rank = 1:10)
+      lib <- self$ac$get_library("ps-macro")
+      if (is_us) {
+        macro <- lib$read("macro_sel_r3")$data  
+      } else {
+        macro <- lib$read("macro_sel_acwi")$data
+      }
+      for (i in 1:length(self$port)) {
+        port <- self$port[[i]]$clone()
+        port$drill_down()
+        x <- left_merge(port$tbl_hold, macro, match_by = "Ticker")
+        x <- pivot_longer(x$inter[, c("CapWgt", "Layer2")])
+      }
+    },
+    
     # returns ----
     
     #' @description Clean and lineup portfolio, benchmark, asset, and rf returns

@@ -319,43 +319,6 @@ eq_style_mat <- function() {
   )
 }
 
-#' @title Handle combing and cleaning asset, rf, and benchmarks
-#' @param x xts object of asset(s)
-#' @param b xts object of benchmark(s)
-#' @param rf optional xts object of risk-free
-#' @details
-#'   Utility function to handle common task of needing to line up asset, bench,
-#'   and rf returns. Function will truncate all time-series based on common
-#'   start and end dates, and will clean returns and remove missing columns if
-#'   NAs exceed 5% threshold.
-#' @export
-clean_asset_bench_rf <- function(x, b, rf = NULL) {
-  combo <- xts_cbind_inter(x, b)
-  if (!is.null(colnames(combo$miss_ret))) {
-    if (colnames(combo$miss_ret) == colnames(b)) {
-      stop('benchmark is missing')
-    }
-  }
-  if (!is.null(rf)) {
-    combo <- xts_cbind_inter(combo$ret, rf)
-    if (!is.null(colnames(combo$miss_ret))) {
-      if (colnames(combo$miss_ret) == colnames(rf)) {
-        stop('rf is missing')
-      }
-    }
-  }
-
-  res <- list()
-  if (!is.null(rf)) {
-    res$rf <- combo$ret[, colnames(combo$ret) %in% colnames(rf)]
-  } else {
-    res$rf <- NULL
-  }
-  res$b <- combo$ret[, colnames(combo$ret) %in% colnames(b)]
-  res$x <- combo$ret[, colnames(combo$ret) %in% colnames(x)]
-  return(res)
-}
-
 #' @export
 clean_ret_const <- function(x, a = 0) {
   x[is.na(x)] <- a

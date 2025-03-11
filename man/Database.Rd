@@ -51,6 +51,7 @@ holdings data}
 \item \href{#method-Database-run_backfill}{\code{Database$run_backfill()}}
 \item \href{#method-Database-ret_model}{\code{Database$ret_model()}}
 \item \href{#method-Database-ret_stock}{\code{Database$ret_stock()}}
+\item \href{#method-Database-ret_hfr_index}{\code{Database$ret_hfr_index()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
@@ -351,7 +352,8 @@ Update returns of models
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{dtc_name}}{option to specify specific models to update, leave NULL
-to update all models}
+  to update all models
+HFRI Return index from csv file}
 }
 \if{html}{\out{</div>}}
 }
@@ -367,6 +369,15 @@ to update all models}
   date_end = Sys.Date(),
   freq = "D"
 )}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_hfr_index"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_hfr_index}{}}}
+\subsection{Method \code{ret_hfr_index()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_hfr_index(file_nm)}\if{html}{\out{</div>}}
 }
 
 }

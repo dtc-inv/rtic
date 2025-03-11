@@ -12,7 +12,8 @@ refresh_bd_key <- function(api_keys, save_to_n = FALSE) {
   bd_key$refresh_token <- tk$access_token
   if (save_to_n) {
     api_keys$bd_key <- bd_key
-    save(api_keys, file = 'N:/Investment Team/DATABASES/MDB/Keys/api_keys.RData')
+    save(api_keys, 
+         file = 'N:/Investment Team/DATABASES/MDB/Keys/api_keys.RData')
   }
   return(bd_key)
 }
@@ -100,16 +101,18 @@ download_sec <- function(long_cik, short_cik, user_email) {
     '&type=',
     doc_type,
     '&dateb=&count=5&scd=filings&search_text=')
-  # SEC requires email as a header for authentication, you don't have to register
-  # email on their site, just need valid email address
+  # SEC requires email as a header for authentication, you don't have to 
+  # register email on their site, just need valid email address
   response <- httr::GET(url, add_headers(`User-Agent` = user_email))
   html_doc <- rvest::read_html(response)
   tbl <- rvest::html_table(html_doc)
   # might need to change which table to target if web design changes
   long_str <- tbl[[3]]$Description[1]
   file_date <- tbl[[3]]$`Filing Date`[1]
-  # need to extract ##-##-## from table cell to target the url of the latest filing
-  num_id <- stringr::str_extract(long_str, '[[:digit:]]+-[[:digit:]]+-[[:digit:]]+')
+  # need to extract ##-##-## from table cell to target the url of the latest 
+  # filing
+  num_id <- stringr::str_extract(long_str, 
+                                 '[[:digit:]]+-[[:digit:]]+-[[:digit:]]+')
   num_str <- gsub('-', '', num_id)
   # now we can target url of latest filing and get the holdings
   url <- paste0('https://www.sec.gov/Archives/edgar/data/',
@@ -192,6 +195,29 @@ download_fs_global_prices <- function(api_keys, ids, date_start, date_end,
     endDate = date_end,
     frequency = freq,
     dividendAdjust = "EXDATE_C",
+    batch = "N"
+  )
+  response <- httr::POST(
+    url, authenticate(username, password), body = request,
+    add_headers(Accept = 'application/json'), encode = 'json')
+  output <- rawToChar(response$content)
+  json <- parse_json(output)
+  return(json)
+}
+
+#' @export
+download_fs_exchange_price <- function(api_keys, ids, date_start, date_end,
+                                       freq = "D") {
+  username <- api_keys$fs$username
+  password <- api_keys$fs$password
+  ids[is.na(ids)] <- ""
+  url <- "https://api.factset.com/content/factset-global-prices/v1/prices"
+  request <- list(
+    ids = as.list(ids),
+    startDate = date_start,
+    endDate = date_end,
+    frequency = freq,
+    fields = list("price"),
     batch = "N"
   )
   response <- httr::POST(
@@ -288,7 +314,7 @@ flatten_fs_formula <- function(json) {
 }
 
 #' @export
-flatten_fs_global_prices <- function(json) {
+flatten_fs_global_prices <- function(json, price = FALSE) {
   if ('status' %in% names(json)) {
     if (json$status == "Bad Request") {
       warning('bad request, returning empty data.frame')
@@ -304,15 +330,27 @@ flatten_fs_global_prices <- function(json) {
   if (is.list(date)) {
     date <- unlist(list_replace_null(date))
   }
-  totalReturn <- sapply(dat, '[[', 'totalReturn')
-  if (is.list(totalReturn)) {
-    totalReturn <- unlist(list_replace_null(totalReturn))
+  if (price) {
+    price <- sapply(dat, '[[', "price")
+    if (is.list(price)) {
+      price <- unlist(list_replace_null(price))
+    }
+    df <- data.frame(
+      RequestId = requestId,
+      Date = date,
+      Price = price
+    )
+  } else {
+    totalReturn <- sapply(dat, '[[', 'totalReturn')
+    if (is.list(totalReturn)) {
+      totalReturn <- unlist(list_replace_null(totalReturn))
+    }
+    df <- data.frame(
+      RequestId = requestId,
+      Date = date,
+      TotalReturn = totalReturn
+    )
   }
-  df <- data.frame(
-    RequestId = requestId,
-    Date = date,
-    TotalReturn = totalReturn
-  )
   return(df)
 }
 
@@ -322,5 +360,22 @@ read_private_xts <- function(file_nm, field_nm) {
   r <- dataframe_to_xts(xdf)
   r <- r$`Return*`
   colnames(r) <- field_nm
+  return(r)
+}
+
+#' @title Read HFR Returns CSV Export
+#' @param file_nm file name of csv file, e.g., 
+#'   "C:/users/asotolongo/Downloads/HFRI Indices.csv"
+#' @return xts object of returns
+#' @export
+read_hfr_csv <- function(file_nm) {
+  dat <- read.csv(file_nm)
+  dt <- colnames(dat)[8:ncol(dat)]
+  dt <- gsub("X", "", dt)
+  dt <- paste0(dt, ".01")
+  dt <- as.Date(dt, format = "%Y.%m.%d")
+  dt <- eo_month(dt)
+  r <- xts(t(dat[, 8:ncol(dat)]), dt)
+  colnames(r) <- dat$FUND_NAME
   return(r)
 }
