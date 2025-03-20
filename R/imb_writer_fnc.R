@@ -48,8 +48,9 @@ create_perf_tbl <- function(rpt, tm10, freq = "months") {
 #' @param freq Frequency of returns
 #' @export
 create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, b_or = NULL) {
+  dt <- eom_cal_perf_dt()[-1]
   col <- rpt$col
-  combo <- rpt$ret_combo(freq = freq)[[1]]
+  combo <- rpt$ret_combo(freq = freq, date_end = dt[1])[[1]]
   fund <- combo$p
   bench <- combo$b
   rf <- combo$rf
@@ -59,7 +60,6 @@ create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, b_or = NULL
   if (!is.null(b_or)) {
     bench <- cut_time(b_or, zoo::index(bench)[1], zoo::index(bench)[nrow(bench)])
   }
-  dt <- eom_cal_perf_dt()[-1]
   cr <- matrix(nrow = 2, ncol = length(dt))
   for (i in 1:length(dt)) {
     if (i >= 3) {

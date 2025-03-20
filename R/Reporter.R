@@ -15,7 +15,8 @@ Reporter <- R6::R6Class(
     ac = NULL,
     #' @field rf risk-free time-series
     rf = NULL,
-    #' @field col vector of colors for charts, leave NULL for standard DTC colors
+    #' @field col vector of colors for charts, leave NULL for standard DTC 
+    #' colors
     col = NULL,
     
     #' @description Create Reporter object

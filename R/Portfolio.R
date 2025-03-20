@@ -27,7 +27,7 @@ Portfolio <- R6::R6Class(
     #' @param tbl_hold holdings table, see details
     #' @param name portfolio name
     #' @param tr_id track record id
-    #' @details tbl_hold is gathered with the Database Object method $get_hold().
+    #' @details tbl_hold is gathered with the Database Object method $get_hold()
     initialize = function(ac, tbl_hold, name = NULL, tr_id = NULL) {
       if (is.null(name)) {
         name <- "Port"
