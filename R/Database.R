@@ -376,7 +376,7 @@ Database <- R6::R6Class(
     
     #' @description execute backfill
     #' @param dtc_name name of return to backfill
-    run_backfill = function(dtc_name) {
+    run_backfill = function() {
       lib_mt <- self$ac$get_library("meta-tables")
       ret_meta <- lib_mt$read("ret-meta")$data
       lib <- self$ac$get_library("returns")

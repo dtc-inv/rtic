@@ -369,7 +369,7 @@ run_cluster <- function(ret, k_group) {
 }
 
 #' @export
-eom_cal_perf_dt <- function(as_of = NULL) {
+eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   if (is.null(as_of)) {
     as_of <- lubridate::floor_date(Sys.Date(), "months") - 1
   }
@@ -382,6 +382,9 @@ eom_cal_perf_dt <- function(as_of = NULL) {
     as_of - years(5),
     as_of - years(10)
   )
+  if (eom) {
+    dt <- eo_month(ceiling_date(dt, "months"))
+  }
   names(dt) <- c("As of", "1 Mo", "3 Mo", "1 Yr", "3 Yr", "5 Yr", "10 Yr")
   return(dt)
 }

@@ -163,6 +163,8 @@ create_wealth_cht <- function(rpt, tm10, freq = "months", p_or = NULL, b_or = NU
   viz_wealth_index(dat) +
     scale_color_manual(values = col[c(1, 4)]) +
     xlab("") + labs(title = "CUMULATIVE PERFORMANCE") + 
+    guides(color = guide_legend(nrow = 2, keyheight = 5, 
+                                default.unit = "pt")) +
     theme(
       plot.title = element_text(
         family = "La Gioconda TT", 
@@ -249,6 +251,11 @@ create_capm_cht <- function(rpt, tm10, freq = "months", funds = TRUE,
     res <- res + 
       scale_x_continuous(limits = c(x_min, x_max), labels = scales::percent) +
       scale_y_continuous(limits = c(y_min, y_max), labels = scales::percent)
+  }
+  if (legend_loc == "bottom") {
+    res <- res +
+      guides(color = guide_legend(nrow = 2, keyheight = 5, 
+                                  default.unit = "pt"))
   }
   return(res)
 }
@@ -545,7 +552,8 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10,
 #' @export
 write_bond <- function(pres, rpt, dict, descr, locater,
                        slide_title, tm10,
-                       pie_type = c("Quality", "Sector")) {
+                       pie_type = c("Quality", "Sector"),
+                       is_ctf = FALSE) {
   
   col <- rpt$col
   pie_type <- pie_type[1]
@@ -644,6 +652,12 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   
   descr_tbl <- create_descr_tbl(descr, col)
   
+  if (is_ctf) {
+    descr_top <- 0.5
+  } else {
+    descr_top <- locater$descr_tbl["top"]
+  }
+  
   pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
     ph_with(
@@ -695,7 +709,19 @@ write_bond <- function(pres, rpt, dict, descr, locater,
       descr_tbl, 
       ph_location(
         left = locater$descr_tbl["left"], 
-        top = locater$descr_tbl["top"]))
+        top = descr_top))
+  
+  if (is_ctf) {
+    alloc_tbl <- create_alloc_tbl(dict, col)
+    pres <- ph_with(
+      pres,
+      alloc_tbl,
+      ph_location(
+        left = locater$alloct_tbl["left"],
+        top = locater$alloct_tbl["top"],
+        height = locater$alloct_tbl["height"]
+      ))
+  }
   
   return(pres)
 }

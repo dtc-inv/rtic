@@ -35,6 +35,7 @@ write_imb <- function() {
   bond_pos <- locater
   bond_pos$perf_stat_ft <- c(left = 0.34, top = 2.39)
   bond_pos$descr_tbl <- c(left = 0.34, top = 0.92)
+  bond_pos$alloct_tbl = c(left = 0.34, top = 1.67, height = 1)
   bond_pos$sect_cht <- c(left = 2.46, top = 1.97, height = 1.31, width = 4.2)
   bond_pos$char_ft <- c(left = 0.34, top = 4.21)
   bond_pos$wealth_cht <- c(left = 2.56, top = 3.28, height = 2.84, width = 3.36)
@@ -91,6 +92,23 @@ write_imb <- function() {
     slide_title = "Short Duration CTF",
     tm10 = tm10,
     pie_type = "Sector")
+  rm(p1, b, rpt)
+  
+  print("Core Fixed Income")
+  p1 <- db$create_port_from_ids("Core Fixed Income")
+  b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_bond(
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = bond_pos,    
+    slide_title = "Core Fixed Income CTF",
+    tm10 = tm10,
+    pie_type = "Sector",
+    is_ctf = TRUE
+  )
   rm(p1, b, rpt)
   
   print("TCPNX")
