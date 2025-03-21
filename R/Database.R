@@ -89,6 +89,7 @@ Database <- R6::R6Class(
       col_types <- rep("text", 11)
       col_types[3] <- "numeric" 
       dat <- readxl::read_excel(wb, 1, col_types = col_types)
+      self$tbl_msl <- dat
       self$write_msl(dat)
     },
     
@@ -556,6 +557,44 @@ Database <- R6::R6Class(
       dat <- dat / 100
       lib <- self$ac$get_library("returns")
       lib$write("hfr-index", xts_to_arc(dat))
+    },
+    
+    #' @description Update returns that require computational changes
+    ret_function = function() {
+      # cash plus 200 and 400 bps
+      cash <- read_ret("BofAML U.S. Treasury Bill 3M", self$ac)
+      cash_plus_2 <- cash + 0.02 / 252
+      cash_plus_4 <- cash + 0.04 / 252
+      lib <- self$ac$get_library("returns")
+      rec <- lib$read("index")
+      rec$data[, "Cash Plus 200 bps"] <- as.vector(cash_plus_2)
+      rec$data[, "Cash Plus 400 bps"] <- as.vector(cash_plus_4)
+      lib$write("index", rec$data)
+    },
+    
+    ret_fred = function() {
+      dict <- filter(self$tbl_msl, ReturnLibrary == "fred-monthly")
+      lib_meta <- self$ac$get_library("meta-tables")
+      lib_ret <- self$ac$get_library("returns")
+      fred <- lib_meta$read("fred-meta")
+      x <- left_merge(dict, fred$data, match_by = "DtcName")
+      if (nrow(x$miss) > 0) {
+        warning(x$miss$DtcName)
+      }
+      if (nrow(x$inter) == 0) {
+        stop("no fred records found")
+      }
+      dat <- list()
+      for (i in 1:nrow(x$inter)) {
+        dat[[i]] <- download_fred(x$inter$Ticker[i], self$api_keys$fred)
+        if (tolower(x$inter$Type[i]) == "price") {
+          dat[[i]] <- price_to_ret(dat[[i]])
+        } 
+      }
+      r <- do.call(cbind.xts, dat)
+      colnames(r) <- sapply(dat, colnames)
+      r <- xts_eo_month(r)
+      lib_ret$write("fred-monthly", xts_to_arc(r))
     },
     
     # read returns ----
