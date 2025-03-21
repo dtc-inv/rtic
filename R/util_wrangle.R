@@ -63,6 +63,10 @@ read_ret <- function(ids, ac) {
   for (i in 1:length(ret_src)) {
     x_dict <- filter(ids_dict, ReturnLibrary %in% ret_src[i])
     record <- lib_ret$read(ret_src[i], columns = c("Date", x_dict$DtcName))
+    if (ncol(record$data) == 1) {
+      warning(x_dict$DtcName)
+      next
+    }
     res[[i]] <- dataframe_to_xts(record$data)
   }
   if ("monthly" %in% ret_data$Freq) {

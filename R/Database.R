@@ -592,7 +592,10 @@ Database <- R6::R6Class(
         } 
       }
       r <- do.call(cbind.xts, dat)
-      colnames(r) <- sapply(dat, colnames)
+      tix <- sapply(dat, colnames)
+      ix <- match_ids_dtc_name(tix, self$tbl_msl)
+      dtc_name <- self$tbl_msl$DtcName[ix]
+      colnames(r) <- dtc_name
       r <- xts_eo_month(r)
       lib_ret$write("fred-monthly", xts_to_arc(r))
     },
