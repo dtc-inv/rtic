@@ -17,7 +17,8 @@ Structure to wrangle portfolios and an optional benchmark into reports
 
 \item{\code{rf}}{risk-free time-series}
 
-\item{\code{col}}{vector of colors for charts, leave NULL for standard DTC colors}
+\item{\code{col}}{vector of colors for charts, leave NULL for standard DTC 
+colors}
 }
 \if{html}{\out{</div>}}
 }

@@ -315,3 +315,16 @@ check_tbl_hold <- function(tbl_hold) {
 drill_down <- function(ac, tbl_hold, layer = 1, latest = TRUE) {
   
 }
+
+#' @title Get all libraries in ArcticDB
+#' @param ac datastore
+#' @export
+get_all_lib <- function(ac) {
+  all_lib <- ac$list_libraries()
+  res <- list()
+  for (i in 1:length(all_lib)) {
+    res[[i]] <- ac$get_library(all_lib[i])
+  }
+  names(res) <- all_lib
+  return(res)
+}

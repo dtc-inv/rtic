@@ -52,6 +52,8 @@ holdings data}
 \item \href{#method-Database-ret_model}{\code{Database$ret_model()}}
 \item \href{#method-Database-ret_stock}{\code{Database$ret_stock()}}
 \item \href{#method-Database-ret_hfr_index}{\code{Database$ret_hfr_index()}}
+\item \href{#method-Database-ret_function}{\code{Database$ret_function()}}
+\item \href{#method-Database-ret_fred}{\code{Database$ret_fred()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
@@ -328,7 +330,7 @@ read in returns to backfill daily and monthly returns
 \subsection{Method \code{run_backfill()}}{
 execute backfill
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$run_backfill(dtc_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$run_backfill()}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -378,6 +380,25 @@ HFRI Return index from csv file}
 \subsection{Method \code{ret_hfr_index()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_hfr_index(file_nm)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_function"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_function}{}}}
+\subsection{Method \code{ret_function()}}{
+Update returns that require computational changes
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_function()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_fred"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_fred}{}}}
+\subsection{Method \code{ret_fred()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_fred()}\if{html}{\out{</div>}}
 }
 
 }

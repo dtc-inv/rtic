@@ -66,7 +66,7 @@ Create new Portfolio
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-tbl_hold is gathered with the Database Object method $get_hold().
+tbl_hold is gathered with the Database Object method $get_hold()
 }
 
 }

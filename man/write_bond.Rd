@@ -12,7 +12,8 @@ write_bond(
   locater,
   slide_title,
   tm10,
-  pie_type = c("Quality", "Sector")
+  pie_type = c("Quality", "Sector"),
+  is_ctf = FALSE
 )
 }
 \arguments{
