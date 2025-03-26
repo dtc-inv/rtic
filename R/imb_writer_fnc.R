@@ -37,7 +37,7 @@ create_perf_tbl <- function(rpt, tm10, freq = "months") {
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
-    color(i = 1, color = col[4], part = "header") |>
+    color(i = 1, color = col[1], part = "header") |>
     color(part = "body", color = "black") |>
     height(0.18, i = 1:nrow(perf_tbl)) |>
     width(j = 1, width = 1.2)
@@ -106,7 +106,7 @@ create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, b_or = NULL
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
-    color(i = 1, color = col[4], part = "header") |>
+    color(i = 1, color = col[1], part = "header") |>
     color(part = "body", color = "black") |>
     width(1.75, j = 1) |>
     width(0.525, j = 2:ncol(cr)) |>
@@ -132,7 +132,7 @@ create_char_tbl <- function(rpt) {
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
-    color(i = 1, color = col[4], part = "header") |>
+    color(i = 1, color = col[1], part = "header") |>
     height(0.18, i = 1:nrow(char_tbl)) |>
     width(j = 1, width = 1.2)
 }
@@ -168,7 +168,7 @@ create_wealth_cht <- function(rpt, tm10, freq = "months", p_or = NULL, b_or = NU
     theme(
       plot.title = element_text(
         family = "La Gioconda TT", 
-        color = col[4],
+        color = col[1],
         size = 8
       ),
       legend.position = "bottom",
@@ -232,7 +232,7 @@ create_capm_cht <- function(rpt, tm10, freq = "months", funds = TRUE,
       ),
       plot.title = element_text(
         family = "La Gioconda TT", 
-        color = col[4], 
+        color = col[1], 
         size = 8
       ),
       legend.position = legend_loc
@@ -294,7 +294,7 @@ create_sector_cht <- function(rpt) {
           ),
           plot.title = element_text(
             family = "La Gioconda TT", 
-            color = col[4], 
+            color = col[1], 
             size = 8
           ),
           legend.position = "bottom",
@@ -341,7 +341,7 @@ create_country_cht <- function(rpt, lgnd_pos = "bottom") {
           ),
           plot.title = element_text(
             family = "La Gioconda TT", 
-            color = col[4], 
+            color = col[1], 
             size = 8
           ),
           legend.position = lgnd_pos,
@@ -373,7 +373,7 @@ create_alloc_tbl <- function(dict, col) {
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
-    color(i = 1, color = col[4], part = "header") |>
+    color(i = 1, color = col[1], part = "header") |>
     color(part = "body", color = "black") |>
     height(0.025, i = 1:nrow(tbl)) |>
     line_spacing(space = 0.5) |>
@@ -390,7 +390,7 @@ create_descr_tbl <- function(descr, col) {
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
-    color(i = 1, color = col[4], part = "header") |>
+    color(i = 1, color = col[1], part = "header") |>
     color(part = "body", color = "black") |>
     width(j = 1, width = 4.25) |>
     border_remove()
@@ -427,7 +427,7 @@ create_bar_wgt_cht <- function(dict, col, lgnd_pos = "right") {
           ),
           plot.title = element_text(
             family = "La Gioconda TT", 
-            color = col[4], 
+            color = col[1], 
             size = 8
           ),
           legend.position = lgnd_pos,
@@ -586,7 +586,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
     font(part = "header", fontname = "La Gioconda TT") |>
-    color(i = 1, color = col[4], part = "header") |>
+    color(i = 1, color = col[1], part = "header") |>
     height(0.18, i = 1:nrow(char_tbl)) |>
     width(j = 1, width = 1.2)
   
@@ -603,7 +603,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
     theme(
       plot.title = element_text(
         family = "La Gioconda TT", 
-        color = col[4], 
+        color = col[1], 
         size = 8
       ),
       legend.text = element_text(
@@ -627,7 +627,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
       size = 1.75, 
       position = position_dodge(0.9),
       color = "grey40") +
-    xlab("") + ylab("") + labs(title = "QUALTIY", fill = "") +
+    xlab("") + ylab("") + labs(title = "MATURITY", fill = "") +
     theme_minimal() +
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -639,7 +639,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
           ),
           plot.title = element_text(
             family = "La Gioconda TT", 
-            color = col[4], 
+            color = col[1], 
             size = 8
           ),
           legend.position = "none",
