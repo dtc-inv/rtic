@@ -47,7 +47,8 @@ create_perf_tbl <- function(rpt, tm10, freq = "months") {
 #' @param rpt Reporter Object
 #' @param freq Frequency of returns
 #' @export
-create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, b_or = NULL) {
+create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, 
+                                  b_or = NULL) {
   dt <- eom_cal_perf_dt()[-1]
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_end = dt[1])[[1]]
@@ -58,7 +59,8 @@ create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, b_or = NULL
     fund <- cut_time(p_or, zoo::index(fund)[1], zoo::index(fund)[nrow(fund)])
   }
   if (!is.null(b_or)) {
-    bench <- cut_time(b_or, zoo::index(bench)[1], zoo::index(bench)[nrow(bench)])
+    bench <- cut_time(b_or, zoo::index(bench)[1], 
+                      zoo::index(bench)[nrow(bench)])
   }
   cr <- matrix(nrow = 2, ncol = length(dt))
   for (i in 1:length(dt)) {
@@ -144,7 +146,8 @@ create_char_tbl <- function(rpt) {
 #' @param p_or portfolio return override
 #' @param b_or benchmark return override
 #' @export
-create_wealth_cht <- function(rpt, tm10, freq = "months", p_or = NULL, b_or = NULL) {
+create_wealth_cht <- function(rpt, tm10, freq = "months", p_or = NULL, 
+                              b_or = NULL) {
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_start = tm10)[[1]]
   fund <- combo$p
@@ -305,7 +308,8 @@ create_sector_cht <- function(rpt) {
             color = "grey40"
           ),
           legend.key.size = unit(0.2, "in"),
-          legend.text = element_text(size = 6, family = "Source Sans Pro Light"),
+          legend.text = element_text(size = 6, 
+                                     family = "Source Sans Pro Light"),
           legend.box.spacing = unit(-10, "pt"))
 }
 
@@ -352,7 +356,8 @@ create_country_cht <- function(rpt, lgnd_pos = "bottom") {
             color = "grey40"
           ),
           legend.key.size = unit(0.2, "in"),
-          legend.text = element_text(size = 6, family = "Source Sans Pro Light"),
+          legend.text = element_text(size = 6, 
+                                     = "Source Sans Pro Light"),
           legend.box.spacing = unit(-10, "pt"))
 }
 
@@ -368,7 +373,8 @@ create_alloc_tbl <- function(dict, col) {
     tbl <- wgt
     colnames(tbl) <- c("ALLOCATION", "Target Weight")
   }
-  tbl$`Target Weight` <- scales::percent(as.numeric(tbl$`Target Weight`) / 100, 0.1)
+  tbl$`Target Weight` <- scales::percent(as.numeric(tbl$`Target Weight`) / 100, 
+                                         0.1)
   flextable(tbl) |>
     theme_alafoli() |>
     font(part = "body", fontname = "Source Sans Pro Light") |>
@@ -438,7 +444,8 @@ create_bar_wgt_cht <- function(dict, col, lgnd_pos = "right") {
             color = "grey40"
           ),
           legend.key.size = unit(0.2, "in"),
-          legend.text = element_text(size = 6, family = "Source Sans Pro Light"),
+          legend.text = element_text(size = 6, 
+                                     family = "Source Sans Pro Light"),
           legend.box.spacing = unit(-10, "pt"))
 }
 
@@ -580,7 +587,8 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   is_cur <- char_tbl$CHARACTERISTICS %in% "AUM (MMs)"
   is_num <- char_tbl$CHARACTERISTICS %in% "Duration"
   char_tbl[is_per, 2] <- scales::percent(as.numeric(char_tbl[is_per, 2]), 0.01)
-  char_tbl[is_cur, 2] <- scales::number(as.numeric(char_tbl[is_cur, 2]), big.mark = ",")
+  char_tbl[is_cur, 2] <- scales::number(as.numeric(char_tbl[is_cur, 2]), 
+                                        big.mark = ",")
   char_tbl[is_num, 2] <- scales::number(as.numeric(char_tbl[is_num, 2]), 0.1)
   char_ft <- flextable(char_tbl) |>
     theme_alafoli() |>
@@ -593,7 +601,8 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   pie_tbl <- dict[dict$DataType == pie_type, ]
   pie_tbl$Value <- as.numeric(pie_tbl$Value)
   pie_tbl$Label <- scales::percent(pie_tbl$Value / 100, 0.1)
-  pie_cht <- ggplot(pie_tbl, aes(x = "", y = Value, fill = Field, label = Label)) +
+  pie_cht <- ggplot(pie_tbl, aes(x = "", y = Value, fill = Field, label = 
+                                   Label)) +
     geom_bar(stat = "identity", width = 1) +
     coord_polar("y", start = 0) +
     theme_void() +
@@ -619,7 +628,8 @@ write_bond <- function(pres, rpt, dict, descr, locater,
   bar_tbl$Value <- as.numeric(bar_tbl$Value) / 100
   bar_tbl$Lbl <- scales::percent(bar_tbl$Value, 0.1)
   bar_tbl$Field <- factor(bar_tbl$Field, unique(bar_tbl$Field))
-  sect_cht <- ggplot(bar_tbl, aes(x = Field, y = Value, label = Lbl, fill = Field)) +
+  sect_cht <- ggplot(bar_tbl, aes(x = Field, y = Value, label = Lbl, 
+                                  fill = Field)) +
     geom_bar(stat = "identity", position = "dodge") +
     scale_fill_manual(values = c(col, "grey", "seagreen", "brown")) +
     geom_text(

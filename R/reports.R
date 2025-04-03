@@ -389,6 +389,8 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   return(dt)
 }
 
-trailing_perf <- function(x, b) {
-
+ctf_daily_est <- function(ac, dtc_name, update_hold = TRUE) {
+  if (update_hold) {
+    
+  }
 }

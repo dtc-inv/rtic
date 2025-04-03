@@ -328,3 +328,24 @@ get_all_lib <- function(ac) {
   names(res) <- all_lib
   return(res)
 }
+
+#' @title Read underlying holdings
+#' @param ac ArcticDB structure
+#' @param dtc_name dtc id of security, string
+#' @param latest boolean default is TRUE for only return most recent holdings,
+#'   FALSE will return a time-series of holdings over time
+#' @return data.frame with holdings values, weights, and meta-data
+#' @export
+read_hold <- function(ac, dtc_name, latest = TRUE) {
+  lib <- ac$get_library("holdings")
+  if (!dtc_name %in% lib$list_symbols()) {
+    warning(paste0(dtc_name, " not found in holdings library. Returning
+                       list of symbols available in library."))
+    return(sort(lib$list_symbols()))
+  }
+  tbl_hold <- lib$read(dtc_name)$data
+  if (latest) {
+    tbl_hold <- latest_holdings(tbl_hold)
+  }
+  return(tbl_hold)
+}
