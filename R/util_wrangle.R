@@ -349,3 +349,23 @@ read_hold <- function(ac, dtc_name, latest = TRUE) {
   }
   return(tbl_hold)
 }
+
+#' @title Merge MSL with holdings table
+#' @param tbl_hold data.frame with portfolio holdings
+#' @param tbl_msl master security list (data.frame)
+#' @return list with union, intersection, and missing tables
+#' @export 
+merge_msl <- function(tbl_hold, tbl_msl) {
+  res <- left_merge(
+    x = tbl_hold,
+    y = tbl_msl,
+    match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
+                 "Identifier")
+  )
+  is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
+  if (any(is_dup)) {
+    warning("duplicate dates found, removing")
+    res$inter <- res$inter[!is_dup, ]
+  }
+  return(res)
+}

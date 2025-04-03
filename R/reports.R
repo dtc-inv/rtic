@@ -389,8 +389,9 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   return(dt)
 }
 
-ctf_daily_est <- function(ac, dtc_name, update_hold = TRUE) {
-  if (update_hold) {
-    
-  }
+ctf_daily_est <- function(ac, dtc_name, sum_to_1) {
+  tbl_hold <- read_hold(ac, dtc_name)
+  p <- Portfolio$new(ac, tbl_hold)
+  p$init_rebal("D")
+  
 }

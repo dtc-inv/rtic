@@ -546,9 +546,11 @@ Database <- R6::R6Class(
       xdf$DtcName <- dtc_name
       is_dup <- duplicated(paste0(xdf$DtcName, xdf$Date))
       xdf <- xdf[!is_dup, ]
+      xdf$TotalReturn <- xdf$TotalReturn / 100
       new_dat <- pivot_wider(xdf, id_cols = Date, values_from = TotalReturn,
                              names_from = DtcName)
-
+      combo <- xts_rbind(new_dat, old_dat, FALSE, TRUE)
+      lib$write("stock", xts_to_arc(combo))
     },
 
     #' HFRI Return index from csv file

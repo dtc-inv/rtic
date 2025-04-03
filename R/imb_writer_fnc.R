@@ -357,7 +357,7 @@ create_country_cht <- function(rpt, lgnd_pos = "bottom") {
           ),
           legend.key.size = unit(0.2, "in"),
           legend.text = element_text(size = 6, 
-                                     = "Source Sans Pro Light"),
+                                     family = "Source Sans Pro Light"),
           legend.box.spacing = unit(-10, "pt"))
 }
 
