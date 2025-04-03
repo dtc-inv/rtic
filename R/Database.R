@@ -186,7 +186,7 @@ Database <- R6::R6Class(
           res[[i]] <- dat
         }
       }
-      dtc_name <- filter(self$tbl_msl, Ticker %in% ids)$DtcName[!is_miss]
+      dtc_name <- filter(self$tbl_msl, Ticker %in% na.omit(ids))$DtcName[!is_miss]
       dtc_name <- na.omit(dtc_name)
       ret <- do.call("cbind", res)
       colnames(ret) <- dtc_name
