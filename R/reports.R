@@ -392,6 +392,6 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
 ctf_daily_est <- function(ac, dtc_name, sum_to_1) {
   tbl_hold <- read_hold(ac, dtc_name)
   p <- Portfolio$new(ac, tbl_hold)
-  p$init_rebal("D")
-  
+  p$init_rebal("D", "D")
+  p$rebal$rebal_ret[nrow(p$rebal$rebal_ret)]
 }

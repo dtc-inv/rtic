@@ -321,7 +321,7 @@ Database <- R6::R6Class(
     #' @param t_minus_m integer to indicate how many months back to download new
     #'   data from
     ret_ctf_monthly = function(ids = NULL, t_minus_m = 1) {
-      tbl_msl <- read_msl(db$ac)
+      tbl_msl <- self$tbl_msl
       if (is.null(ids)) {
         ctf <- filter(tbl_msl, ReturnLibrary == "ctf")
         ids <- ctf$Isin
