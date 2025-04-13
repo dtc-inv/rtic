@@ -12,8 +12,6 @@ Download and store holdings and price time-series data in s3 from various
 \describe{
 \item{\code{api_keys}}{of api keys}
 
-\item{\code{bucket}}{aws s3 bucket}
-
 \item{\code{ac}}{ArcticDB object store}
 
 \item{\code{tbl_msl}}{master security list: table of meta data for all 
