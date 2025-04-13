@@ -9,8 +9,6 @@ Database <- R6::R6Class(
   public = list(
     #' @field api_keys of api keys
     api_keys = NULL,
-    #' @field bucket aws s3 bucket
-    bucket = NULL,
     #' @field ac ArcticDB object store
     ac = NULL,
     #' @field tbl_msl master security list: table of meta data for all 
@@ -45,21 +43,7 @@ Database <- R6::R6Class(
       }
       self$check_api_keys(api_keys)
       self$api_keys <- api_keys
-      bucket <- arrow::s3_bucket(
-        "dtc-inv",
-        access_key = api_keys$s3$access_key,
-        secret_key = api_keys$s3$secret_key
-      )
-      use_python(py_loc)
-      adb <- import("arcticdb")
-      base_url <- 's3://s3.us-east-1.amazonaws.com:dtc-rtic?'
-      s3_url <- paste0(
-        base_url,
-        "access=", api_keys$s3$access_key,
-        "&secret=", api_keys$s3$secret_key
-      )
-      ac <- adb$Arctic(s3_url)
-      self$bucket <- bucket
+      ac <- create_arctic(api_keys, py_loc = py_loc)
       self$ac <- ac
       lib <- ac$get_library("meta-tables")
       self$tbl_msl <- lib$read("msl")$data

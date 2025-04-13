@@ -16,12 +16,20 @@ create_arctic <- function(api_keys = NULL, py_loc = NULL, s3_name = "dtc-rtic")
       load(api_keys)
     }
   }
+  if (Sys.info()[["user"]] == "rstudio") {
+    if (is.null(py_loc)) {
+      py_loc <- "/usr/bin/python3"
+    }
+    use_python(py_loc)
+  }
   adb <- try(import("arcticdb"))
   if ("try-error" %in% class(adb)) {
     if (Sys.info()[["sysname"]] == "Windows") {
       user <- Sys.info()[["user"]]
-      py_loc <- paste0("C:/Users/" , user, 
-                       "/AppData/Local/anaconda3/")
+      if (is.null(py_loc)) {
+        py_loc <- paste0("C:/Users/" , user, 
+                         "/AppData/Local/anaconda3/")
+      }
       use_python(py_loc)
       adb <- import("arcticdb")
     }
