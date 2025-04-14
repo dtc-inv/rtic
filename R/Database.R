@@ -719,6 +719,34 @@ Database <- R6::R6Class(
       }
     },
     
+    hold_cust_backfill = function(dtc_name, date_start, freq = "days") {
+      freq <- check_freq(freq)
+      date_start <- as.Date(date_start)
+      if (freq == "days") {
+        dt <- us_trading_days(date_start, last_us_trading_day())
+      } else if (freq == "months") {
+        date_start <- eo_month(date_start)
+        dt <- seq.Date(date_start, last_us_trading_day(), by = "months")
+        dt[2:length(dt)] <- eo_month(dt[2:length(dt)] - 10)
+      } else {
+        stop("freq only supported for days or months")
+      }
+      xdf <- data.frame()
+      cust <- self$tbl_cust
+      rec <- filter(cust, DtcName == dtc_name)
+      for (i in 1:length(dt)) {
+        x <- try(download_bd(rec$BdAccountId, self$api_keys, as_of = dt[i]))
+        if ("try-error" %in% class(x)) {
+          warning(dt[i])
+          next
+        }
+        print(dt[i])
+        xdf <- rbind(xdf, x)
+      }
+      lib <- self$ac$get_library("holdings")
+      lib$write(dtc_name, xdf)
+    }
+    
     hold_model = function(dtc_name, tbl_hold = NULL, xl_file = NULL, 
                           sum_to_1 = TRUE) {
       if (!is.null(xl_file)) {
