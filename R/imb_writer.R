@@ -56,6 +56,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("BofAML Municipals 1-2 Yr") 
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -70,6 +71,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("BofAML Municipals 1-12 Yr")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -84,6 +86,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("BofAML U.S. Treasuries 1-3 Yr")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -99,6 +102,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -116,6 +120,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -132,6 +137,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("BofAML Municipals 1-12 Yr")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -147,6 +153,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -163,6 +170,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("S&P / LSTA Leveraged Loan")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -179,6 +187,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("Bloomberg Barclays U.S. Aggregate")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -195,6 +204,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("Bloomberg Barclays U.S. TIPS 0-5 Yr")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -211,6 +221,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("Bloomberg Barclays U.S. Treasury 20+ Yr")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_bond(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -229,6 +240,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_equity(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -244,6 +256,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_equity(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -259,6 +272,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_equity(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -274,6 +288,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("IWV", tr_id = "Russell 3000")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_equity(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -289,6 +304,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("ACWX", tr_id = "MSCI ACWI ex US")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_equity(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -305,6 +321,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("ACWX", tr_id = "MSCI ACWI ex US")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_equity(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -321,6 +338,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("MSCI ACWI")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_multi_strat(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -336,6 +354,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("MSCI ACWI")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_multi_strat(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -351,6 +370,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("MSCI ACWI")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_pdf(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,
@@ -366,6 +386,7 @@ write_imb <- function() {
   b <- db$create_port_from_ids("MSCI ACWI")
   rpt <- Reporter$new(list(p1), b)
   pres <- write_pdf(
+    as_of = as_of,
     pres = pres,
     rpt = rpt,
     dict = res$dict,

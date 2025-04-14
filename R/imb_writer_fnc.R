@@ -462,7 +462,7 @@ create_bar_wgt_cht <- function(dict, col, lgnd_pos = "right") {
 #' @param bar_cht_opt option for bar chart: sector or region
 #' @return pres with added slide
 #' @export
-write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10,
+write_equity <- function(as_of, pres, rpt, dict, descr, locater, slide_title, tm10,
                          bar_cht_opt = c("sector", "region")) {
   
   bar_cht_opt <- bar_cht_opt[1]
@@ -539,7 +539,11 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10,
       descr_tbl, 
       ph_location(
         left = locater$descr_tbl["left"], 
-        top = locater$descr_tbl["top"]))
+        top = locater$descr_tbl["top"])) |>
+    ph_with(
+      format(as_of, "%B %Y"),
+      ph_location_label("Text Placeholder 3")
+    )
   
   return(pres)
 }
@@ -557,7 +561,7 @@ write_equity <- function(pres, rpt, dict, descr, locater, slide_title, tm10,
 #' @param pie_type plot quality or sector pie chart
 #' @return pres with added slide
 #' @export
-write_bond <- function(pres, rpt, dict, descr, locater,
+write_bond <- function(as_of, pres, rpt, dict, descr, locater,
                        slide_title, tm10,
                        pie_type = c("Quality", "Sector"),
                        is_ctf = FALSE) {
@@ -719,7 +723,11 @@ write_bond <- function(pres, rpt, dict, descr, locater,
       descr_tbl, 
       ph_location(
         left = locater$descr_tbl["left"], 
-        top = descr_top))
+        top = descr_top)) |>
+    ph_with(
+      format(as_of, "%B %Y"),
+      ph_location_label("Text Placeholder 3")
+    )
   
   if (is_ctf) {
     alloc_tbl <- create_alloc_tbl(dict, col)
@@ -739,7 +747,7 @@ write_bond <- function(pres, rpt, dict, descr, locater,
 # multi-strat ----
 
 #' @export
-write_multi_strat <- function(pres, rpt, dict, descr, locater,
+write_multi_strat <- function(as_of, pres, rpt, dict, descr, locater,
                               slide_title, tm10) {
   
   cash_plus_2 <- rpt$rf + 0.02 / 252
@@ -799,13 +807,16 @@ write_multi_strat <- function(pres, rpt, dict, descr, locater,
       descr_tbl, 
       ph_location(
         left = locater$descr_tbl["left"], 
-        top = locater$descr_tbl["top"]))
+        top = locater$descr_tbl["top"])) |>
+    ph_with(
+      format(as_of, "%B %Y"),
+      ph_location_label("Text Placeholder 3"))
   
   return(pres)
 }
 
 #' @export
-write_pdf <- function(pres, rpt, dict, descr, locater,
+write_pdf <- function(as_of, pres, rpt, dict, descr, locater,
                               slide_title, tm10, lgnd_pos = "bottom") {
   
   cash_plus <- rpt$rf + 0.04 / 252
@@ -867,7 +878,10 @@ write_pdf <- function(pres, rpt, dict, descr, locater,
       descr_tbl, 
       ph_location(
         left = locater$descr_tbl["left"], 
-        top = locater$descr_tbl["top"]))
+        top = locater$descr_tbl["top"])) |>
+    ph_with(
+      format(as_of, "%B %Y"),
+      ph_location_label("Text Placeholder 3"))
   
   return(pres)
 }
