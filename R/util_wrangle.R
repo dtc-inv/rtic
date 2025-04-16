@@ -75,14 +75,16 @@ read_ret <- function(ids, ac) {
     }
   }
   if (length(res) == 1) {
-    return(res[[1]])
+    ret <- res[[1]]
   } else {
     ret <- do.call("cbind", res)
     nm <- unlist(lapply(res, colnames))
     colnames(ret) <- nm
-    
-    return(ret)
   }
+  ix <- match_ids_dtc_name(ids, tbl_msl)
+  dtc_name <- tbl_msl$DtcName[na.omit(ix)]  
+  ret <- ret[, dtc_name]
+  return(ret)
 }
 
 #' @title Space Out ids in multiple iterations

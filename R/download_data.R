@@ -175,7 +175,7 @@ download_sec <- function(long_cik, short_cik, user_email) {
   return(xdf)
 }
 
-#' @title Factset Global Prices API
+#' @title Factset Global Prices API for total returns
 #' @param api_keys list of api keys
 #' @param ids character vector of ids to download
 #' @param date_start begginig date, earliest start is 2006-01-03
@@ -205,6 +205,13 @@ download_fs_global_prices <- function(api_keys, ids, date_start, date_end,
   return(json)
 }
 
+#' @title Factset Global Prices API for End of Day Prices
+#' @param api_keys list of api keys
+#' @param ids character vector of ids to download
+#' @param date_start begginig date, earliest start is 2006-01-03
+#' @param date_end ending date
+#' @param freq "D", or "M" for daily or monthly time-series
+#' @return json with data
 #' @export
 download_fs_exchange_price <- function(api_keys, ids, date_start, date_end,
                                        freq = "D") {
@@ -226,6 +233,18 @@ download_fs_exchange_price <- function(api_keys, ids, date_start, date_end,
   output <- rawToChar(response$content)
   json <- parse_json(output)
   return(json)
+}
+
+#' @title Download Last Business Day Price
+#' @param api_keys list of api keys
+#' @param ids character vector of ids to download
+#' @param as_of leave NULL for last trading day or specify as_of date for price
+#' @return data.frame with prices
+#' @export 
+download_latest_price <- function(api_keys, ids, as_of = NULL) {
+  as_of <- last_us_trading_day(as_of)
+  json <- download_fs_exchange_price(api_keys, ids, as_of, as_of)
+  flatten_fs_global_prices(json, TRUE)
 }
 
 #' @title Factset Formula API: RA_RET

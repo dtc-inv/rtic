@@ -506,6 +506,11 @@ Database <- R6::R6Class(
       if (is.null(ids)) {
         stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
         ids <- create_ids(stock)
+      } else {
+        ix <- match_ids_dtc_name(ids, self$tbl_msl)
+        if (any(is.na(ix))) {
+          stop("ids missing from MSL")
+        }
       }
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("stock")$data
@@ -745,7 +750,7 @@ Database <- R6::R6Class(
       }
       lib <- self$ac$get_library("holdings")
       lib$write(dtc_name, xdf)
-    }
+    },
     
     hold_model = function(dtc_name, tbl_hold = NULL, xl_file = NULL, 
                           sum_to_1 = TRUE) {
