@@ -51,3 +51,16 @@ f_percent <- function(x, d) {
 f_num <- function(x, d) {
   as.character(round(x, d))
 }
+
+#' @title Convert to trading day
+#' @export
+as_trading_day <- function(dates, t_minus = 0) {
+  yrs <- lubridate::year(dates)
+  min_year <- min(yrs) - 1
+  max_year <- max(yrs) + 1
+  bizdays::create.calendar(
+    "cal", 
+    holidays = timeDate::holidayNYSE(min_year:max_year),
+    weekdays = c("saturday", "sunday"))
+  bizdays::adjust.previous(dates - t_minus, "cal")
+}

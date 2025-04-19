@@ -5,6 +5,7 @@
 \title{Write IMB Equity Slide}
 \usage{
 write_equity(
+  as_of,
   pres,
   rpt,
   dict,

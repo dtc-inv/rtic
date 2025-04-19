@@ -724,21 +724,27 @@ Database <- R6::R6Class(
       }
     },
     
-    hold_cust_backfill = function(dtc_name, date_start, freq = "days") {
+    hold_cust_backfill = function(dtc_name, date_start, freq = "months") {
       freq <- check_freq(freq)
       date_start <- as.Date(date_start)
       if (freq == "days") {
+        return("months only for now")
         dt <- us_trading_days(date_start, last_us_trading_day())
       } else if (freq == "months") {
         date_start <- eo_month(date_start)
         dt <- seq.Date(date_start, last_us_trading_day(), by = "months")
-        dt[2:length(dt)] <- eo_month(dt[2:length(dt)] - 10)
+        dt[2:length(dt)] <- lubridate::ceiling_date(dt[2:length(dt)] - 10, 
+                                                    unit = "months") - 1
+        dt <- as_trading_day(dt)
       } else {
         stop("freq only supported for days or months")
       }
       xdf <- data.frame()
       cust <- self$tbl_cust
       rec <- filter(cust, DtcName == dtc_name)
+      if (nrow(rec) ==  0) {
+        stop(paste0(dtc_name, " not found."))
+      }
       for (i in 1:length(dt)) {
         x <- try(download_bd(rec$BdAccountId, self$api_keys, as_of = dt[i]))
         if ("try-error" %in% class(x)) {

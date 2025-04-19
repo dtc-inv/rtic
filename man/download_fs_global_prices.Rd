@@ -2,7 +2,7 @@
 % Please edit documentation in R/download_data.R
 \name{download_fs_global_prices}
 \alias{download_fs_global_prices}
-\title{Factset Global Prices API}
+\title{Factset Global Prices API for total returns}
 \usage{
 download_fs_global_prices(api_keys, ids, date_start, date_end, freq = "D")
 }
@@ -21,5 +21,5 @@ download_fs_global_prices(api_keys, ids, date_start, date_end, freq = "D")
 json with data
 }
 \description{
-Factset Global Prices API
+Factset Global Prices API for total returns
 }

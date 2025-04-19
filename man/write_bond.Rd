@@ -5,6 +5,7 @@
 \title{Write IMB Bond Slide}
 \usage{
 write_bond(
+  as_of,
   pres,
   rpt,
   dict,
