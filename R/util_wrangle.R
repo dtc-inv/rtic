@@ -82,8 +82,8 @@ read_ret <- function(ids, ac) {
     colnames(ret) <- nm
   }
   ix <- match_ids_dtc_name(ids, tbl_msl)
-  dtc_name <- tbl_msl$DtcName[na.omit(ix)]  
-  ret <- ret[, dtc_name]
+  dtc_name <- tbl_msl$DtcName[na.omit(ix)]
+  ret <- ret[, dtc_name[dtc_name %in% colnames(ret)]]
   return(ret)
 }
 

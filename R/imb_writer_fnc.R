@@ -462,8 +462,8 @@ create_bar_wgt_cht <- function(dict, col, lgnd_pos = "right") {
 #' @param bar_cht_opt option for bar chart: sector or region
 #' @return pres with added slide
 #' @export
-write_equity <- function(as_of, pres, rpt, dict, descr, locater, slide_title, tm10,
-                         bar_cht_opt = c("sector", "region")) {
+write_equity <- function(as_of, pres, rpt, dict, descr, locater, slide_title, 
+                         tm10, bar_cht_opt = c("sector", "region")) {
   
   bar_cht_opt <- bar_cht_opt[1]
   col <- rpt$col
@@ -491,7 +491,7 @@ write_equity <- function(as_of, pres, rpt, dict, descr, locater, slide_title, tm
   alloc_tbl <- create_alloc_tbl(dict, col)
   descr_tbl <- create_descr_tbl(descr, col)
   
-  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
+  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-202109") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
     ph_with(
       trail_perf_ft, 
@@ -672,7 +672,7 @@ write_bond <- function(as_of, pres, rpt, dict, descr, locater,
     descr_top <- locater$descr_tbl["top"]
   }
   
-  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
+  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-202109") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
     ph_with(
       pie_cht,
@@ -772,7 +772,7 @@ write_multi_strat <- function(as_of, pres, rpt, dict, descr, locater,
   descr_tbl <- create_descr_tbl(descr, col)
   alloc_tbl <- create_alloc_tbl(dict, col)
   
-  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
+  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-202109") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
     ph_with(
       alloc_tbl,
@@ -841,7 +841,7 @@ write_pdf <- function(as_of, pres, rpt, dict, descr, locater,
   descr_tbl <- create_descr_tbl(descr, col)
   alloc_cht <- create_bar_wgt_cht(dict, col, lgnd_pos)
   
-  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-2021") |>
+  pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-202109") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
     ph_with(
       alloc_cht,
