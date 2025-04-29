@@ -57,6 +57,7 @@ holdings data}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
 \item \href{#method-Database-hold_cust_backfill}{\code{Database$hold_cust_backfill()}}
 \item \href{#method-Database-hold_model}{\code{Database$hold_model()}}
+\item \href{#method-Database-hold_ctf}{\code{Database$hold_ctf()}}
 \item \href{#method-Database-read_hold}{\code{Database$read_hold()}}
 \item \href{#method-Database-download_fundamental_data}{\code{Database$download_fundamental_data()}}
 \item \href{#method-Database-download_sectors}{\code{Database$download_sectors()}}
@@ -72,7 +73,7 @@ holdings data}
 \subsection{Method \code{new()}}{
 Create a db object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$new(api_keys, py_loc)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$new(api_keys, py_loc = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -368,7 +369,8 @@ HFRI Return index from csv file}
   ids = NULL,
   date_start = NULL,
   date_end = Sys.Date(),
-  freq = "D"
+  freq = "D",
+  geo = c("us", "intl")
 )}\if{html}{\out{</div>}}
 }
 
@@ -460,7 +462,12 @@ dtc_names to download specific funds}
 Download account data from custodian, currently done via
   BlackDiamond
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust(dtc_name = NULL, save_to_db = TRUE, return_data = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust(
+  dtc_name = NULL,
+  save_to_db = TRUE,
+  return_data = FALSE,
+  as_of = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -491,6 +498,15 @@ dtc_names to download specific funds}
 \subsection{Method \code{hold_model()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_model(dtc_name, tbl_hold = NULL, xl_file = NULL, sum_to_1 = TRUE)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-hold_ctf"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-hold_ctf}{}}}
+\subsection{Method \code{hold_ctf()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf(dtc_name = NULL, as_of = NULL)}\if{html}{\out{</div>}}
 }
 
 }

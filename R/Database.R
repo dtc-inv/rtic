@@ -30,7 +30,7 @@ Database <- R6::R6Class(
     #' list of keys
     #' @param py_loc optional file path where python is installed to be used
     #'   with `reticulate`
-    initialize = function(api_keys, py_loc) {
+    initialize = function(api_keys, py_loc = NULL) {
 
       if (!is.list(api_keys)) {
         rdat_file <- grep(".RData", api_keys, fixed = TRUE)
@@ -681,7 +681,7 @@ Database <- R6::R6Class(
     #' @param save_to_db save data to DTC's database
     #' @param return_data return data.frame of holdings
     hold_cust = function(dtc_name = NULL, save_to_db = TRUE,
-                         return_data = FALSE) {
+                         return_data = FALSE, as_of = NULL) {
       lib <- self$ac$get_library("holdings")
       cust <- self$tbl_cust
       if (!is.null(dtc_name)) {
@@ -695,7 +695,8 @@ Database <- R6::R6Class(
       res <- list()
       for (i in 1:length(dtc_name)) {
         print(paste0("working on ", dtc_name[i]))
-        dat <- try(download_bd(cust$BdAccountId[i], self$api_keys))
+        dat <- try(download_bd(cust$BdAccountId[i], self$api_keys, 
+                               as_of = as_of))
         if ("try-error" %in% class(dat)) {
           warning(paste0("could not download ", dtc_name[i]))
           next
@@ -785,6 +786,54 @@ Database <- R6::R6Class(
       lib$write(dtc_name, tbl_hold)
         
     }, 
+    
+    hold_ctf = function(dtc_name = NULL, as_of = NULL, save_to_db = TRUE,
+                        return_data = FALSE, download_ctf = FALSE) {
+      dict <- filter(self$tbl_msl, SecType == "ctf")
+      dict <- filter(dict, Layer == 3)
+      if (!is.null(dtc_name)) {
+        dict <- filter(dict, DtcName %in% dtc_name)
+      } 
+      lib_hold <- self$ac$get_library("holdings")
+      if (nrow(dict) == 0) {
+        stop("dtc_name not found")
+      }
+      
+      tbl_hold <- self$hold_cust(dict$DtcName, save_to_db = FALSE, 
+                                 return_data = TRUE, as_of = as_of)
+      for (i in 1:length(tbl_hold)) {
+        res <- merge_msl(tbl_hold[[i]], self$tbl_msl)
+        mv <- rep(NA, nrow(res$union))
+        for (j in 1:nrow(res$union)) {
+          if (download_ctf) {
+            x <- try(self$hold_cust(res$union$DtcName[j], save_to_db = FALSE,
+                     return_data = TRUE)[[1]])
+            if (inherits(x, "try-error")) {
+              mv[j] <- res$union$Value[j]
+            } else {
+              mv[j] <- sum(x$Value, na.rm = TRUE)
+            }
+          } else {
+            x <- self$read_hold(res$union$DtcName[j])
+            x <- try(sum(x$Value, na.rm = TRUE))
+            if (inherits(x, "try-error")) {
+              mv[j] <- res$union$Value[j]
+            } else {
+              mv[j] <- x
+            }
+          }
+        }
+        tbl_hold[[i]]$Value <- mv
+        tbl_hold[[i]]$CapWgt <- tbl_hold[[i]]$Value / 
+          sum(tbl_hold[[i]]$Value, na.rm = TRUE)
+        if (save_to_db) {
+          lib_hold$write(dict$DtcName[i], tbl_hold[[i]])
+        }
+      }
+    if (return_data) {
+        return(tbl_hold)
+      }
+    },
 
     #' @description Read Holdings Data
     #' @param dtc_name DtcName field in MSL to pull holdings

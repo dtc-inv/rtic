@@ -4,7 +4,7 @@
 \alias{read_ret}
 \title{Read Returns}
 \usage{
-read_ret(ids, ac)
+read_ret(ids, ac, tbl_msl = NULL)
 }
 \arguments{
 \item{ids}{ticker, cusip, lei, dtc name, or identifier}
