@@ -502,9 +502,14 @@ Database <- R6::R6Class(
     },
     
     ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
-                         freq = "D") {
+                         freq = "D", geo = c("us", "intl")) {
+      geo <- tolower(geo[1])
+      if (!geo %in% c("us", "intl")) {
+        stop("geo must be us or intl")
+      }
+      geo <- paste0(geo, "-stock")
       if (is.null(ids)) {
-        stock <- filter(self$tbl_msl, ReturnLibrary == "stock")
+        stock <- filter(self$tbl_msl, ReturnLibrary == geo)
         ids <- create_ids(stock)
       } else {
         ix <- match_ids_dtc_name(ids, self$tbl_msl)
@@ -513,7 +518,7 @@ Database <- R6::R6Class(
         }
       }
       lib <- self$ac$get_library("returns")
-      old_dat <- lib$read("stock")$data
+      old_dat <- lib$read(geo)$data
       if (is.null(date_start)) {
         date_start <- old_dat$Date[nrow(old_dat)]
       }
@@ -539,7 +544,7 @@ Database <- R6::R6Class(
       new_dat <- pivot_wider(xdf, id_cols = Date, values_from = TotalReturn,
                              names_from = DtcName)
       combo <- xts_rbind(new_dat, old_dat, FALSE, TRUE)
-      lib$write("stock", xts_to_arc(combo))
+      lib$write(geo, xts_to_arc(combo))
     },
 
     #' HFRI Return index from csv file
@@ -561,6 +566,10 @@ Database <- R6::R6Class(
       rec$data[, "Cash Plus 200 bps"] <- as.vector(cash_plus_2)
       rec$data[, "Cash Plus 400 bps"] <- as.vector(cash_plus_4)
       lib$write("index", rec$data)
+      # money market proxy with cash
+      mmkt <- cash
+      colnames(mmkt) <- "Blackrock Liquidity Fed Funds (TFDXX)"
+      lib$write("money-market", xts_to_arc(mmkt))
     },
     
     ret_fred = function() {
@@ -729,7 +738,7 @@ Database <- R6::R6Class(
       date_start <- as.Date(date_start)
       if (freq == "days") {
         return("months only for now")
-        dt <- us_trading_days(date_start, last_us_trading_day())
+        # dt <- us_trading_days(date_start, last_us_trading_day())
       } else if (freq == "months") {
         date_start <- eo_month(date_start)
         dt <- seq.Date(date_start, last_us_trading_day(), by = "months")

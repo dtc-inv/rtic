@@ -36,10 +36,12 @@ read_macro_wb <- function(wb, idx_nm) {
 #' @param ac arcticdb datastore
 #' @return xts of time-series of ids, will warn if some ids are not found
 #' @export
-read_ret <- function(ids, ac) {
+read_ret <- function(ids, ac, tbl_msl = NULL) {
   lib_ret <- ac$get_library("returns")
   lib_tbl <- ac$get_library("meta-tables")
-  tbl_msl <- lib_tbl$read("msl")$data
+  if (is.null(tbl_msl)) {
+    tbl_msl <- lib_tbl$read("msl")$data
+  }
   ids_dict <- filter(
     tbl_msl, 
       DtcName %in% ids | Ticker %in% ids | Cusip %in% ids | Sedol %in% ids | 
