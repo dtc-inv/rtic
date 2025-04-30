@@ -714,7 +714,6 @@ Database <- R6::R6Class(
             }
             combo <- rob_rbind(old_dat$data, dat)
             lib$write(dtc_name[i], combo)
-            lib$write(dtc_name[i], combo)
           } else {
             warning(
               paste0(
@@ -734,7 +733,8 @@ Database <- R6::R6Class(
       }
     },
     
-    hold_cust_backfill = function(dtc_name, date_start, freq = "months") {
+    hold_cust_backfill = function(dtc_name, date_start, freq = "months",
+                                  save_to_db = TRUE, return_data = FALSE) {
       freq <- check_freq(freq)
       date_start <- as.Date(date_start)
       if (freq == "days") {
@@ -764,8 +764,13 @@ Database <- R6::R6Class(
         print(dt[i])
         xdf <- rbind(xdf, x)
       }
-      lib <- self$ac$get_library("holdings")
-      lib$write(dtc_name, xdf)
+      if (save_to_db) {
+        lib <- self$ac$get_library("holdings")
+        lib$write(dtc_name, xdf)
+      }
+      if (return_data) {
+        return(xdf)
+      }
     },
     
     hold_model = function(dtc_name, tbl_hold = NULL, xl_file = NULL, 
@@ -791,6 +796,7 @@ Database <- R6::R6Class(
                         return_data = FALSE, download_ctf = FALSE) {
       dict <- filter(self$tbl_msl, SecType == "ctf")
       dict <- filter(dict, Layer == 3)
+      
       if (!is.null(dtc_name)) {
         dict <- filter(dict, DtcName %in% dtc_name)
       } 
@@ -798,11 +804,11 @@ Database <- R6::R6Class(
       if (nrow(dict) == 0) {
         stop("dtc_name not found")
       }
-      
-      tbl_hold <- self$hold_cust(dict$DtcName, save_to_db = FALSE, 
-                                 return_data = TRUE, as_of = as_of)
-      for (i in 1:length(tbl_hold)) {
-        res <- merge_msl(tbl_hold[[i]], self$tbl_msl)
+      all_hold <- lib_hold$list_symbols()
+      for (i in 1:nrow(dict)) {
+        tbl_hold <- self$hold_cust(dict$DtcName[i], save_to_db = FALSE, 
+                                   return_data = TRUE, as_of = as_of)
+        res <- merge_msl(tbl_hold[[1]], self$tbl_msl)
         mv <- rep(NA, nrow(res$union))
         for (j in 1:nrow(res$union)) {
           if (download_ctf) {
@@ -814,20 +820,25 @@ Database <- R6::R6Class(
               mv[j] <- sum(x$Value, na.rm = TRUE)
             }
           } else {
-            x <- self$read_hold(res$union$DtcName[j])
-            x <- try(sum(x$Value, na.rm = TRUE))
-            if (inherits(x, "try-error")) {
-              mv[j] <- res$union$Value[j]
+            if (res$union$DtcName[j] %in% all_hold) {      
+              x <- self$read_hold(res$union$DtcName[j])
+              mv[j] <- sum(as.numeric(x$Value), na.rm = TRUE)
             } else {
-              mv[j] <- x
+              mv[j] <- res$union$Value[j]
             }
           }
         }
-        tbl_hold[[i]]$Value <- mv
-        tbl_hold[[i]]$CapWgt <- tbl_hold[[i]]$Value / 
-          sum(tbl_hold[[i]]$Value, na.rm = TRUE)
+        tbl_hold[[1]]$Value <- mv
+        tbl_hold[[1]]$CapWgt <- tbl_hold[[1]]$Value / 
+          sum(tbl_hold[[1]]$Value, na.rm = TRUE)
         if (save_to_db) {
-          lib_hold$write(dict$DtcName[i], tbl_hold[[i]])
+          old <- lib_hold$read(dict$DtcName[i])
+          if (!inherits(old, "data.frame")) {
+            warning(paste0(dtc_name[i], " does not have existing holdings."))
+            old <- data.frame()
+          }
+          combo <- rbind_holdings(old, tbl_hold[[1]])
+          lib_hold$write(dict$DtcName[i], combo)
         }
       }
     if (return_data) {
@@ -835,6 +846,11 @@ Database <- R6::R6Class(
       }
     },
 
+    hold_ctf_backfill = function(dtc_name = NULL, combo = FALSE) {
+      res <- self$hold_ctf(dtc_name, save_to_db = FALSE, return_data = TRUE,
+                           download_ctf = FALSE)
+    },
+    
     #' @description Read Holdings Data
     #' @param dtc_name DtcName field in MSL to pull holdings
     #' @param latest option to truncate to most recent holdings

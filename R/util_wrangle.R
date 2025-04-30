@@ -373,3 +373,26 @@ merge_msl <- function(tbl_hold, tbl_msl) {
   }
   return(res)
 }
+
+#' @export
+rbind_holdings <- function(old, new, keep = c("old", "new")) {
+  keep <- tolower(keep[1])
+  if (nrow(old) == 0) {
+    return(new)
+  }
+  if (keep == "old") {
+    ix <- new$TimeStamp %in% unique(old$TimeStamp)
+    if (any(ix)) {
+      new <- new[!ix, ]
+    }
+  }
+  if (keep == "new") {
+    ix <- old$TimeStamp %in% unique(new$TimeStamp)
+    if (any(ix)) {
+      old <- old[!ix, ]
+    }
+  }
+  res <- rbind(old, new)
+  return(res)
+}
+
