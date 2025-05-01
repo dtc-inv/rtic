@@ -506,7 +506,13 @@ dtc_names to download specific funds}
 \if{latex}{\out{\hypertarget{method-Database-hold_ctf}{}}}
 \subsection{Method \code{hold_ctf()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf(dtc_name = NULL, as_of = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf(
+  dtc_name = NULL,
+  as_of = NULL,
+  save_to_db = TRUE,
+  return_data = FALSE,
+  download_ctf = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 }
