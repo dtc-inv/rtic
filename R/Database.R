@@ -170,9 +170,8 @@ Database <- R6::R6Class(
           res[[i]] <- dat
         }
       }
-      dtc_name <- filter(self$tbl_msl, Ticker %in% na.omit(ids))$DtcName[!is_miss]
-      dtc_name <- na.omit(dtc_name)
       ret <- do.call("cbind", res)
+      dtc_name <- idx$DtcName[!is_miss]
       colnames(ret) <- dtc_name
       lib <- self$ac$get_library("returns")
       old_dat <- lib$read("index")$data
