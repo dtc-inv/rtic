@@ -299,16 +299,12 @@ Database <- R6::R6Class(
     },
 
     #' @description Update CTF Returns from Factset
-    #' @param ids leave `NULL` to update all CTFs or enter a vector of ids to
-    #'   only update specific CTFs
     #' @param t_minus_m integer to indicate how many months back to download new
     #'   data from
-    ret_ctf_monthly = function(ids = NULL, t_minus_m = 1) {
+    ret_ctf_monthly = function(t_minus_m = 1) {
       tbl_msl <- self$tbl_msl
-      if (is.null(ids)) {
-        ctf <- filter(tbl_msl, ReturnLibrary == "ctf")
-        ids <- ctf$Isin
-      }
+      ctf <- lib_meta$read("ctf-meta")$data
+      ids <- ctf$MonthlyId
       res <- list()
       is_miss <- rep(FALSE, length(ids))
       for (i in 1:length(ids)) {
@@ -319,17 +315,71 @@ Database <- R6::R6Class(
           res[[i]] <- dat
         }
       }
-      dtc_name <- filter(self$tbl_msl, Isin %in% ids)$DtcName[!is_miss]
-      dtc_name <- na.omit(dtc_name)
+      dtc_name <- ctf$DtcName[!is_miss]
       ret <- do.call("cbind", res)
       colnames(ret) <- dtc_name
       lib <- self$ac$get_library("returns")
-      old_dat <- lib$read("ctf")$data
+      old_dat <- lib$read("ctf-monthly")$data
       new_dat <- xts_to_dataframe(ret)
       combo <- xts_rbind(new_dat, old_dat, FALSE)
       combo_df <- xts_to_dataframe(combo)
       combo_df$Date <- as.character(combo_df$Date)
-      lib$write("ctf", combo_df)
+      lib$write("ctf-monthly", combo_df)
+    },
+    
+    ret_ctf_daily = function(t_minus_m = 1) {
+      lib_meta <- self$ac$get_library("meta-tables")
+      ctf_meta <- lib_meta$read("ctf-meta")$data
+      is_daily <- !is.na(ctf_meta$DailyId)
+      ctf_meta <- ctf_meta[is_daily, ]
+      ids <- ctf_meta$DailyId
+      is_found <- rep(TRUE, length(ids))
+      res <- list()
+      for (i in 1:length(ids)) {
+        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "D"))
+        if (inherits(dat, "try-error")) {
+          is_found[i] <- FALSE
+        } else {
+          res[[i]] <- dat
+        }
+      }
+      dtc_name <- ctf_meta$DtcName[is_found]
+      ret <- do.call("cbind", res)
+      colnames(ret) <- dtc_name
+      old_dat <- lib$read("ctf-daily")
+      new_dat <- xts_to_dataframe(ret)
+      combo <- xts_rbind(new_dat, old_dat, FALSE)
+      combo_df <- xts_to_dataframe(combo)
+      combo_df$Date <- as.character(combo_df$Date)
+      lib$write("ctf-daily", combo_df)
+    },
+    
+    ret_ctf_daily_adj = function() {
+      lib_meta <- self$ac$get_library("meta-tables")
+      lib_ret <- self$ac$get_library("returns")
+      ctf_meta <- lib_meta$read("ctf-meta")$data
+      daily <- lib_ret$read("ctf-daily")$data
+      daily <- dataframe_to_xts(daily)
+      monthly <- lib_ret$read("ctf-monthly")$data
+      monthly <- dataframe_to_xts(monthly)
+      for (i in 1:ncol(daily)) {
+        d <- daily[, i]
+        d <- clean_ret(d, eps = 1)
+        d <- d$ret
+        ix <- colnames(monthly) %in% colnames(d)
+        if (sum(ix) == 0) {
+          warning(paste0(colnames(d), " not found in monthly returns"))
+          next
+        }
+        m <- monthly[, ix]
+        res <- try(daily_spline(d, m))
+        if (inherits(res, "try-error")) {
+          warning(paste0(colnames(d), " did not spline"))
+          next
+        }
+        daily[, i] <- res
+      }
+      lib_ret$write("ctf-daily", xts_to_arc(daily))
     },
     
     #' @description read in manually uploaded returns from Excel

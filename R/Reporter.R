@@ -39,7 +39,7 @@ Reporter <- R6::R6Class(
       }
       self$rf <- na.omit(dataframe_to_xts(rf$data))
       if (is.null(col)) {
-        self$col <- dtc_col()
+        self$col <- c(dtc_col(), "black")
       }
     },
     

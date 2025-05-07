@@ -359,20 +359,51 @@ read_hold <- function(ac, dtc_name, latest = TRUE) {
 #' @param tbl_msl master security list (data.frame)
 #' @return list with union, intersection, and missing tables
 #' @export 
-merge_msl <- function(tbl_hold, tbl_msl) {
-  res <- left_merge(
+merge_msl <- function(tbl_hold, tbl_msl, rm_dup_dates = TRUE) {
+  ix <- match_mult(
     x = tbl_hold,
     y = tbl_msl,
     match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
-                 "Identifier")
+      "Identifier")
   )
-  is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
-  if (any(is_dup)) {
-    warning("duplicate dates found, removing")
-    res$inter <- res$inter[!is_dup, ]
+  if ("Identifier" %in% colnames(tbl_hold)) {
+    ix <- match_bd_id(tbl_hold$Identifier, tbl_msl, ix)
   }
+  y_dup_col <- colnames(tbl_msl) %in% colnames(tbl_hold)
+  x_dup_col <- colnames(tbl_hold) %in% colnames(tbl_msl)
+  tbl_union <- cbind(tbl_hold, tbl_msl[ix, !y_dup_col, drop = FALSE])
+  tbl_miss <- tbl_hold[is.na(ix), ]
+  tbl_inter <- cbind(tbl_hold[, !x_dup_col, drop = FALSE], tbl_msl[ix, ])
+  tbl_inter <- tbl_inter[!is.na(ix), ]
+  
+  res <- list()
+  res$inter <- tbl_inter
+  res$union <- tbl_union
+  res$miss <- tbl_miss
+  
+  if (rm_dup_dates) {
+    is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
+    if (any(is_dup)) {
+      warning("duplicate dates found, removing")
+      res$inter <- res$inter[!is_dup, ]
+    }
+  }
+  
   return(res)
 }
+
+#' @export
+match_bd_id <- function(bd_id, tbl_msl, ix = NULL) {
+  if (is.null(ix)) {
+    ix <- rep(NA, length(bd_id))
+  }
+  ix <- fill_ix(ix, match(bd_id, tbl_msl$Sedol))
+  ix <- fill_ix(ix, match(bd_id, substr(tbl_msl$Ticker, 1, 
+                                        nchar(tbl_msl$Ticker))))
+  ix <- fill_ix(ix, match(bd_id, tbl_msl$Cusip))
+  return(ix)
+}
+
 
 #' @export
 rbind_holdings <- function(old, new, keep = c("old", "new")) {
