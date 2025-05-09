@@ -389,11 +389,20 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   return(dt)
 }
 
-ctf_daily_est <- function(ac, dtc_name, sum_to_1) {
-  tbl_hold <- read_hold(ac, dtc_name)
-  p <- Portfolio$new(ac, tbl_hold)
-  p$init_rebal("D", "D")
-  p$rebal$rebal_ret[nrow(p$rebal$rebal_ret)]
+ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
+  tbl_hold <- read_hold(ac, dtc_name, FALSE)
+  if (is.null(msl)) {
+    lib <- ac$get_library("meta-tables")
+    tbl_msl <- lib$read("msl")$data
+  }
+  res <- merge_msl(tbl_hold, tbl_msl, FALSE)
+  rebal_wgt <- tidyr::pivot_wider(
+    data = res$inter, 
+    id_cols = TimeStamp,
+    values_from = CapWgt,
+    names_from = DtcName)
+  rebal_wgt <- dataframe_to_xts(rebal_wgt)
+  rebal_wgt[is.na(rebal_wgt)] <- 0
 }
 
 miss_ret <- function(ac) {
@@ -408,6 +417,7 @@ miss_ret <- function(ac) {
   return(miss)
 }
 
+# update AllocatoR
 ret_date_info <- function(x) {
   sdate <- rep(NA, ncol(x))
   edate <- sdate
@@ -423,3 +433,5 @@ ret_date_info <- function(x) {
   }
   data.frame(Name = nm, Start = as.Date(sdate), End = as.Date(edate))
 }
+
+

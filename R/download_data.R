@@ -375,11 +375,10 @@ flatten_fs_global_prices <- function(json, price = FALSE) {
 
 #' @export
 read_private_xts <- function(file_nm, field_nm) {
-  xdf <- readxl::read_excel(file_nm)
-  r <- dataframe_to_xts(xdf)
-  r <- r$`Return*`
-  colnames(r) <- field_nm
-  return(r)
+  dat <- readxl::read_excel(file_nm)
+  dat_xts <- xts(dat$`Return*`, as.Date(dat$Date))
+  colnames(dat_xts) <- field_nm
+  return(dat_xts)
 }
 
 #' @title Read HFR Returns CSV Export

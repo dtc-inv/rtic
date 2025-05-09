@@ -267,18 +267,19 @@ Database <- R6::R6Class(
       pe_q <- read_private_xts(
         paste0(base, "PrivateEquity.xlsx"),
         "Private Equity Index"
-      ) |>
-        unsmooth_ret()
+      )
       re_q <- read_private_xts(
         paste0(base, "PrivateRealEstateValueAdd.xlsx"),
         "Private Real Estate Value Add Index"
-      ) |>
-        unsmooth_ret()
+      )
+      reg_q <- read_private_xts(
+        paste0(base, "PrivateRealEstate.xlsx"),
+        "Private Real Estate Index"
+      )
       pc_q <- read_private_xts(
         paste0(base, "PrivateCredit.xlsx"),
         "Private Credit Index"
-      ) |>
-        unsmooth_ret()
+      )
       lib <- self$ac$get_library("returns")
       ind <- lib$read("index")
       ind <- dataframe_to_xts(ind$data)
@@ -287,11 +288,14 @@ Database <- R6::R6Class(
       pc_m <- change_freq(na.omit(ind$`BofAML U.S. HY Master II`))
       pe <- monthly_spline(pe_m, pe_q)
       re <- monthly_spline(re_m, re_q)
+      reg <- monthly_spline(re_m, reg_q)
       pc <- monthly_spline(pc_m, pc_q)
       colnames(pe) <- "Private Equity Index"
       colnames(re) <- "Private Real Estate Value Add Index"
+      colnames(reg) <- "Private Real Estate Index"
       colnames(pc) <- "Private Credit Index"
       dat <- xts_cbind(pe, re)
+      dat <- xts_cbind(dat, reg)
       dat <- xts_cbind(dat, pc)
       xdf <- xts_to_dataframe(dat)
       xdf$Date <- as.character(xdf$Date)
