@@ -58,6 +58,7 @@ holdings data}
 \item \href{#method-Database-hold_cust_backfill}{\code{Database$hold_cust_backfill()}}
 \item \href{#method-Database-hold_model}{\code{Database$hold_model()}}
 \item \href{#method-Database-hold_ctf}{\code{Database$hold_ctf()}}
+\item \href{#method-Database-hold_ctf_backfill}{\code{Database$hold_ctf_backfill()}}
 \item \href{#method-Database-read_hold}{\code{Database$read_hold()}}
 \item \href{#method-Database-download_fundamental_data}{\code{Database$download_fundamental_data()}}
 \item \href{#method-Database-download_sectors}{\code{Database$download_sectors()}}
@@ -488,7 +489,13 @@ dtc_names to download specific funds}
 \if{latex}{\out{\hypertarget{method-Database-hold_cust_backfill}{}}}
 \subsection{Method \code{hold_cust_backfill()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust_backfill(dtc_name, date_start, freq = "months")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust_backfill(
+  dtc_name,
+  date_start,
+  freq = "months",
+  save_to_db = TRUE,
+  return_data = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 }
@@ -513,6 +520,15 @@ dtc_names to download specific funds}
   return_data = FALSE,
   download_ctf = FALSE
 )}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-hold_ctf_backfill"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-hold_ctf_backfill}{}}}
+\subsection{Method \code{hold_ctf_backfill()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf_backfill(dtc_name = NULL, combo = FALSE)}\if{html}{\out{</div>}}
 }
 
 }
