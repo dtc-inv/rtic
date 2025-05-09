@@ -395,3 +395,31 @@ ctf_daily_est <- function(ac, dtc_name, sum_to_1) {
   p$init_rebal("D", "D")
   p$rebal$rebal_ret[nrow(p$rebal$rebal_ret)]
 }
+
+miss_ret <- function(ac) {
+  lib <- get_all_lib(ac)
+  tbl_msl <- lib$`meta-tables`$read("msl")$data
+  r <- read_ret(tbl_msl$DtcName, ac)  
+  date_info <- ret_date_info(r)
+  is_miss <- is.na(date_info$Start)
+  miss <- date_info$Name[is_miss]
+  is_miss <- !tbl_msl$DtcName %in% date_info$Name
+  miss <- c(miss, tbl_msl$DtcName[is_miss])
+  return(miss)
+}
+
+ret_date_info <- function(x) {
+  sdate <- rep(NA, ncol(x))
+  edate <- sdate
+  for (i in 1:ncol(x)) {
+    dt <- zoo::index(na.omit(x[, i]))
+    if (length(dt) == 0) {dt <- NA}
+    sdate[i] <- dt[1]
+    edate[i] <- dt[length(dt)]
+  }
+  nm <- colnames(x)
+  if (is.null(nm)) {
+    nm <- 1:ncol(x)
+  }
+  data.frame(Name = nm, Start = as.Date(sdate), End = as.Date(edate))
+}

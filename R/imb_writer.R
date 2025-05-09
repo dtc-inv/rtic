@@ -10,9 +10,10 @@ load_imb_dict <- function() {
 }
   
 #' @export
-write_imb <- function() {  
+write_imb <- function(t_minus_m = 1) {  
   
-  as_of <- floor_date(Sys.Date(), "months") - 1
+  as_of <- floor_date(add_with_rollback(Sys.Date(), months(-t_minus_m)), 
+                                        "months") - 1
   tm10 <- as_of - years(10)
   
   res <- load_imb_dict()

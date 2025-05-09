@@ -490,7 +490,6 @@ write_equity <- function(as_of, pres, rpt, dict, descr, locater, slide_title,
   
   alloc_tbl <- create_alloc_tbl(dict, col)
   descr_tbl <- create_descr_tbl(descr, col)
-  
   pres <- add_slide(pres, layout = "Body Slide", master = "DTC-Theme-202109") |>
     ph_with(slide_title, ph_location_label("Text Placeholder 18")) |>
     ph_with(

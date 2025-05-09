@@ -58,17 +58,10 @@ Portfolio <- R6::R6Class(
     #' @description Merge MSL with Holdings Table
     merge_msl = function() {
       tbl_msl <- read_msl(self$ac)
-      res <- left_merge(
-        x = self$tbl_hold,
-        y = tbl_msl,
-        match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
-                     "Identifier")
+      res <- merge_msl(
+        self$tbl_hold,
+        tbl_msl
       )
-      is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
-      if (any(is_dup)) {
-        warning("duplicate dates found, removing")
-        res$inter <- res$inter[!is_dup, ]
-      }
       self$tbl_hold <- res$inter
       self$tbl_miss <- res$miss
     },
@@ -99,13 +92,14 @@ Portfolio <- R6::R6Class(
           record$data$CapWgt <- record$data$CapWgt * x$CapWgt[j]
           lay_1 <- rob_rbind(lay_1, record$data)
         }
-        res <- left_merge(
-          x = lay_1,
-          y = tbl_msl,
-          match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
-                       "Identifier"),
-          keep_x_dup_col = FALSE
-        )
+        # res <- left_merge(
+        #   x = lay_1,
+        #   y = tbl_msl,
+        #   match_by = c("DtcName", "Ticker", "Cusip", "Sedol", "Isin", "Lei",
+        #                "Identifier"),
+        #   keep_x_dup_col = FALSE
+        # )
+        res <- merge_msl(lay_1, tbl_msl, FALSE)
         lay_1 <- res$inter
         self$tbl_miss <- rob_rbind(self$tbl_miss, res$miss)
         is_lay_1 <- lay_1$Layer <= layer + i - 1

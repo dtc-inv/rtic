@@ -44,6 +44,8 @@ holdings data}
 \item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
+\item \href{#method-Database-ret_ctf_daily}{\code{Database$ret_ctf_daily()}}
+\item \href{#method-Database-ret_ctf_daily_adj}{\code{Database$ret_ctf_daily_adj()}}
 \item \href{#method-Database-ret_workup}{\code{Database$ret_workup()}}
 \item \href{#method-Database-ret_backfill}{\code{Database$ret_backfill()}}
 \item \href{#method-Database-run_backfill}{\code{Database$run_backfill()}}
@@ -281,20 +283,35 @@ Update Private Asset Indexes from Excel
 \subsection{Method \code{ret_ctf_monthly()}}{
 Update CTF Returns from Factset
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_monthly(ids = NULL, t_minus_m = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_monthly(t_minus_m = 1)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{ids}}{leave `NULL` to update all CTFs or enter a vector of ids to
-only update specific CTFs}
-
 \item{\code{t_minus_m}}{integer to indicate how many months back to download new
 data from}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_ctf_daily"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily}{}}}
+\subsection{Method \code{ret_ctf_daily()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily(t_minus_m = 1)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_ctf_daily_adj"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily_adj}{}}}
+\subsection{Method \code{ret_ctf_daily_adj()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily_adj()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_workup"></a>}}
