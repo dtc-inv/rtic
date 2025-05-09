@@ -570,6 +570,7 @@ Database <- R6::R6Class(
       old_dat <- lib$read(geo)$data
       if (is.null(date_start)) {
         date_start <- old_dat$Date[nrow(old_dat)]
+        date_start <- as.Date(date_start)
       }
       iter <- space_ids(ids)
       xdf <- data.frame()
