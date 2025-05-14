@@ -588,6 +588,7 @@ Database <- R6::R6Class(
         )
         xdf <- rob_rbind(xdf, flatten_fs_global_prices(json))
         print(iter[i])
+        Sys.sleep(1)
       }
       ix <- match_ids_dtc_name(xdf$RequestId, self$tbl_msl)
       dtc_name <- self$tbl_msl$DtcName[ix]

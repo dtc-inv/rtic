@@ -389,6 +389,7 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   return(dt)
 }
 
+#' @export
 ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
   tbl_hold <- read_hold(ac, dtc_name, FALSE)
   if (is.null(msl)) {
@@ -401,8 +402,14 @@ ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
     id_cols = TimeStamp,
     values_from = CapWgt,
     names_from = DtcName)
-  rebal_wgt <- dataframe_to_xts(rebal_wgt)
+  rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
   rebal_wgt[is.na(rebal_wgt)] <- 0
+  asset_ret <- read_ret(colnames(rebal_wgt), ac)
+  asset_ret[is.na(asset_ret)] <- 0
+  reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name)
+  reb$align_rebal_wgt()
+  reb$rebal(sum_to_1)
+  return(reb)
 }
 
 miss_ret <- function(ac) {
