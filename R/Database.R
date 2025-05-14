@@ -307,6 +307,7 @@ Database <- R6::R6Class(
     #'   data from
     ret_ctf_monthly = function(t_minus_m = 1) {
       tbl_msl <- self$tbl_msl
+      lib_meta <- self$ac$get_library("meta-tables")
       ctf <- lib_meta$read("ctf-meta")$data
       ids <- ctf$MonthlyId
       res <- list()

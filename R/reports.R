@@ -403,13 +403,51 @@ ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
     values_from = CapWgt,
     names_from = DtcName)
   rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
-  rebal_wgt[is.na(rebal_wgt)] <- 0
   asset_ret <- read_ret(colnames(rebal_wgt), ac)
+  res <- clean_rebal_ret(asset_ret, rebal_wgt)
+  
   asset_ret[is.na(asset_ret)] <- 0
+  rebal_wgt[is.na(rebal_wgt)] <- 0
   reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name)
   reb$align_rebal_wgt()
   reb$rebal(sum_to_1)
   return(reb)
+}
+
+clean_rebal_ret <- function(asset_ret, rebal_wgt) {
+  is_miss <- setdiff(colnames(rebal_wgt), colnames(asset_ret))
+  if (identical(is_miss, colnames(rebal_wgt))) {
+    stop("no intersection of rebal_wgt and asset_ret columns")
+  }
+  if (length(is_miss) > 0) {
+    miss <- is_miss
+  } else {
+    miss <- NA
+  }
+  inter <- intersect(colnames(rebal_wgt), colnames(asset_ret))
+  asset_ret <- asset_ret[, inter]
+  rebal_wgt <- rebal_wgt[, inter]
+  reb_start <- zoo::index(rebal_wgt)[1]
+  if (zoo::index(asset_ret[1]) > reb_start) {
+    stop("rebal_wgt start before asset_ret")
+  }
+  asset_ret <- asset_ret[format(reb_start, "%Y-%m/")]
+  r <- ret_date_info(asset_ret)
+  w <- ret_date_info(rebal_wgt)
+  is_miss <- r$Start > w$Start | r$End < w$End
+  if (any(is_miss)) {
+    miss <- c(miss, r$Name[is_miss])
+    miss <- na.omit(miss)
+  } else {
+    miss <- NA
+  }
+  res <- list()
+  res$miss <- miss
+  res$asset_ret <- asset_ret
+  res$reb_wgt <- rebal_wgt
+  res$r <- r
+  res$w <- w
+  return(res)
 }
 
 miss_ret <- function(ac) {
