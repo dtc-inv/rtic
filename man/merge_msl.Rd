@@ -4,7 +4,7 @@
 \alias{merge_msl}
 \title{Merge MSL with holdings table}
 \usage{
-merge_msl(tbl_hold, tbl_msl)
+merge_msl(tbl_hold, tbl_msl, rm_dup_dates = TRUE)
 }
 \arguments{
 \item{tbl_hold}{data.frame with portfolio holdings}

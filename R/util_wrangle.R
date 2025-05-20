@@ -393,6 +393,36 @@ merge_msl <- function(tbl_hold, tbl_msl, rm_dup_dates = TRUE) {
 }
 
 #' @export
+next_trading_day <- function(dates, t_plus = 0) {
+  yrs <- lubridate::year(dates)
+  min_year <- min(yrs) - 1
+  max_year <- max(yrs) + 1
+  bizdays::create.calendar(
+    "cal", 
+    holidays = timeDate::holidayNYSE(min_year:max_year),
+    weekdays = c("saturday", "sunday"))
+  bizdays::adjust.next(dates + t_plus, "cal")
+}
+
+#' @export
+prev_trading_day <- function(dates, t_minus = 0) {
+  yrs <- lubridate::year(dates)
+  min_year <- min(yrs) - 1
+  max_year <- max(yrs) + 1
+  bizdays::create.calendar(
+    "cal", 
+    holidays = timeDate::holidayNYSE(min_year:max_year),
+    weekdays = c("saturday", "sunday"))
+  bizdays::adjust.previous(dates - t_minus, "cal")
+}
+
+#' @export
+mid_month <- function(dt) {
+  dt <- lubridate::floor_date(dt, "months")
+  prev_trading_day(dt + 14)
+}
+
+#' @export
 match_bd_id <- function(bd_id, tbl_msl, ix = NULL) {
   if (is.null(ix)) {
     ix <- rep(NA, length(bd_id))

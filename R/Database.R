@@ -789,19 +789,42 @@ Database <- R6::R6Class(
       }
     },
     
-    hold_cust_backfill = function(dtc_name, date_start, freq = "months",
-                                  save_to_db = TRUE, return_data = FALSE) {
-      freq <- check_freq(freq)
-      date_start <- as.Date(date_start)
+    hold_cust_backfill = function(dtc_name, date_start = NULL, date_end = NULL, 
+                                  freq = "days", save_to_db = TRUE, 
+                                  return_data = FALSE) {
+      #freq <- check_freq(freq)
+      lib <- self$ac$get_library("holdings")
+      old_dat <- try(lib$read(dtc_name)$data)
+      if (inherits(old_dat, "try-error")) {
+        old_dat <- data.frame()
+      }
+      if (is.null(date_start)) {
+        if (nrow(old_dat) == 0) {
+          stop("no history found, need to supply date_start")
+        }
+        date_start <- us_trading_days(max(unique(as.Date(old_dat$TimeStamp))) + 1)
+      } else {
+        date_start <- as.Date(date_start)
+      }
+      if (is.null(date_end)) {
+        date_end <- last_us_trading_day()
+      }
       if (freq == "days") {
-        return("months only for now")
-        # dt <- us_trading_days(date_start, last_us_trading_day())
+        dt <- us_trading_days(date_start, date_end)
       } else if (freq == "months") {
         date_start <- eo_month(date_start)
-        dt <- seq.Date(date_start, last_us_trading_day(), by = "months")
+        dt <- seq.Date(date_start, date_end, by = "months")
         dt[2:length(dt)] <- lubridate::ceiling_date(dt[2:length(dt)] - 10, 
                                                     unit = "months") - 1
         dt <- as_trading_day(dt)
+        
+      } else if (freq == "ctf") {
+        date_start <- floor_date(date_start, "months")
+        dt <- seq.Date(date_start, floor_date(date_end, "months"), 
+                       by = "months") - 1
+        dt_start <- next_trading_day(dt, 4)
+        dt_mid <- mid_month(dt)[-1]
+        dt <- sort(c(dt_start, dt_mid))
       } else {
         stop("freq only supported for days or months")
       }
@@ -820,12 +843,14 @@ Database <- R6::R6Class(
         print(dt[i])
         xdf <- rbind(xdf, x)
       }
+      combo <- rbind(old_dat, xdf)
+      is_dup <- duplicated(paste0(combo$Name, combo$TimeStamp))
+      combo <- combo[!is_dup, ]
       if (save_to_db) {
-        lib <- self$ac$get_library("holdings")
-        lib$write(dtc_name, xdf)
+        lib$write(dtc_name, combo)
       }
       if (return_data) {
-        return(xdf)
+        return(combo)
       }
     },
     

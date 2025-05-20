@@ -508,8 +508,9 @@ dtc_names to download specific funds}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust_backfill(
   dtc_name,
-  date_start,
-  freq = "months",
+  date_start = NULL,
+  date_end = NULL,
+  freq = "days",
   save_to_db = TRUE,
   return_data = FALSE
 )}\if{html}{\out{</div>}}

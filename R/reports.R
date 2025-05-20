@@ -392,6 +392,10 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
 #' @export
 ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
   tbl_hold <- read_hold(ac, dtc_name, FALSE)
+  tbl_hold$TimeStamp <- as.Date(tbl_hold$TimeStamp)
+  dt <- unique(tbl_hold$TimeStamp) 
+  month_seq <- seq.Date(min(dt), max(dt), "months")
+  tbl_hold <- filter(tbl_hold, TimeStamp %in% month_seq)
   if (is.null(msl)) {
     lib <- ac$get_library("meta-tables")
     tbl_msl <- lib$read("msl")$data
@@ -405,15 +409,20 @@ ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
   rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
   asset_ret <- read_ret(colnames(rebal_wgt), ac)
   res <- clean_rebal_ret(asset_ret, rebal_wgt)
-  
+  asset_ret <- res$asset_ret
+  rebal_wgt <- res$reb_wgt
   asset_ret[is.na(asset_ret)] <- 0
   rebal_wgt[is.na(rebal_wgt)] <- 0
-  reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name)
+  reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name, rebal_freq = "BH")
   reb$align_rebal_wgt()
   reb$rebal(sum_to_1)
-  return(reb)
+  out <- list()
+  out$res <- res
+  out$reb <- reb
+  return(out)
 }
 
+#' @export
 clean_rebal_ret <- function(asset_ret, rebal_wgt) {
   is_miss <- setdiff(colnames(rebal_wgt), colnames(asset_ret))
   if (identical(is_miss, colnames(rebal_wgt))) {
