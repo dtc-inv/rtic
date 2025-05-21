@@ -332,6 +332,61 @@ Database <- R6::R6Class(
       lib$write("ctf-monthly", combo_df)
     },
     
+    #' @description Update daily estimates based on holdings x returns
+    #' meant for short periods use xxx function for backfill
+    ret_ctf_daily_hold = function(dtc_name = NULL, date_start = NULL, 
+                                  date_end = NULL) {
+      sma <- filter(self$tbl_msl, SecType == "sma")
+      if (is.null(date_start)) {
+        date_start <- prev_trading_day(Sys.Date(), 1)
+      }
+      if (is.null(date_end)) {
+        date_end <- prev_trading_day(Sys.Date(), 1)
+      }
+      if (date_start > date_end) {
+        stop("starting date is after ending date")
+      }
+      if (!is.null(dtc_name)) {
+        sma <- filter(sma, DtcName %in% dtc_name)
+      }
+      if (nrow(sma) == 0) {
+        stop("no results found")
+      }
+      xts_list <- list()
+      for (i in 1:nrow(sma)) {
+        print(sma$DtcName[i])
+        tbl_hold <- self$read_hold(sma$DtcName[i], latest = FALSE)
+        ix <- tbl_hold$TimeStamp >= date_start
+        if (all(ix == FALSE)) {
+          ix <- tbl_hold$TimeStamp == max(tbl_hold$TimeStamp)
+        }
+        tbl_hold <- tbl_hold[ix, ]
+        res <- merge_msl(tbl_hold, self$tbl_msl, FALSE)
+        rebal_wgt <- tidyr::pivot_wider(
+          data = res$inter, 
+          id_cols = TimeStamp,
+          values_from = CapWgt,
+          names_from = DtcName)
+        rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
+        asset_ret <- read_ret(colnames(rebal_wgt), self$ac)
+        res <- clean_rebal_ret(asset_ret, rebal_wgt)
+        asset_ret <- res$asset_ret
+        rebal_wgt <- res$reb_wgt
+        asset_ret[is.na(asset_ret)] <- 0
+        rebal_wgt[is.na(rebal_wgt)] <- 0
+        reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name[i], rebal_freq = "BH")
+        reb$align_rebal_wgt()
+        reb$rebal()
+        xts_list[[i]] <- reb$rebal_ret
+      }
+      new_ret <- do.call(cbind, xts_list)
+      colnames(new_ret) <- sma$DtcName
+      lib <- self$ac$get_library("returns")
+      old_ret <- lib$read("ctf-daily")$data
+      combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, FALSE, TRUE)
+      lib$write("returns", combo)
+    },
+    
     ret_ctf_daily = function(t_minus_m = 1) {
       lib_meta <- self$ac$get_library("meta-tables")
       ctf_meta <- lib_meta$read("ctf-meta")$data
