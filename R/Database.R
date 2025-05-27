@@ -306,31 +306,33 @@ Database <- R6::R6Class(
     #' @param t_minus_m integer to indicate how many months back to download new
     #'   data from
     ret_ctf_monthly = function(t_minus_m = 1) {
-      tbl_msl <- self$tbl_msl
-      lib_meta <- self$ac$get_library("meta-tables")
-      ctf <- lib_meta$read("ctf-meta")$data
-      ids <- ctf$MonthlyId
-      res <- list()
-      is_miss <- rep(FALSE, length(ids))
-      for (i in 1:length(ids)) {
-        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "M"))
-        if ("try-error" %in% class(dat)) {
-          is_miss[i] <- TRUE
-        } else {
-          res[[i]] <- dat
-        }
-      }
-      dtc_name <- ctf$DtcName[!is_miss]
-      ret <- do.call("cbind", res)
-      colnames(ret) <- dtc_name
-      lib <- self$ac$get_library("returns")
-      old_dat <- lib$read("ctf-monthly")$data
-      new_dat <- xts_to_dataframe(ret)
-      combo <- xts_rbind(new_dat, old_dat, FALSE)
-      combo_df <- xts_to_dataframe(combo)
-      combo_df$Date <- as.character(combo_df$Date)
-      lib$write("ctf-monthly", combo_df)
+      # tbl_msl <- self$tbl_msl
+      # lib_meta <- self$ac$get_library("meta-tables")
+      # ctf <- lib_meta$read("ctf-meta")$data
+      # ids <- ctf$MonthlyId
+      # res <- list()
+      # is_miss <- rep(FALSE, length(ids))
+      # for (i in 1:length(ids)) {
+      #   dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "M"))
+      #   if ("try-error" %in% class(dat)) {
+      #     is_miss[i] <- TRUE
+      #   } else {
+      #     res[[i]] <- dat
+      #   }
+      # }
+      # dtc_name <- ctf$DtcName[!is_miss]
+      # ret <- do.call("cbind", res)
+      # colnames(ret) <- dtc_name
+      # lib <- self$ac$get_library("returns")
+      # old_dat <- lib$read("ctf-monthly")$data
+      # new_dat <- xts_to_dataframe(ret)
+      # combo <- xts_rbind(new_dat, old_dat, FALSE)
+      # combo_df <- xts_to_dataframe(combo)
+      # combo_df$Date <- as.character(combo_df$Date)
+      # lib$write("ctf-monthly", combo_df)
+      upload_ctf_monthly(self$ac)
     },
+    
     
     #' @description Update daily estimates based on holdings x returns
     #' meant for short periods use xxx function for backfill
@@ -374,7 +376,8 @@ Database <- R6::R6Class(
         rebal_wgt <- res$reb_wgt
         asset_ret[is.na(asset_ret)] <- 0
         rebal_wgt[is.na(rebal_wgt)] <- 0
-        reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name[i], rebal_freq = "BH")
+        reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name[i], 
+                         rebal_freq = "BH")
         reb$align_rebal_wgt()
         reb$rebal()
         xts_list[[i]] <- reb$rebal_ret

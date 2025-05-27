@@ -188,15 +188,18 @@ create_wealth_cht <- function(rpt, tm10, freq = "months", p_or = NULL,
 
 #' @export
 create_capm_cht <- function(rpt, tm10, freq = "months", funds = TRUE,
-                            adj_scale = TRUE, legend_loc = "right") {
+                            adj_scale = TRUE, legend_loc = "right", 
+                            dict = NULL) {
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_start = tm10)[[1]]
   asset <- combo$xp
   bench <- combo$xb
   rf <- combo$xrf
   port <- combo$p
-  
   if (funds) {
+    if (!is.null(dict)) {
+      asset <- asset[, colnames(asset) %in% dict$Value] 
+    }
     plot_ret <- xts_cbind(asset, port)
   } else {
     plot_ret <- port
@@ -478,7 +481,7 @@ write_equity <- function(as_of, pres, rpt, dict, descr, locater, slide_title,
   perf_stat_ft <- create_perf_tbl(rpt, tm10)
   char_ft <- create_char_tbl(rpt)
   wealth_cht <- create_wealth_cht(rpt, tm10)
-  capm_cht <- create_capm_cht(rpt, tm10)
+  capm_cht <- create_capm_cht(rpt, tm10, dict = dict)
   if (bar_cht_opt == "sector") {
     bar_cht <- create_sector_cht(rpt)
   } else if (bar_cht_opt == "region") {

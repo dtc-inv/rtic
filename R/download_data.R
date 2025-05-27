@@ -1,5 +1,5 @@
 #' @export
-refresh_bd_key <- function(api_keys, save_to_n = FALSE) {
+refresh_bd_key <- function(api_keys, save_to_n = FALSE, save_local = FALSE) {
   bd_key <- api_keys$bd_key
   response <- httr::POST('https://login.bdreporting.com/connect/token',
                          encode = 'form',
@@ -13,7 +13,11 @@ refresh_bd_key <- function(api_keys, save_to_n = FALSE) {
   if (save_to_n) {
     api_keys$bd_key <- bd_key
     save(api_keys, 
-         file = 'N:/Investment Team/DATABASES/MDB/Keys/api_keys.RData')
+         file = 'N:/Investment Team/DATABASES/CustomRet/keys/api_keys.RData')
+  }
+  if (save_local) {
+    api_keys$bd_key <- bd_key
+    save(api_keys, "~/api_keys.RData")
   }
   return(bd_key)
 }
@@ -37,7 +41,7 @@ download_bd <- function(account_id, api_keys, as_of = NULL) {
                 include = list(returnInfo = TRUE, assets = TRUE))
   ) # end POST
   if (response$status_code != 200) {
-    bd_key <- refresh_bd_key(api_keys, TRUE)
+    bd_key <- refresh_bd_key(api_keys, TRUE, TRUE)
     response <- httr::POST(
       'https://api.blackdiamondwealthplatform.com/account/Query/HoldingDetailSearch',
       accept_json(),
@@ -396,4 +400,25 @@ read_hfr_csv <- function(file_nm) {
   r <- xts(t(dat[, 8:ncol(dat)]), dt)
   colnames(r) <- dat$FUND_NAME
   return(r)
+}
+
+upload_ctf_monthly <- function(ac, xl_path = NULL, skip = 4) {
+  lib <- get_all_lib(ac)
+  tbl_cust <- lib$`meta-tables`$read("cust")
+  if (is.null(xl_path)) {
+    xl_path <- "N:/Investment Team/DATABASES/FACTSET/BMO NAV & Platform Return Upload.xlsx"
+  }
+  dat <- read_xts(xl_path, skip = skip)
+  ix <- match(tbl_cust$WorkupId, colnames(dat))
+  if (any(ix)) {
+    if (all(ix)) {
+      stop("no values found")
+    }
+    warning("missing values created when matching workup excel to custodian library")
+    ix <- na.omit(ix)
+    
+  }
+  r <- dat[, ix]
+  r <- r["1994/"] / 100
+  lib$returns$write("ctf-monthly", xts_to_arc(r))
 }
