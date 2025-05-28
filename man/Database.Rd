@@ -44,6 +44,7 @@ holdings data}
 \item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
+\item \href{#method-Database-ret_ctf_daily_hold}{\code{Database$ret_ctf_daily_hold()}}
 \item \href{#method-Database-ret_ctf_daily}{\code{Database$ret_ctf_daily()}}
 \item \href{#method-Database-ret_ctf_daily_adj}{\code{Database$ret_ctf_daily_adj()}}
 \item \href{#method-Database-ret_workup}{\code{Database$ret_workup()}}
@@ -294,6 +295,21 @@ data from}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-ret_ctf_daily_hold"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily_hold}{}}}
+\subsection{Method \code{ret_ctf_daily_hold()}}{
+Update daily estimates based on holdings x returns
+meant for short periods use xxx function for backfill
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily_hold(
+  dtc_name = NULL,
+  date_start = NULL,
+  date_end = NULL
+)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_ctf_daily"></a>}}

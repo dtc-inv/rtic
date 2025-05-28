@@ -850,7 +850,6 @@ Database <- R6::R6Class(
     hold_cust_backfill = function(dtc_name, date_start = NULL, date_end = NULL, 
                                   freq = "days", save_to_db = TRUE, 
                                   return_data = FALSE) {
-      #freq <- check_freq(freq)
       lib <- self$ac$get_library("holdings")
       old_dat <- try(lib$read(dtc_name)$data)
       if (inherits(old_dat, "try-error")) {
@@ -860,7 +859,8 @@ Database <- R6::R6Class(
         if (nrow(old_dat) == 0) {
           stop("no history found, need to supply date_start")
         }
-        date_start <- us_trading_days(max(unique(as.Date(old_dat$TimeStamp))) + 1)
+        date_start <- prev_trading_day(max(unique(as.Date(old_dat$TimeStamp))) 
+                                       + 1, 0)
       } else {
         date_start <- as.Date(date_start)
       }

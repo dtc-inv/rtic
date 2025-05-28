@@ -17,7 +17,7 @@ refresh_bd_key <- function(api_keys, save_to_n = FALSE, save_local = FALSE) {
   }
   if (save_local) {
     api_keys$bd_key <- bd_key
-    save(api_keys, "~/api_keys.RData")
+    save(api_keys, file = "~/api_keys.RData")
   }
   return(bd_key)
 }
@@ -182,7 +182,7 @@ download_sec <- function(long_cik, short_cik, user_email) {
 #' @title Factset Global Prices API for total returns
 #' @param api_keys list of api keys
 #' @param ids character vector of ids to download
-#' @param date_start begginig date, earliest start is 2006-01-03
+#' @param date_start beginning date, earliest start is 2006-01-03
 #' @param date_end ending date
 #' @param freq "D", or "M" for daily or monthly time-series
 #' @return json with data

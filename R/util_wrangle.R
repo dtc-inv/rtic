@@ -375,12 +375,10 @@ merge_msl <- function(tbl_hold, tbl_msl, rm_dup_dates = TRUE) {
   tbl_miss <- tbl_hold[is.na(ix), ]
   tbl_inter <- cbind(tbl_hold[, !x_dup_col, drop = FALSE], tbl_msl[ix, ])
   tbl_inter <- tbl_inter[!is.na(ix), ]
-  
   res <- list()
   res$inter <- tbl_inter
   res$union <- tbl_union
   res$miss <- tbl_miss
-  
   if (rm_dup_dates) {
     is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
     if (any(is_dup)) {

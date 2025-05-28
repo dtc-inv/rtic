@@ -390,17 +390,23 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
 }
 
 #' @export
-ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
+ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE, 
+                          m_seq = TRUE) {
   tbl_hold <- read_hold(ac, dtc_name, FALSE)
   tbl_hold$TimeStamp <- as.Date(tbl_hold$TimeStamp)
-  dt <- unique(tbl_hold$TimeStamp) 
-  month_seq <- seq.Date(min(dt), max(dt), "months")
-  tbl_hold <- filter(tbl_hold, TimeStamp %in% month_seq)
+  dt <- unique(tbl_hold$TimeStamp)
+  if (m_seq) {
+    month_seq <- seq.Date(min(dt), max(dt), "months")
+    tbl_hold <- filter(tbl_hold, TimeStamp %in% month_seq)
+  }
   if (is.null(msl)) {
     lib <- ac$get_library("meta-tables")
     tbl_msl <- lib$read("msl")$data
   }
+  is_dup <- duplicated(paste0(tbl_hold$Name, tbl_hold$TimeStamp))
+  tbl_hold <- tbl_hold[!is_dup, ]
   res <- merge_msl(tbl_hold, tbl_msl, FALSE)
+  tbl_miss <- res$miss
   rebal_wgt <- tidyr::pivot_wider(
     data = res$inter, 
     id_cols = TimeStamp,
@@ -417,6 +423,7 @@ ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE) {
   reb$align_rebal_wgt()
   reb$rebal(sum_to_1)
   out <- list()
+  out$tbl_miss <- tbl_miss
   out$res <- res
   out$reb <- reb
   return(out)
