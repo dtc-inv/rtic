@@ -368,6 +368,12 @@ merge_msl <- function(tbl_hold, tbl_msl, rm_dup_dates = TRUE) {
   )
   if ("Identifier" %in% colnames(tbl_hold)) {
     ix <- match_bd_id(tbl_hold$Identifier, tbl_msl, ix)
+    if ("Cusip" %in% colnames(tbl_hold)) {
+      ix <- match_bd_id(tbl_hold$Cusip, tbl_msl, ix)
+    }
+    if ("Name" %in% colnames(tbl_hold)) {
+      ix <- match_bd_id(tbl_hold$Name, tbl_msl, ix)
+    }
   }
   y_dup_col <- colnames(tbl_msl) %in% colnames(tbl_hold)
   x_dup_col <- colnames(tbl_hold) %in% colnames(tbl_msl)
@@ -386,7 +392,6 @@ merge_msl <- function(tbl_hold, tbl_msl, rm_dup_dates = TRUE) {
       res$inter <- res$inter[!is_dup, ]
     }
   }
-  
   return(res)
 }
 
@@ -422,13 +427,13 @@ mid_month <- function(dt) {
 
 #' @export
 match_bd_id <- function(bd_id, tbl_msl, ix = NULL) {
+  incomps <- c(NA, "000000000", "N/A", "0")
   if (is.null(ix)) {
     ix <- rep(NA, length(bd_id))
   }
-  ix <- fill_ix(ix, match(bd_id, tbl_msl$Sedol))
-  ix <- fill_ix(ix, match(bd_id, substr(tbl_msl$Ticker, 1, 
-                                        nchar(tbl_msl$Ticker))))
-  ix <- fill_ix(ix, match(bd_id, tbl_msl$Cusip))
+  ix <- fill_ix(ix, match(bd_id, tbl_msl$Sedol, incomparables = incomps))
+  ix <- fill_ix(ix, match(bd_id, tbl_msl$Cusip, incomparables = incomps))
+  ix <- fill_ix(ix, match(bd_id, tbl_msl$BdName, incomparables = incomps))
   return(ix)
 }
 
