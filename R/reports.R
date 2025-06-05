@@ -407,6 +407,11 @@ ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE,
   tbl_hold <- tbl_hold[!is_dup, ]
   res <- merge_msl(tbl_hold, tbl_msl, FALSE)
   tbl_miss <- res$miss
+  is_dup <- duplicated(paste0(res$inter$DtcName, res$inter$TimeStamp))
+  if (any(is_dup)) {
+    warning("duplicate values found after msl merge")
+    res$inter <- res$inter[!is_dup, ]
+  }
   rebal_wgt <- tidyr::pivot_wider(
     data = res$inter, 
     id_cols = TimeStamp,

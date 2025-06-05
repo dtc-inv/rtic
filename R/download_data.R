@@ -198,6 +198,7 @@ download_fs_global_prices <- function(api_keys, ids, date_start, date_end,
     startDate = date_start,
     endDate = date_end,
     frequency = freq,
+    currency = "USD",
     dividendAdjust = "EXDATE_C",
     batch = "N"
   )
