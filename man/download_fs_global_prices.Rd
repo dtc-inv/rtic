@@ -11,7 +11,7 @@ download_fs_global_prices(api_keys, ids, date_start, date_end, freq = "D")
 
 \item{ids}{character vector of ids to download}
 
-\item{date_start}{begginig date, earliest start is 2006-01-03}
+\item{date_start}{beginning date, earliest start is 2006-01-03}
 
 \item{date_end}{ending date}
 

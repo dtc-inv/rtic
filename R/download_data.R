@@ -22,14 +22,22 @@ refresh_bd_key <- function(api_keys, save_to_n = FALSE, save_local = FALSE) {
   return(bd_key)
 }
 
+#' @title Get Batch ID for bulk download
+#' @param api_keys list of API Keys
+#' @param as_of optional date, defaults to last trading day, transactions
+#'   will default to last 7 days
+#' @return batch id to pass to `download_bd_batch` for bulk download
+#' @export
 download_bd_batch_id <- function(api_keys, as_of = NULL) {
   if (is.null(as_of)) {
     as_of <- last_us_trading_day()
   }
-  body <- list(returnDate = "06-04-2025", batchFiles = list("accounts"), 
+  bd_key <- api_keys$bd_key
+  body <- list(returnDate = format(as_of, "%m-%d-%Y"), 
+               batchFiles = list("accounts"), 
                includeTransactions = TRUE, includeHoldings = TRUE)
   response <- httr::POST(
-    'https://api.blackdiamondwealthplatform.com/account/Query/HoldingDetailSearch',
+    'https://api.blackdiamondwealthplatform.com/batchV5',
     accept_json(),
     add_headers(
       Authorization = paste0('Bearer ', bd_key$refresh_token),
@@ -38,9 +46,9 @@ download_bd_batch_id <- function(api_keys, as_of = NULL) {
     encode = 'json',
     body = body)
   if (response$status_code != 200) {
-    bd_key <- refresh_bd_key(api_keys, TRUE, FALSE, TRUE)
+    bd_key <- refresh_bd_key(api_keys, FALSE, TRUE)
     response <- httr::POST(
-      'https://api.blackdiamondwealthplatform.com/account/Query/HoldingDetailSearch',
+      'https://api.blackdiamondwealthplatform.com/batchV5',
       accept_json(),
       add_headers(
         Authorization = paste0('Bearer ', bd_key$refresh_token),
@@ -49,6 +57,124 @@ download_bd_batch_id <- function(api_keys, as_of = NULL) {
       encode = 'json',
       body = body)
   }
+  res <- parse_json(response)
+  return(res)
+}
+
+#' @title BlackDiamond Batch Download
+#' @param api_keys list of API Keys
+#' @param batch_id from `download_bd_batch_id`
+#' @return response with raw data
+#' @export
+download_bd_batch <- function(api_keys, batch_id) {
+  bd_key <- api_keys$bd_key
+  url <- paste0(
+    "https://api.blackdiamondwealthplatform.com/batch/",
+    batch_id
+  )
+  resp <- httr::GET(
+    url,
+    accept_json(),
+    add_headers(
+      Authorization = paste0('Bearer ', bd_key$refresh_token),
+      `Ocp-Apim-Subscription-Key` = bd_key$bd_subkey
+    ),
+    encode = 'json'
+  )
+  return(resp)
+}
+
+#' @title Unzip Response from BlackDiamond Batch Download
+#' @param resp response returned by `download_bd_batch`
+#' @return json data (list)
+#' @export
+unzip_bd_batch <- function(resp) {
+  tmp <- tempfile(fileext = ".zip")
+  brio::write_file_raw(resp$content, path = tmp)
+  ufile <- unzip(tmp)
+  read_json(ufile)
+}
+
+#' @title Parse JSON file from BlackDiamond Batch Download Process
+#' @param ac arcticDB datastore
+#' @param json from `unzip_bd_batch`
+#' @return does not return data, transactions, market values, and holdings
+#'   are stored in `ac`
+#' @export
+handle_bd_batch <- function(ac, json, as_of) {
+  lib <- get_all_lib(ac)
+  cust <- lib$`meta-tables`$read("cust")$data
+  for (i in 1:length(json)) {
+    x <- json[[i]]
+    if (!x$Id %in% cust$BdAccountId) {
+      next
+    }
+    print(x$Name)
+    ix <- match(x$Id, cust$BdAccountId)
+    dtc_name <- cust$DtcName[ix]
+    mv <- x$Details$TotalEmv
+    cf_dat <- data.frame(
+      DtcName = dtc_name, 
+      TradeDate = as_of, 
+      Action = "EndingValue", 
+      Value = mv, 
+      TransactionId = paste0("EndingValue", "-", as_of)
+    )
+    cf_type <- sapply(x$Transactions, "[[", "ExternalFlowAffect")
+    is_cf <- cf_type != "NotExternalFlow"
+    if (any(is_cf)) {
+      cf <- x$Transactions[is_cf]
+      for (j in 1:length(cf)) {
+        dir <- extract_list_null(cf[[j]], "ExternalFlowAffect")
+        if (dir == "Withdrawal") {
+          cf_dat[j + 1, "TradeDate"] <- extract_list_null(cf[[j]], "TradeDate")
+          cf_dat[j + 1, "Action"] <- dir
+          cf_dat[j + 1, "Value"] <- -extract_list_null(cf[[j]], "MarketValue")
+          cf_dat[j + 1, "TransactionId"] <- extract_list_null(cf[[j]], "TransactionID")
+        } else if (dir == "Contribution") {
+          cf_dat[j + 1, "TradeDate"] <- extract_list_null(cf[[j]], "TradeDate")
+          cf_dat[j + 1, "Action"] <- dir
+          cf_dat[j + 1, "Value"] <- extract_list_null(cf[[j]], "MarketValue")
+          cf_dat[j + 1, "TransactionId"] <- extract_list_null(cf[[j]], "TransactionID")
+        } else {
+         warning(paste0(dtc_name, " unfamiliar transaction"))
+        } # end if dir
+      } # end cf loop
+    } # end any cf
+    cf_dat$DtcName <- dtc_name
+    old_dat <- try(lib$transactions$read(dtc_name)$data)
+    if ("try-error" %in% class(old_dat)) {
+      old_dat <- data.frame()
+    }
+    combo <- rbind_tx(old_dat, cf_dat)
+    lib$transactions$write(dtc_name, combo)
+  } # end json loop
+}
+
+#' @title Extract field from list checking for NULL
+#' @param x list
+#' @param nm field (string)
+#' @return NA if field is NULL or field value if not NULL
+#' @export
+extract_list_null <- function(x, nm) {
+  if (is.null(x[nm][[1]])) {
+    return(NA)
+  } else {
+    return(x[nm][[1]])
+  }
+}
+
+#' @title Rowbind transactions
+#' @param old existing data.frame of transactions
+#' @param new newly downloaded transactions
+#' @return combo of new and old, removes duplicated values for new from old
+#' @export
+rbind_tx <- function(old, new) {
+  ix <- na.omit(match(old$TransactionId, new$TransactionId))
+  if (length(ix) > 0) {
+    old <- old[-ix, ]
+  }
+  rbind(old, new)
 }
 
 #' @export
