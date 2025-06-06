@@ -22,6 +22,35 @@ refresh_bd_key <- function(api_keys, save_to_n = FALSE, save_local = FALSE) {
   return(bd_key)
 }
 
+download_bd_batch_id <- function(api_keys, as_of = NULL) {
+  if (is.null(as_of)) {
+    as_of <- last_us_trading_day()
+  }
+  body <- list(returnDate = "06-04-2025", batchFiles = list("accounts"), 
+               includeTransactions = TRUE, includeHoldings = TRUE)
+  response <- httr::POST(
+    'https://api.blackdiamondwealthplatform.com/account/Query/HoldingDetailSearch',
+    accept_json(),
+    add_headers(
+      Authorization = paste0('Bearer ', bd_key$refresh_token),
+      `Ocp-Apim-Subscription-Key` = bd_key$bd_subkey
+    ),
+    encode = 'json',
+    body = body)
+  if (response$status_code != 200) {
+    bd_key <- refresh_bd_key(api_keys, TRUE, FALSE, TRUE)
+    response <- httr::POST(
+      'https://api.blackdiamondwealthplatform.com/account/Query/HoldingDetailSearch',
+      accept_json(),
+      add_headers(
+        Authorization = paste0('Bearer ', bd_key$refresh_token),
+        `Ocp-Apim-Subscription-Key` = bd_key$bd_subkey
+      ),
+      encode = 'json',
+      body = body)
+  }
+}
+
 #' @export
 download_bd <- function(account_id, api_keys, as_of = NULL) {
   if (is.null(as_of)) {
@@ -41,7 +70,7 @@ download_bd <- function(account_id, api_keys, as_of = NULL) {
                 include = list(returnInfo = TRUE, assets = TRUE))
   ) # end POST
   if (response$status_code != 200) {
-    bd_key <- refresh_bd_key(api_keys, TRUE, TRUE)
+    bd_key <- refresh_bd_key(api_keys, FALSE, TRUE)
     response <- httr::POST(
       'https://api.blackdiamondwealthplatform.com/account/Query/HoldingDetailSearch',
       accept_json(),
