@@ -500,4 +500,45 @@ ret_date_info <- function(x) {
   data.frame(Name = nm, Start = as.Date(sdate), End = as.Date(edate))
 }
 
-
+ctf_daily_est_mv <- function(ac, dtc_name, as_of = NULL) {
+  if (is.null(as_of)) {
+    as_of <- last_us_trading_day()
+  }
+  lib <- get_all_lib(ac)
+  tx <- lib$transactions$read(dtc_name)$data
+  tx$TradeDate <- as.Date(tx$TradeDate)
+  cf <- filter(tx, Action != "EndingValue") |>
+    group_by(TradeDate) |>
+    summarize(Value = sum(Value))
+  if (nrow(cf) > 0) {
+    ix <- cf$TradeDate %in% as_of
+    if (any(ix)) {
+      cf <- cf$Value[ix]
+    } else {
+      cf <- 0
+    }
+  } else {
+    cf <- 0
+  }
+  t_1 <- prev_trading_day(as_of, 1)
+  beg_val_log <- tx$TradeDate == t_1 & tx$Action == "EndingValue"
+  if (all(beg_val_log == FALSE)) {
+    stop("previous trading day beginning market value not found")
+  }
+  beg_val <- tx$Value[beg_val_log]
+  if (length(beg_val) > 1) {
+    warning("more than 1 entry found for prev trading day beg mv")
+    beg_val <- beg_val[1]
+  }
+  end_val_log <- tx$TradeDate == as_of & tx$Action == "EndingValue"
+  if (all(end_val_log == FALSE)) {
+    stop("previous trading day ending market value not found")
+  }
+  end_val <- tx$Value[end_val_log]
+  if (length(end_val) > 1) {
+    warning("more than 1 entry found for prev trading day end mv")
+    end_val <- end_val[1]
+  }
+  # modified deitz assuming cash flow is traded mid-day
+  ret <- (end_val - beg_val - cf) / (beg_val + 0.5 * cf)
+}
