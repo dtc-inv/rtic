@@ -440,7 +440,8 @@ Database <- R6::R6Class(
           warning(paste0(colnames(d), " did not spline"))
           next
         }
-        daily[, i] <- res
+        incpt <- zoo::index(res)[1]
+        daily[paste0(incpt, "/"), i] <- res
       }
       lib_ret$write("ctf-daily", xts_to_arc(daily))
     },
