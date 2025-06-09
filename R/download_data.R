@@ -558,16 +558,24 @@ read_hfr_csv <- function(file_nm) {
   return(r)
 }
 
+#' @title Upload Month End CTF Reconciled Returns
+#' @param ac arcticDB datastore
+#' @param xl_path filepath of excel workbook with returns, leave `NULL` for
+#'   default
+#' @param skip leading header rows to skip, default is `4`
+#' @return no data is returned, the entire history is read and stored in
+#'   arcticDB   
+#' @export   
 upload_ctf_monthly <- function(ac, xl_path = NULL, skip = 4) {
   lib <- get_all_lib(ac)
-  tbl_cust <- lib$`meta-tables`$read("cust")
+  tbl_cust <- lib$`meta-tables`$read("cust")$data
   if (is.null(xl_path)) {
     xl_path <- "N:/Investment Team/DATABASES/FACTSET/BMO NAV & Platform Return Upload.xlsx"
   }
   dat <- read_xts(xl_path, skip = skip)
   ix <- match(tbl_cust$WorkupId, colnames(dat))
-  if (any(ix)) {
-    if (all(ix)) {
+  if (any(is.na(ix))) {
+    if (all(is.na(ix))) {
       stop("no values found")
     }
     warning("missing values created when matching workup excel to custodian library")
@@ -575,6 +583,24 @@ upload_ctf_monthly <- function(ac, xl_path = NULL, skip = 4) {
     
   }
   r <- dat[, ix]
+  nm_tgt <- match(colnames(r), tbl_cust$WorkupId)
+  colnames(r) <- tbl_cust$DtcName[nm_tgt]
   r <- r["1994/"] / 100
   lib$returns$write("ctf-monthly", xts_to_arc(r))
+}
+
+read_daily_ctf_xl <- function(nm) {
+  fnm <- paste0("N:/Investment Team/DATABASES/CustomRet/ctf-daily-backfill/", nm, ".csv")
+  dat <- read.csv(fnm)
+  dt <- try(as.Date(dat$Date))
+  if (inherits(dt, "try-error")) {
+    dt <- as.Date(dat$Date, format = "%m/%d/%Y")
+  }
+  tgt <-  c("BMV", "EMV", "Net.Additions")
+  dat[, tgt] <- apply(dat[, tgt], 2, gsub, pattern = ",", replacement = "")
+  dat[, tgt] <- apply(dat[ ,tgt], 2, as.numeric)
+  r <- dat[, "EMV"] / (dat[, "BMV"] + dat[, "Net.Additions"]) - 1
+  out <- xts(r, dt)
+  colnames(out) <- nm
+  return(out)
 }

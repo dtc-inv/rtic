@@ -4,7 +4,7 @@
 \alias{handle_bd_batch}
 \title{Parse JSON file from BlackDiamond Batch Download Process}
 \usage{
-handle_bd_batch(ac, json)
+handle_bd_batch(ac, json, as_of)
 }
 \arguments{
 \item{ac}{arcticDB datastore}
