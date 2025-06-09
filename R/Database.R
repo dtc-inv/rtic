@@ -417,6 +417,21 @@ Database <- R6::R6Class(
       lib$write("ctf-daily", combo_df)
     },
     
+    ret_ctf_daily_bd = function(as_of = NULL) {
+      self$api_keys$bd_key <- refresh_bd_key(self$api_keys)
+      id <- download_bd_batch_id(self$api_keys, as_of)
+      Sys.sleep(120)
+      res <- download_bd_batch(self$api_keys, id$id)
+      json <- unzip_bd_batch(res)
+      if (is.null(as_of)) {
+        as_of <- last_us_trading_day()
+      }
+      handle_bd_batch(self$ac, json, as_of)
+      # lib <- get_all_lib(self$ac)
+      # cust <- lib$`meta-tables`$read("cust")$data
+      
+    },
+    
     ret_ctf_daily_adj = function() {
       lib_meta <- self$ac$get_library("meta-tables")
       lib_ret <- self$ac$get_library("returns")

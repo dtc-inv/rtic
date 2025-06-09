@@ -104,6 +104,7 @@ unzip_bd_batch <- function(resp) {
 handle_bd_batch <- function(ac, json, as_of) {
   lib <- get_all_lib(ac)
   cust <- lib$`meta-tables`$read("cust")$data
+  as_of <- as.character(as_of)
   for (i in 1:length(json)) {
     x <- json[[i]]
     if (!x$Id %in% cust$BdAccountId) {
@@ -148,6 +149,36 @@ handle_bd_batch <- function(ac, json, as_of) {
     }
     combo <- rbind_tx(old_dat, cf_dat)
     lib$transactions$write(dtc_name, combo)
+    hold <- x$Holdings
+    fld <- sapply(hold, names) |> unlist() |> unique()
+    xdf <- data.frame(x = rep(NA, length(hold)))
+    for (h in 1:length(fld)) {
+      dat <- sapply(hold, "[[", fld[h])
+      dat <- list_replace_null(dat) |> unlist()
+      if (is.null(dat)) {
+        dat <- rep(NA, length(hold))
+      }
+      xdf[, h] <- dat
+    }
+    if ("AssetName" %in% fld) {
+      fld[fld %in% "AssetName"] <- "Name"
+    }
+    if ("AlternateId" %in% fld) {
+      fld[fld %in% "AlternateId"] <- "Identifier"
+    }
+    if ("MarketValue" %in% fld) {
+      fld[fld %in% "MarketValue"] <- "Value"
+    }
+    if ("AsOfDate" %in% fld) {
+      fld[fld %in% "AsOfDate"] <- "TimeStamp"
+    }
+    colnames(xdf) <- fld
+    old_dat <- try(lib$holdings$read(dtc_name)$data)
+    if (inherits(old_dat, "try-error")) {
+      old_dat <- data.frame()
+    }
+    combo <- rob_rbind(old_dat, xdf)
+    lib$holdings$write(dtc_name, combo)  
   } # end json loop
 }
 
