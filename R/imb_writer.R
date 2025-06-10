@@ -399,6 +399,23 @@ write_imb <- function(t_minus_m = 1) {
   )
   rm(p1, b, rpt)
   
+  print("Magnitude")
+  p1 <- db$create_port_from_ids("Magnitude Capital")
+  b <- db$create_port_from_ids("MSCI ACWI")
+  rpt <- Reporter$new(list(p1), b)
+  pres <- write_pdf(
+    as_of = as_of,
+    pres = pres,
+    rpt = rpt,
+    dict = res$dict,
+    descr = res$descr,
+    locater = ms_pos,
+    slide_title = "Magnitude Capital",
+    tm10 = tm10,
+    lgnd_pos = "bottom",
+    b_over = "hfr"
+  )
+  rm(p1, b, rpt)
   # write out
   print(pres, "C:/Users/asotolongo/Downloads/test.pptx")
 }

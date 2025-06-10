@@ -7,6 +7,9 @@
 #' @export
 create_arctic <- function(api_keys = NULL, py_loc = NULL, s3_name = "dtc-rtic") 
   {
+  if (is.null(api_keys)) {
+    load("~/api_keys.RData")
+  }
   if (!is.list(api_keys)) {
     rdat_file <- grep(".RData", api_keys, fixed = TRUE)
     if (length(rdat_file) == 0) {

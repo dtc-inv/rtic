@@ -819,11 +819,16 @@ write_multi_strat <- function(as_of, pres, rpt, dict, descr, locater,
 
 #' @export
 write_pdf <- function(as_of, pres, rpt, dict, descr, locater,
-                              slide_title, tm10, lgnd_pos = "bottom") {
-  
-  cash_plus <- rpt$rf + 0.04 / 252
-  colnames(cash_plus) <- "Cash + 4%"
-  cash_plus <- change_freq(cash_plus)
+                              slide_title, tm10, lgnd_pos = "bottom",
+                      b_over = c("cash", "hfr")) {
+
+  if (b_over[1] == "cash") {
+    cash_plus <- rpt$rf + 0.04 / 252
+    colnames(cash_plus) <- "Cash + 4%"
+    cash_plus <- change_freq(cash_plus)
+  } else {
+    cash_plus <- read_ret("HFRI FOF: Conservative Index", rpt$ac)
+  }
   col <- rpt$col
   set_flextable_defaults(font.size = 8, font.color = "black")
   dtc_name <- rpt$port[[1]]$name
