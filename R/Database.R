@@ -390,46 +390,62 @@ Database <- R6::R6Class(
       lib$write("returns", combo)
     },
     
-    ret_ctf_daily = function(t_minus_m = 1) {
-      lib_meta <- self$ac$get_library("meta-tables")
-      ctf_meta <- lib_meta$read("ctf-meta")$data
-      is_daily <- !is.na(ctf_meta$DailyId)
-      ctf_meta <- ctf_meta[is_daily, ]
-      ids <- ctf_meta$DailyId
-      is_found <- rep(TRUE, length(ids))
-      res <- list()
-      for (i in 1:length(ids)) {
-        dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "D"))
-        if (inherits(dat, "try-error")) {
-          is_found[i] <- FALSE
-        } else {
-          res[[i]] <- dat
-        }
-      }
-      dtc_name <- ctf_meta$DtcName[is_found]
-      ret <- do.call("cbind", res)
-      colnames(ret) <- dtc_name
-      old_dat <- lib$read("ctf-daily")
-      new_dat <- xts_to_dataframe(ret)
-      combo <- xts_rbind(new_dat, old_dat, FALSE)
-      combo_df <- xts_to_dataframe(combo)
-      combo_df$Date <- as.character(combo_df$Date)
-      lib$write("ctf-daily", combo_df)
-    },
+    # ret_ctf_daily = function(t_minus_m = 1) {
+    #   lib_meta <- self$ac$get_library("meta-tables")
+    #   ctf_meta <- lib_meta$read("ctf-meta")$data
+    #   is_daily <- !is.na(ctf_meta$DailyId)
+    #   ctf_meta <- ctf_meta[is_daily, ]
+    #   ids <- ctf_meta$DailyId
+    #   is_found <- rep(TRUE, length(ids))
+    #   res <- list()
+    #   for (i in 1:length(ids)) {
+    #     dat <- try(download_fs_ra_ret(ids[i], self$api_keys, t_minus_m, "D"))
+    #     if (inherits(dat, "try-error")) {
+    #       is_found[i] <- FALSE
+    #     } else {
+    #       res[[i]] <- dat
+    #     }
+    #   }
+    #   dtc_name <- ctf_meta$DtcName[is_found]
+    #   ret <- do.call("cbind", res)
+    #   colnames(ret) <- dtc_name
+    #   old_dat <- lib$read("ctf-daily")
+    #   new_dat <- xts_to_dataframe(ret)
+    #   combo <- xts_rbind(new_dat, old_dat, FALSE)
+    #   combo_df <- xts_to_dataframe(combo)
+    #   combo_df$Date <- as.character(combo_df$Date)
+    #   lib$write("ctf-daily", combo_df)
+    # },
     
-    ret_ctf_daily_bd = function(as_of = NULL) {
-      self$api_keys$bd_key <- refresh_bd_key(self$api_keys)
-      id <- download_bd_batch_id(self$api_keys, as_of)
-      Sys.sleep(120)
-      res <- download_bd_batch(self$api_keys, id$id)
-      json <- unzip_bd_batch(res)
-      if (is.null(as_of)) {
-        as_of <- last_us_trading_day()
+    ret_ctf_daily = function(date_start = NULL, date_end = NULL) {
+      if (is.null(date_end)) {
+        date_end <- last_us_trading_day()
       }
-      handle_bd_batch(self$ac, json, as_of)
-      # lib <- get_all_lib(self$ac)
-      # cust <- lib$`meta-tables`$read("cust")$data
-      
+      if (is.null(date_start)) {
+        date_start <- prev_trading_day(date_end, 2)
+      }
+      lib <- get_all_lib(self$ac)
+      ctf <- lib$`meta-tables`$read("cust")$data
+      ctf <- left_merge(ctf, self$tbl_msl[, c("DtcName", "Layer")], "DtcName", 
+                        FALSE)
+      ctf <- ctf$union
+      sma <- ctf[ctf$Layer < 3, ]
+      res <- list()
+      for (i in 1:nrow(sma)) {
+        tx <- try(lib$transactions$read(sma$DtcName[i])$data)
+        if (inherits(tx, "try-error")) {
+          next
+        }
+        tx$TradeDate <- as.Date(tx$TradeDate)
+        is_cf <- tx$Action %in% c("Withdrawal", "Contribution")
+        tx$TradeDate[is_cf] <- prev_trading_day(tx$TradeDate[is_cf], 1)
+        adj <- tx |>
+          group_by(TradeDate) |>
+          summarize(AdjVal = sum(Value))
+        price <- xts(adj[[2]], adj[[1]])
+        ret <- price_to_ret(price)
+        colnames(ret) <- sma$DtcName[i]
+      }
     },
     
     ret_ctf_daily_adj = function() {
@@ -743,6 +759,20 @@ Database <- R6::R6Class(
     
     # holdings ----
 
+    #' @description BlackDiamond batch download of holdings and transactions
+    #' @param as_of as of date, leave `NULL` for previous business day
+    hold_ctf_daily_bd = function(as_of = NULL) {
+      self$api_keys$bd_key <- refresh_bd_key(self$api_keys)
+      id <- download_bd_batch_id(self$api_keys, as_of)
+      Sys.sleep(120)
+      res <- download_bd_batch(self$api_keys, id$id)
+      json <- unzip_bd_batch(res)
+      if (is.null(as_of)) {
+        as_of <- last_us_trading_day()
+      }
+      handle_bd_batch(self$ac, json, as_of)
+    },
+    
     #' @description Download holdings from SEC EDGAR Database
     #' @param dtc_name leave `NULL` to download all, or enter a vector of
     #'   dtc_names to download specific funds
