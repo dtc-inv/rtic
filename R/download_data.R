@@ -114,6 +114,9 @@ handle_bd_batch <- function(ac, json, as_of) {
     ix <- match(x$Id, cust$BdAccountId)
     dtc_name <- cust$DtcName[ix]
     mv <- x$Details$TotalEmv
+    if (is.null(mv)) {
+      mv <- NA
+    }
     cf_dat <- data.frame(
       DtcName = dtc_name, 
       TradeDate = as_of, 
@@ -201,7 +204,7 @@ extract_list_null <- function(x, nm) {
 #' @return combo of new and old, removes duplicated values for new from old
 #' @export
 rbind_tx <- function(old, new) {
-  ix <- na.omit(match(old$TransactionId, new$TransactionId))
+  ix <- na.omit(match(new$TransactionId, old$TransactionId))
   if (length(ix) > 0) {
     old <- old[-ix, ]
   }

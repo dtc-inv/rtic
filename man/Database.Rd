@@ -56,6 +56,7 @@ holdings data}
 \item \href{#method-Database-ret_function}{\code{Database$ret_function()}}
 \item \href{#method-Database-ret_fred}{\code{Database$ret_fred()}}
 \item \href{#method-Database-read_ret}{\code{Database$read_ret()}}
+\item \href{#method-Database-hold_ctf_daily_bd}{\code{Database$hold_ctf_daily_bd()}}
 \item \href{#method-Database-hold_sec}{\code{Database$hold_sec()}}
 \item \href{#method-Database-hold_cust}{\code{Database$hold_cust()}}
 \item \href{#method-Database-hold_cust_backfill}{\code{Database$hold_cust_backfill()}}
@@ -316,7 +317,7 @@ meant for short periods use xxx function for backfill
 \if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily}{}}}
 \subsection{Method \code{ret_ctf_daily()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily(t_minus_m = 1)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily(date_start = NULL, date_end = NULL)}\if{html}{\out{</div>}}
 }
 
 }
@@ -459,6 +460,23 @@ If any returns are pulled from a monthly return library, e.g., CTF
 official returns, then all returns pinged will be converted to monthly
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Database-hold_ctf_daily_bd"></a>}}
+\if{latex}{\out{\hypertarget{method-Database-hold_ctf_daily_bd}{}}}
+\subsection{Method \code{hold_ctf_daily_bd()}}{
+BlackDiamond batch download of holdings and transactions
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf_daily_bd(as_of = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{as_of}}{as of date, leave `NULL` for previous business day}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-hold_sec"></a>}}

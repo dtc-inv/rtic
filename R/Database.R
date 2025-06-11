@@ -438,14 +438,23 @@ Database <- R6::R6Class(
         }
         tx$TradeDate <- as.Date(tx$TradeDate)
         is_cf <- tx$Action %in% c("Withdrawal", "Contribution")
-        tx$TradeDate[is_cf] <- prev_trading_day(tx$TradeDate[is_cf], 1)
+        if (any(is_cf)) {
+          tx$TradeDate[is_cf] <- prev_trading_day(tx$TradeDate[is_cf], 1)
+        }
         adj <- tx |>
           group_by(TradeDate) |>
           summarize(AdjVal = sum(Value))
         price <- xts(adj[[2]], adj[[1]])
         ret <- price_to_ret(price)
         colnames(ret) <- sma$DtcName[i]
+        res[[i]] <- ret
       }
+      new_ret <- do.call(cbind, res)
+      new_ret <- cut_time(new_ret, date_start, date_end)
+      colnames(new_ret) <- sapply(res, colnames)
+      old_ret <- lib$returns$read("ctf-daily")$data
+      combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, is_xts = FALSE)
+      lib$returns$write("ctf-daily", xts_to_arc(combo))
     },
     
     ret_ctf_daily_adj = function() {
