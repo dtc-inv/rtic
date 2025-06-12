@@ -176,6 +176,7 @@ handle_bd_batch <- function(ac, json, as_of) {
       fld[fld %in% "AsOfDate"] <- "TimeStamp"
     }
     colnames(xdf) <- fld
+    xdf$CapWgt <- xdf$Value / sum(xdf$Value, na.rm = TRUE)
     old_dat <- try(lib$holdings$read(dtc_name)$data)
     if (inherits(old_dat, "try-error")) {
       old_dat <- data.frame()
