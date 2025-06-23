@@ -771,14 +771,14 @@ Database <- R6::R6Class(
     #' @description BlackDiamond batch download of holdings and transactions
     #' @param as_of as of date, leave `NULL` for previous business day
     hold_ctf_daily_bd = function(as_of = NULL) {
+      if (is.null(as_of)) {
+        as_of <- last_us_trading_day()
+      }
       self$api_keys$bd_key <- refresh_bd_key(self$api_keys)
       id <- download_bd_batch_id(self$api_keys, as_of)
       Sys.sleep(120)
       res <- download_bd_batch(self$api_keys, id$id)
       json <- unzip_bd_batch(res)
-      if (is.null(as_of)) {
-        as_of <- last_us_trading_day()
-      }
       handle_bd_batch(self$ac, json, as_of)
     },
     

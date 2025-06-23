@@ -91,7 +91,7 @@ download_bd_batch <- function(api_keys, batch_id) {
 unzip_bd_batch <- function(resp) {
   tmp <- tempfile(fileext = ".zip")
   brio::write_file_raw(resp$content, path = tmp)
-  ufile <- unzip(tmp)
+  ufile <- unzip(tmp, exdir = paste0("~/json/", Sys.time()))
   read_json(ufile)
 }
 
