@@ -200,6 +200,9 @@ Reporter <- R6::R6Class(
       return(res)
     },
     
+    #' @description Macro Select data
+    #' @param is_us boolean to specify U.S. vs. Int'l data
+    #' @param layer 1 for security, 2 for fund
     macro_sel = function(is_us = TRUE, layer = 1) {
       res <- data.frame(Rank = 1:10)
       lib <- self$ac$get_library("ps-macro")
@@ -220,6 +223,8 @@ Reporter <- R6::R6Class(
     
     #' @description Clean and lineup portfolio, benchmark, asset, and rf returns
     #' @param freq option to change frequency
+    #' @param date_start option to enter date to truncate starting date
+    #' @param date_end option to enter date to truncate ending date
     ret_combo = function(freq = NULL, date_start = NULL, date_end = NULL) {
       res <- list()
       bench <- self$bench$clone()

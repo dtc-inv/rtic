@@ -23,3 +23,16 @@ json with data
 \description{
 Factset Global Prices API for total returns
 }
+\examples{
+load("~/api_keys.RData")
+download_fs_global_prices(
+  api_keys = api_keys,
+  ids = c("AAPL", "MSFT"),
+  date_start = "2025-05-01",
+  date_end = "2025-05-15",
+  freq = "D")
+}
+\seealso{
+\code{\link{flatten_fs_global_prices}} for converting json list into
+  a data.table
+}

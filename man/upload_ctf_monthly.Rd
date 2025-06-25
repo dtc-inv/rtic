@@ -2,7 +2,7 @@
 % Please edit documentation in R/download_data.R
 \name{upload_ctf_monthly}
 \alias{upload_ctf_monthly}
-\title{Upload Month End CTF Reconciled Returns}
+\title{Upload Month End CTF Reconciled Returns into the Database}
 \usage{
 upload_ctf_monthly(ac, xl_path = NULL, skip = 4)
 }
@@ -19,5 +19,5 @@ no data is returned, the entire history is read and stored in
   arcticDB
 }
 \description{
-Upload Month End CTF Reconciled Returns
+Upload Month End CTF Reconciled Returns into the Database
 }

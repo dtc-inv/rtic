@@ -8,11 +8,15 @@ read_hfr_csv(file_nm)
 }
 \arguments{
 \item{file_nm}{file name of csv file, e.g., 
-"C:/users/asotolongo/Downloads/HFRI Indices.csv"}
+"C:/users/asotolongo/Downloads/HFR Indices.csv"}
 }
 \value{
 xts object of returns
 }
 \description{
 Read HFR Returns CSV Export
+}
+\examples{
+dat <- read_hfr_csv("C:/users/asotolongo/Downloads/HFR Indices.csv")
+tail(dat[, 1:5])
 }

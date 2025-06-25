@@ -2,7 +2,7 @@
 % Please edit documentation in R/download_data.R
 \name{extract_list_null}
 \alias{extract_list_null}
-\title{Extract field from list checking for NULL}
+\title{Utility to extract field from list checking for NULL}
 \usage{
 extract_list_null(x, nm)
 }
@@ -15,5 +15,5 @@ extract_list_null(x, nm)
 NA if field is NULL or field value if not NULL
 }
 \description{
-Extract field from list checking for NULL
+Utility to extract field from list checking for NULL
 }

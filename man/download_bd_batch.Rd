@@ -9,11 +9,16 @@ download_bd_batch(api_keys, batch_id)
 \arguments{
 \item{api_keys}{list of API Keys}
 
-\item{batch_id}{from `download_bd_batch_id`}
+\item{batch_id}{from \code{\link{download_bd_batch_id}}}
 }
 \value{
-response with raw data
+response with zipped raw data
 }
 \description{
 BlackDiamond Batch Download
+}
+\seealso{
+\code{\link{unzip_bd_batch}} to read the response output and 
+\code{\link{download_bd_batch_id}} for the 
+  \code{batch_id} input
 }

@@ -13,7 +13,7 @@ download_bd_batch_id(api_keys, as_of = NULL)
 will default to last 7 days}
 }
 \value{
-batch id to pass to `download_bd_batch` for bulk download
+batch id to pass to \code{\link{download_bd_batch}} for bulk download
 }
 \description{
 Get Batch ID for bulk download

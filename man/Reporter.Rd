@@ -161,10 +161,20 @@ Financial data summary: PE, PB, PFCF, and DY
 \if{html}{\out{<a id="method-Reporter-macro_sel"></a>}}
 \if{latex}{\out{\hypertarget{method-Reporter-macro_sel}{}}}
 \subsection{Method \code{macro_sel()}}{
+Macro Select data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Reporter$macro_sel(is_us = TRUE, layer = 1)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{is_us}}{boolean to specify U.S. vs. Int'l data}
+
+\item{\code{layer}}{1 for security, 2 for fund}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Reporter-ret_combo"></a>}}
@@ -179,6 +189,10 @@ Clean and lineup portfolio, benchmark, asset, and rf returns
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{freq}}{option to change frequency}
+
+\item{\code{date_start}}{option to enter date to truncate starting date}
+
+\item{\code{date_end}}{option to enter date to truncate ending date}
 }
 \if{html}{\out{</div>}}
 }

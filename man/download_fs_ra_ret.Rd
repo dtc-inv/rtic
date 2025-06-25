@@ -19,3 +19,16 @@ xts time-series
 \description{
 Factset Formula API: RA_RET
 }
+\note{
+For downloading returns of investments not on an exchange, e.g., mutual
+  funds, indexes, DTC models, etc
+}
+\examples{
+load("~/api_keys.RData")
+download_fs_ra_ret(
+  id = "GQETX",
+  api_keys = api_keys,
+  t_minus = 1,
+  freq = "D"
+)
+}

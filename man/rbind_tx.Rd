@@ -2,7 +2,7 @@
 % Please edit documentation in R/download_data.R
 \name{rbind_tx}
 \alias{rbind_tx}
-\title{Rowbind transactions}
+\title{Utility to row bind transaction data}
 \usage{
 rbind_tx(old, new)
 }
@@ -15,5 +15,8 @@ rbind_tx(old, new)
 combo of new and old, removes duplicated values for new from old
 }
 \description{
-Rowbind transactions
+Utility to row bind transaction data
+}
+\seealso{
+used as part of \code{\link{handle_bd_batch}}
 }

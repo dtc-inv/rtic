@@ -19,3 +19,7 @@ data.frame with prices
 \description{
 Download Last Business Day Price
 }
+\examples{
+load("~/api_keys.RData")
+download_latest_price(api_keys, c("AAPL", "MSFT"), as.Date("2025-05-01"))
+}

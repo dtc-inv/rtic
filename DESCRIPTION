@@ -5,8 +5,12 @@ Title: Provides database interface, analytical calculations, and report writing
 Version: 0.1.0
 Author: Alejandro Sotolongo
 Maintainer: Alejandro Sotolongo <asotolongo@diversifiedtrust.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: rtic is organized around three main objects: Database, Portfolio,
+    and Reporter. Database contains methods to download from various data sources 
+    and read / write to the DTC database in S3. Portfolio helps organize data
+    into investment portfolios and contains methods to run risk / return 
+    analytics. Reporter takes Portfolio objects as inputs and manipulates them
+    to write common report charts / tables.
 License: TBD
 Encoding: UTF-8
 LazyData: true

@@ -29,7 +29,7 @@ Database <- R6::R6Class(
     #' @param api_keys list of api keys or `.RData` file location to load the 
     #' list of keys
     #' @param py_loc optional file path where python is installed to be used
-    #'   with `reticulate`
+    #'   with \code{reticulate}
     initialize = function(api_keys, py_loc = NULL) {
 
       if (!is.list(api_keys)) {
@@ -63,9 +63,8 @@ Database <- R6::R6Class(
     },
 
     # tables ----
-    #' @description Read MSL from Excel
+    #' @description Read MSL from Excel into object and database
     #' @param wb excel file full path
-    #' @param write boolean to overwrite MSL in database, default FALSE
     read_msl_xl = function(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx") {
       prev_msl <- read_msl(self$ac)
       lib <- self$ac$get_library("meta-tables")
@@ -78,6 +77,7 @@ Database <- R6::R6Class(
     },
     
     #' @description write MSL to database
+    #' @param tbl_msl data.frame with msl
     write_msl = function(tbl_msl) {
       lib <- self$ac$get_library("meta-tables")
       lib$write("msl", tbl_msl)
@@ -334,61 +334,61 @@ Database <- R6::R6Class(
     },
     
     
-    #' @description Update daily estimates based on holdings x returns
-    #' meant for short periods use xxx function for backfill
-    ret_ctf_daily_hold = function(dtc_name = NULL, date_start = NULL, 
-                                  date_end = NULL) {
-      sma <- filter(self$tbl_msl, SecType == "sma")
-      if (is.null(date_start)) {
-        date_start <- prev_trading_day(Sys.Date(), 1)
-      }
-      if (is.null(date_end)) {
-        date_end <- prev_trading_day(Sys.Date(), 1)
-      }
-      if (date_start > date_end) {
-        stop("starting date is after ending date")
-      }
-      if (!is.null(dtc_name)) {
-        sma <- filter(sma, DtcName %in% dtc_name)
-      }
-      if (nrow(sma) == 0) {
-        stop("no results found")
-      }
-      xts_list <- list()
-      for (i in 1:nrow(sma)) {
-        print(sma$DtcName[i])
-        tbl_hold <- self$read_hold(sma$DtcName[i], latest = FALSE)
-        ix <- tbl_hold$TimeStamp >= date_start
-        if (all(ix == FALSE)) {
-          ix <- tbl_hold$TimeStamp == max(tbl_hold$TimeStamp)
-        }
-        tbl_hold <- tbl_hold[ix, ]
-        res <- merge_msl(tbl_hold, self$tbl_msl, FALSE)
-        rebal_wgt <- tidyr::pivot_wider(
-          data = res$inter, 
-          id_cols = TimeStamp,
-          values_from = CapWgt,
-          names_from = DtcName)
-        rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
-        asset_ret <- read_ret(colnames(rebal_wgt), self$ac)
-        res <- clean_rebal_ret(asset_ret, rebal_wgt)
-        asset_ret <- res$asset_ret
-        rebal_wgt <- res$reb_wgt
-        asset_ret[is.na(asset_ret)] <- 0
-        rebal_wgt[is.na(rebal_wgt)] <- 0
-        reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name[i], 
-                         rebal_freq = "BH")
-        reb$align_rebal_wgt()
-        reb$rebal()
-        xts_list[[i]] <- reb$rebal_ret
-      }
-      new_ret <- do.call(cbind, xts_list)
-      colnames(new_ret) <- sma$DtcName
-      lib <- self$ac$get_library("returns")
-      old_ret <- lib$read("ctf-daily")$data
-      combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, FALSE, TRUE)
-      lib$write("returns", combo)
-    },
+    #' Update daily estimates based on holdings x returns
+    #' #' meant for short periods use xxx function for backfill
+    #' ret_ctf_daily_hold = function(dtc_name = NULL, date_start = NULL, 
+    #'                               date_end = NULL) {
+    #'   sma <- filter(self$tbl_msl, SecType == "sma")
+    #'   if (is.null(date_start)) {
+    #'     date_start <- prev_trading_day(Sys.Date(), 1)
+    #'   }
+    #'   if (is.null(date_end)) {
+    #'     date_end <- prev_trading_day(Sys.Date(), 1)
+    #'   }
+    #'   if (date_start > date_end) {
+    #'     stop("starting date is after ending date")
+    #'   }
+    #'   if (!is.null(dtc_name)) {
+    #'     sma <- filter(sma, DtcName %in% dtc_name)
+    #'   }
+    #'   if (nrow(sma) == 0) {
+    #'     stop("no results found")
+    #'   }
+    #'   xts_list <- list()
+    #'   for (i in 1:nrow(sma)) {
+    #'     print(sma$DtcName[i])
+    #'     tbl_hold <- self$read_hold(sma$DtcName[i], latest = FALSE)
+    #'     ix <- tbl_hold$TimeStamp >= date_start
+    #'     if (all(ix == FALSE)) {
+    #'       ix <- tbl_hold$TimeStamp == max(tbl_hold$TimeStamp)
+    #'     }
+    #'     tbl_hold <- tbl_hold[ix, ]
+    #'     res <- merge_msl(tbl_hold, self$tbl_msl, FALSE)
+    #'     rebal_wgt <- tidyr::pivot_wider(
+    #'       data = res$inter, 
+    #'       id_cols = TimeStamp,
+    #'       values_from = CapWgt,
+    #'       names_from = DtcName)
+    #'     rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
+    #'     asset_ret <- read_ret(colnames(rebal_wgt), self$ac)
+    #'     res <- clean_rebal_ret(asset_ret, rebal_wgt)
+    #'     asset_ret <- res$asset_ret
+    #'     rebal_wgt <- res$reb_wgt
+    #'     asset_ret[is.na(asset_ret)] <- 0
+    #'     rebal_wgt[is.na(rebal_wgt)] <- 0
+    #'     reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name[i], 
+    #'                      rebal_freq = "BH")
+    #'     reb$align_rebal_wgt()
+    #'     reb$rebal()
+    #'     xts_list[[i]] <- reb$rebal_ret
+    #'   }
+    #'   new_ret <- do.call(cbind, xts_list)
+    #'   colnames(new_ret) <- sma$DtcName
+    #'   lib <- self$ac$get_library("returns")
+    #'   old_ret <- lib$read("ctf-daily")$data
+    #'   combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, FALSE, TRUE)
+    #'   lib$write("returns", combo)
+    #' },
     
     # ret_ctf_daily = function(t_minus_m = 1) {
     #   lib_meta <- self$ac$get_library("meta-tables")
@@ -417,6 +417,14 @@ Database <- R6::R6Class(
     #   lib$write("ctf-daily", combo_df)
     # },
     
+    #' @description
+        #' Update CTF returns each day from Black Diamond bulk data
+    #' @param date_start first date for return update, defaultt is two trading
+    #'   days prior to date_end
+    #' @param date_end lastest date for return update, default is last trading 
+    #'   day
+    #' @return no data returned, row binds new returns to database "ctf-daily"
+    #'   record
     ret_ctf_daily = function(date_start = NULL, date_end = NULL) {
       if (is.null(date_end)) {
         date_end <- last_us_trading_day()
@@ -459,6 +467,9 @@ Database <- R6::R6Class(
       lib$returns$write("ctf-daily", xts_to_arc(combo))
     },
     
+    #' @description
+        #' Adjust daily CTF return estimates to land on month end returns
+    #' @return does not return data, updates "ctf-daily" record in database
     ret_ctf_daily_adj = function() {
       lib_meta <- self$ac$get_library("meta-tables")
       lib_ret <- self$ac$get_library("returns")
@@ -490,6 +501,7 @@ Database <- R6::R6Class(
     
     #' @description read in manually uploaded returns from Excel
     #' @param xl_file full file path of excel workbook
+    #' @return does not return data, updates "workup" record in database
     ret_workup = function(
       xl_file = "N:/Investment Team/DATABASES/CustomRet/workup.xlsx") {
       
@@ -515,7 +527,6 @@ Database <- R6::R6Class(
     },
     
     #' @description execute backfill
-    #' @param dtc_name name of return to backfill
     run_backfill = function() {
       lib_mt <- self$ac$get_library("meta-tables")
       ret_meta <- lib_mt$read("ret-meta")$data
@@ -567,6 +578,8 @@ Database <- R6::R6Class(
     #' @description Update returns of models
     #' @param dtc_name option to specify specific models to update, leave NULL
     #'   to update all models
+    #' @param months_back integer representing how many months back to update
+    #'   returns for, default is 1
     ret_model = function(dtc_name = NULL, months_back = 1) {
       lib_ret <- self$ac$get_library("returns")
       msl <- read_msl(self$ac)
@@ -656,6 +669,18 @@ Database <- R6::R6Class(
       # }
     },
     
+    #' @description
+        #' Update stock returns
+    #' @param ids optional parameter to only update certain stocks, leave NULL
+    #'   to update all stocks in the MSL
+    #' @param date_start starting date for new returns, default is NULL which
+    #'   will find most recent date of existingg returns to start
+    #' @param date_end most recent date for new returns, default is Sys.Date()
+    #' @param freq "D" for daily
+    #' @param geo "us" for US Stocks or "intl" for international stocks
+    #' @return does not return data, either updates "us-stock" or "intl-stock"
+    #'   records in database
+    #' @seealso \code{\link{download_fs_global_prices}} 
     ret_stock = function(ids = NULL, date_start = NULL, date_end = Sys.Date(),
                          freq = "D", geo = c("us", "intl")) {
       geo <- tolower(geo[1])
@@ -704,7 +729,10 @@ Database <- R6::R6Class(
       lib$write(geo, xts_to_arc(combo))
     },
 
-    #' HFRI Return index from csv file
+    #' @description Update HFRI Return index from csv file
+    #' @param file_nm full file name of csv file
+    #' @seealso \code{\link{read_hfr_index}}
+    #' @return does not return data, updates "hfr-index" record in the database
     ret_hfr_index = function(file_nm) {
       dat <- read_hfr_csv(file_nm)
       dat <- dat / 100
@@ -713,6 +741,10 @@ Database <- R6::R6Class(
     },
     
     #' @description Update returns that require computational changes
+    #' @details
+        #' for example cash plus 200 bps reads the returns of cash, adds 200 bps,
+        #' and then saves as a new data-field (return column)
+    #' @return does not return data, updates various return records in the database
     ret_function = function() {
       # cash plus 200 and 400 bps
       cash <- read_ret("BofAML U.S. Treasury Bill 3M", self$ac)
@@ -729,6 +761,8 @@ Database <- R6::R6Class(
       lib$write("money-market", xts_to_arc(mmkt))
     },
     
+    #' @description Update econ time-series from St. Louis FED (FRED)
+    #' @return does not return data, updates "fred-monthly" record in database
     ret_fred = function() {
       dict <- filter(self$tbl_msl, ReturnLibrary == "fred-monthly")
       lib_meta <- self$ac$get_library("meta-tables")
@@ -764,6 +798,9 @@ Database <- R6::R6Class(
     #' @details
         #' If any returns are pulled from a monthly return library, e.g., CTF
         #' official returns, then all returns pinged will be converted to monthly
+    #' @examples
+        #' db <- Database$new("~/api_keys.RData")
+        #' db$read_ret(c("AAPL", "MSFT"))
     read_ret = function(ids) {
       read_ret(ids, self$ac)
     },
@@ -788,8 +825,8 @@ Database <- R6::R6Class(
     #' @param dtc_name leave `NULL` to download all, or enter a vector of
     #'   dtc_names to download specific funds
     #' @param user_email need to provide an email address to download
-    #' @param save_to_db save data to DTC's database
-    #' @param return_data return data.frame of holdings
+    #' @param save_to_db boolean to write to DTC's database, default is TRUE
+    #' @param return_data boolean to return data.frame of holdings, default is FALSE
     hold_sec = function(dtc_name = NULL,
                         user_email = "asotolongo@diversifiedtrust.com",
                         save_to_db = TRUE, return_data = FALSE) {
@@ -849,8 +886,10 @@ Database <- R6::R6Class(
     #'   BlackDiamond
     #' @param dtc_name leave `NULL` to download all, or enter a vector of
     #'   dtc_names to download specific funds
-    #' @param save_to_db save data to DTC's database
-    #' @param return_data return data.frame of holdings
+    #' @param save_to_db boolean to save data to DTC's database, default is TRUE
+    #' @param return_data boolean to return data.frame of holdings, default is FALSE
+    #' @param as_of as of date to pull holdings, default is NULL to use previous
+    #'   trading day
     hold_cust = function(dtc_name = NULL, save_to_db = TRUE,
                          return_data = FALSE, as_of = NULL) {
       lib <- self$ac$get_library("holdings")
@@ -904,6 +943,14 @@ Database <- R6::R6Class(
       }
     },
     
+    #' @description Backfill historical holdings from Black Diamond
+    #' @param dtc_name Name of CTF / SMA to backfill
+    #' @param date_start beginning date for backfill (oldest date)
+    #' @param date_end ending date for backfill (most recent date)
+    #' @param freq "days" or "months" to backfill each day or each month
+    #' @param save_to_db boolean to save data to database, default is TRUE
+    #' @param return_data boolean to return data.frame of holdings, default is 
+    #'   FALSE
     hold_cust_backfill = function(dtc_name, date_start = NULL, date_end = NULL, 
                                   freq = "days", save_to_db = TRUE, 
                                   return_data = FALSE) {
@@ -969,6 +1016,23 @@ Database <- R6::R6Class(
       }
     },
     
+    #' @description Update model holdings from excel file or data.frame
+    #' @param dtc_name name of model to update
+    #' @param tbl_hold if passing data.frame specify variable name here
+    #' @param xl_file if reading from an excel file specify full file name here
+    #' @param sum_to_1 boolean to force weights to sum to 100%, default is TRUE
+    #' @details
+        #' The holdings table (whether read from Excel or passed as a data.frame)
+        #' is checked with \code\link{check_tbl_hold} to make sure an ID and 
+        #' Weight column are both specified.
+    #' @examples
+    #' \dontrun {
+    #' tbl_hold <- data.frame(
+    #'   Ticker = c("AAPL", "MSFT"),
+    #'   CapWgt = c(0.5, 0.5)
+    #' )
+    #' db$hold_model("My Stock Port", tbl_hold = tbl_hold)
+    #' }
     hold_model = function(dtc_name, tbl_hold = NULL, xl_file = NULL, 
                           sum_to_1 = TRUE) {
       if (!is.null(xl_file)) {
@@ -988,6 +1052,15 @@ Database <- R6::R6Class(
         
     }, 
     
+    #' @description Update CTF holdings
+    #' @param dtc_name option to specify specific CTFs to update, leave NULL
+    #'   to update all CTFs
+    #' @param as_of as of date to update, leave NULL for last trading day
+    #' @param save_to_db boolean to save to database, default is TRUE
+    #' @param return_data boolean to return list of data.frames of holdings
+    #'   for each CTF, default is FALSE
+    #' @param download_ctf boolean to download underlying SMA accounts first,
+    #'   default is FALSE
     hold_ctf = function(dtc_name = NULL, as_of = NULL, save_to_db = TRUE,
                         return_data = FALSE, download_ctf = FALSE) {
       dict <- filter(self$tbl_msl, SecType == "ctf")
@@ -1042,14 +1115,12 @@ Database <- R6::R6Class(
       }
     },
 
-    hold_ctf_backfill = function(dtc_name = NULL, combo = FALSE) {
-      res <- self$hold_ctf(dtc_name, save_to_db = FALSE, return_data = TRUE,
-                           download_ctf = FALSE)
-    },
-    
     #' @description Read Holdings Data
     #' @param dtc_name DtcName field in MSL to pull holdings
-    #' @param latest option to truncate to most recent holdings
+    #' @param latest boolean to truncate to most recent holdings
+    #' @examples
+        #' db <- Database$new("~/api_keys.RData")
+        #' db$read_hold("Cornerstone US Active")
     read_hold = function(dtc_name, latest = TRUE) {
       read_hold(self$ac, dtc_name, latest)
     },
@@ -1060,6 +1131,8 @@ Database <- R6::R6Class(
     #' @param ids leave `NULL` to get for all stocks, or enter specific ids
     #' @param yrs_back how many years of data to pull
     #' @param dtype data type: one of PE, PB, PFCF, DY, ROE, and MCAP
+    #' @return does not return data, updates database with fundamental data
+    #' @seealso \code{\link{download_fs_formula}}
     download_fundamental_data = function(
       ids = NULL, yrs_back = 1,
       dtype = c('PE', 'PB', 'PFCF', 'DY', 'ROE', 'MCAP')) {
@@ -1190,6 +1263,7 @@ Database <- R6::R6Class(
     #' @param dtc_name DtcName
     #' @param latest truncate holdings to last update, default is FALSE for 
     #'   entire time-series of holdings
+    #' @return Portfolio Object
     create_port = function(dtc_name, latest = FALSE) {
       tbl_hold <- self$read_hold(dtc_name, latest)
       Portfolio$new(self$ac, tbl_hold, dtc_name, dtc_name)
@@ -1198,9 +1272,11 @@ Database <- R6::R6Class(
     #' @description Create Portfolio from ids (quick set up)
     #' @param ids Ticker, Cusip, Sedol, etc
     #' @param wgt optional vector of corresponding weights, default is 1/n
+    #' @param incept option for inception date
     #' @param name optional string to name portfolio
     #' @param tr_id optional string for id to pull track record, default will
     #'   be rebalance of weights and returns from ids
+    #' @return Portfolio Object
     create_port_from_ids = function(ids, wgt = NULL, incept = NULL, name = NULL,
                                     tr_id = NULL) {
       r <- self$read_ret(ids)

@@ -11,7 +11,7 @@ download_fs_exchange_price(api_keys, ids, date_start, date_end, freq = "D")
 
 \item{ids}{character vector of ids to download}
 
-\item{date_start}{begginig date, earliest start is 2006-01-03}
+\item{date_start}{begging date, earliest start is 2006-01-03}
 
 \item{date_end}{ending date}
 
@@ -22,4 +22,17 @@ json with data
 }
 \description{
 Factset Global Prices API for End of Day Prices
+}
+\examples{
+load("~/api_keys.RData")
+download_fs_exchange_price(
+  api_keys = api_keys,
+  ids = c("AAPL", "MSFT"),
+  date_start = "2025-05-01",
+  date_end = "2025-05-15",
+  freq = "D")
+}
+\seealso{
+\code{\link{flatten_fs_global_prices}} for converting json list into
+  a data.table
 }

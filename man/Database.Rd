@@ -7,6 +7,41 @@
 Download and store holdings and price time-series data in s3 from various
   sources such as factset, blackdiamond, excel
 }
+\examples{
+
+## ------------------------------------------------
+## Method `Database$read_ret`
+## ------------------------------------------------
+
+db <- Database$new("~/api_keys.RData")
+db$read_ret(c("AAPL", "MSFT"))
+
+## ------------------------------------------------
+## Method `Database$hold_model`
+## ------------------------------------------------
+
+\dontrun {
+tbl_hold <- data.frame(
+  Ticker = c("AAPL", "MSFT"),
+  CapWgt = c(0.5, 0.5)
+)
+db$hold_model("My Stock Port", tbl_hold = tbl_hold)
+}
+
+## ------------------------------------------------
+## Method `Database$read_hold`
+## ------------------------------------------------
+
+db <- Database$new("~/api_keys.RData")
+db$read_hold("Cornerstone US Active")
+}
+\seealso{
+\code{\link{download_fs_global_prices}}
+
+\code{\link{read_hfr_index}}
+
+\code{\link{download_fs_formula}}
+}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -44,7 +79,6 @@ holdings data}
 \item \href{#method-Database-ret_mutual_fund}{\code{Database$ret_mutual_fund()}}
 \item \href{#method-Database-ret_private_index}{\code{Database$ret_private_index()}}
 \item \href{#method-Database-ret_ctf_monthly}{\code{Database$ret_ctf_monthly()}}
-\item \href{#method-Database-ret_ctf_daily_hold}{\code{Database$ret_ctf_daily_hold()}}
 \item \href{#method-Database-ret_ctf_daily}{\code{Database$ret_ctf_daily()}}
 \item \href{#method-Database-ret_ctf_daily_adj}{\code{Database$ret_ctf_daily_adj()}}
 \item \href{#method-Database-ret_workup}{\code{Database$ret_workup()}}
@@ -62,7 +96,6 @@ holdings data}
 \item \href{#method-Database-hold_cust_backfill}{\code{Database$hold_cust_backfill()}}
 \item \href{#method-Database-hold_model}{\code{Database$hold_model()}}
 \item \href{#method-Database-hold_ctf}{\code{Database$hold_ctf()}}
-\item \href{#method-Database-hold_ctf_backfill}{\code{Database$hold_ctf_backfill()}}
 \item \href{#method-Database-read_hold}{\code{Database$read_hold()}}
 \item \href{#method-Database-download_fundamental_data}{\code{Database$download_fundamental_data()}}
 \item \href{#method-Database-download_sectors}{\code{Database$download_sectors()}}
@@ -88,7 +121,7 @@ Create a db object
 list of keys}
 
 \item{\code{py_loc}}{optional file path where python is installed to be used
-with `reticulate`}
+with \code{reticulate}}
 }
 \if{html}{\out{</div>}}
 }
@@ -114,7 +147,7 @@ Check if api keys are properly specified
 \if{html}{\out{<a id="method-Database-read_msl_xl"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-read_msl_xl}{}}}
 \subsection{Method \code{read_msl_xl()}}{
-Read MSL from Excel
+Read MSL from Excel into object and database
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$read_msl_xl(wb = "N:/Investment Team/DATABASES/CustomRet/msl.xlsx")}\if{html}{\out{</div>}}
 }
@@ -123,8 +156,6 @@ Read MSL from Excel
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{wb}}{excel file full path}
-
-\item{\code{write}}{boolean to overwrite MSL in database, default FALSE}
 }
 \if{html}{\out{</div>}}
 }
@@ -138,6 +169,13 @@ write MSL to database
 \if{html}{\out{<div class="r">}}\preformatted{Database$write_msl(tbl_msl)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tbl_msl}}{data.frame with msl}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-write_sec"></a>}}
@@ -292,43 +330,103 @@ Update CTF Returns from Factset
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{t_minus_m}}{integer to indicate how many months back to download new
-data from}
+  data from
+Update daily estimates based on holdings x returns
+#' meant for short periods use xxx function for backfill
+ret_ctf_daily_hold = function(dtc_name = NULL, date_start = NULL, 
+                              date_end = NULL) {
+  sma <- filter(self$tbl_msl, SecType == "sma")
+  if (is.null(date_start)) {
+    date_start <- prev_trading_day(Sys.Date(), 1)
+  }
+  if (is.null(date_end)) {
+    date_end <- prev_trading_day(Sys.Date(), 1)
+  }
+  if (date_start > date_end) {
+    stop("starting date is after ending date")
+  }
+  if (!is.null(dtc_name)) {
+    sma <- filter(sma, DtcName %in% dtc_name)
+  }
+  if (nrow(sma) == 0) {
+    stop("no results found")
+  }
+  xts_list <- list()
+  for (i in 1:nrow(sma)) {
+    print(sma$DtcName[i])
+    tbl_hold <- self$read_hold(sma$DtcName[i], latest = FALSE)
+    ix <- tbl_hold$TimeStamp >= date_start
+    if (all(ix == FALSE)) {
+      ix <- tbl_hold$TimeStamp == max(tbl_hold$TimeStamp)
+    }
+    tbl_hold <- tbl_hold[ix, ]
+    res <- merge_msl(tbl_hold, self$tbl_msl, FALSE)
+    rebal_wgt <- tidyr::pivot_wider(
+      data = res$inter, 
+      id_cols = TimeStamp,
+      values_from = CapWgt,
+      names_from = DtcName)
+    rebal_wgt <- xts(rebal_wgt[, -1], as.Date(rebal_wgt$TimeStamp))
+    asset_ret <- read_ret(colnames(rebal_wgt), self$ac)
+    res <- clean_rebal_ret(asset_ret, rebal_wgt)
+    asset_ret <- res$asset_ret
+    rebal_wgt <- res$reb_wgt
+    asset_ret[is.na(asset_ret)] <- 0
+    rebal_wgt[is.na(rebal_wgt)] <- 0
+    reb <- Rebal$new(rebal_wgt, asset_ret, name = dtc_name[i], 
+                     rebal_freq = "BH")
+    reb$align_rebal_wgt()
+    reb$rebal()
+    xts_list[[i]] <- reb$rebal_ret
+  }
+  new_ret <- do.call(cbind, xts_list)
+  colnames(new_ret) <- sma$DtcName
+  lib <- self$ac$get_library("returns")
+  old_ret <- lib$read("ctf-daily")$data
+  combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, FALSE, TRUE)
+  lib$write("returns", combo)
+},}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Database-ret_ctf_daily_hold"></a>}}
-\if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily_hold}{}}}
-\subsection{Method \code{ret_ctf_daily_hold()}}{
-Update daily estimates based on holdings x returns
-meant for short periods use xxx function for backfill
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily_hold(
-  dtc_name = NULL,
-  date_start = NULL,
-  date_end = NULL
-)}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_ctf_daily"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily}{}}}
 \subsection{Method \code{ret_ctf_daily()}}{
+Update CTF returns each day from Black Diamond bulk data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily(date_start = NULL, date_end = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{date_start}}{first date for return update, defaultt is two trading
+days prior to date_end}
+
+\item{\code{date_end}}{lastest date for return update, default is last trading 
+day}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+no data returned, row binds new returns to database "ctf-daily"
+  record
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_ctf_daily_adj"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_ctf_daily_adj}{}}}
 \subsection{Method \code{ret_ctf_daily_adj()}}{
+Adjust daily CTF return estimates to land on month end returns
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_ctf_daily_adj()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+does not return data, updates "ctf-daily" record in database
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_workup"></a>}}
@@ -347,6 +445,9 @@ read in manually uploaded returns from Excel
 \item{\code{xl_file}}{full file path of excel workbook}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+does not return data, updates "workup" record in database
 }
 }
 \if{html}{\out{<hr>}}
@@ -368,13 +469,6 @@ execute backfill
 \if{html}{\out{<div class="r">}}\preformatted{Database$run_backfill()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{dtc_name}}{name of return to backfill}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_model"></a>}}
@@ -389,8 +483,10 @@ Update returns of models
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{dtc_name}}{option to specify specific models to update, leave NULL
-  to update all models
-HFRI Return index from csv file}
+to update all models}
+
+\item{\code{months_back}}{integer representing how many months back to update
+returns for, default is 1}
 }
 \if{html}{\out{</div>}}
 }
@@ -399,6 +495,7 @@ HFRI Return index from csv file}
 \if{html}{\out{<a id="method-Database-ret_stock"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_stock}{}}}
 \subsection{Method \code{ret_stock()}}{
+Update stock returns
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_stock(
   ids = NULL,
@@ -409,15 +506,47 @@ HFRI Return index from csv file}
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{ids}}{optional parameter to only update certain stocks, leave NULL
+to update all stocks in the MSL}
+
+\item{\code{date_start}}{starting date for new returns, default is NULL which
+will find most recent date of existingg returns to start}
+
+\item{\code{date_end}}{most recent date for new returns, default is Sys.Date()}
+
+\item{\code{freq}}{"D" for daily}
+
+\item{\code{geo}}{"us" for US Stocks or "intl" for international stocks}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+does not return data, either updates "us-stock" or "intl-stock"
+  records in database
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_hfr_index"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_hfr_index}{}}}
 \subsection{Method \code{ret_hfr_index()}}{
+Update HFRI Return index from csv file
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_hfr_index(file_nm)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_nm}}{full file name of csv file}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+does not return data, updates "hfr-index" record in the database
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_function"></a>}}
@@ -428,15 +557,27 @@ Update returns that require computational changes
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_function()}\if{html}{\out{</div>}}
 }
 
+\subsection{Details}{
+for example cash plus 200 bps reads the returns of cash, adds 200 bps,
+and then saves as a new data-field (return column)
+}
+
+\subsection{Returns}{
+does not return data, updates various return records in the database
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-ret_fred"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-ret_fred}{}}}
 \subsection{Method \code{ret_fred()}}{
+Update econ time-series from St. Louis FED (FRED)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$ret_fred()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+does not return data, updates "fred-monthly" record in database
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-read_ret"></a>}}
@@ -458,6 +599,15 @@ Lei, DtcName, Identifier}
 \subsection{Details}{
 If any returns are pulled from a monthly return library, e.g., CTF
 official returns, then all returns pinged will be converted to monthly
+}
+
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{db <- Database$new("~/api_keys.RData")
+db$read_ret(c("AAPL", "MSFT"))
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -500,9 +650,9 @@ dtc_names to download specific funds}
 
 \item{\code{user_email}}{need to provide an email address to download}
 
-\item{\code{save_to_db}}{save data to DTC's database}
+\item{\code{save_to_db}}{boolean to write to DTC's database, default is TRUE}
 
-\item{\code{return_data}}{return data.frame of holdings}
+\item{\code{return_data}}{boolean to return data.frame of holdings, default is FALSE}
 }
 \if{html}{\out{</div>}}
 }
@@ -528,9 +678,12 @@ Download account data from custodian, currently done via
 \item{\code{dtc_name}}{leave `NULL` to download all, or enter a vector of
 dtc_names to download specific funds}
 
-\item{\code{save_to_db}}{save data to DTC's database}
+\item{\code{save_to_db}}{boolean to save data to DTC's database, default is TRUE}
 
-\item{\code{return_data}}{return data.frame of holdings}
+\item{\code{return_data}}{boolean to return data.frame of holdings, default is FALSE}
+
+\item{\code{as_of}}{as of date to pull holdings, default is NULL to use previous
+trading day}
 }
 \if{html}{\out{</div>}}
 }
@@ -539,6 +692,7 @@ dtc_names to download specific funds}
 \if{html}{\out{<a id="method-Database-hold_cust_backfill"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-hold_cust_backfill}{}}}
 \subsection{Method \code{hold_cust_backfill()}}{
+Backfill historical holdings from Black Diamond
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_cust_backfill(
   dtc_name,
@@ -550,13 +704,65 @@ dtc_names to download specific funds}
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{Name of CTF / SMA to backfill}
+
+\item{\code{date_start}}{beginning date for backfill (oldest date)}
+
+\item{\code{date_end}}{ending date for backfill (most recent date)}
+
+\item{\code{freq}}{"days" or "months" to backfill each day or each month}
+
+\item{\code{save_to_db}}{boolean to save data to database, default is TRUE}
+
+\item{\code{return_data}}{boolean to return data.frame of holdings, default is 
+FALSE}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-hold_model"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-hold_model}{}}}
 \subsection{Method \code{hold_model()}}{
+Update model holdings from excel file or data.frame
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_model(dtc_name, tbl_hold = NULL, xl_file = NULL, sum_to_1 = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{name of model to update}
+
+\item{\code{tbl_hold}}{if passing data.frame specify variable name here}
+
+\item{\code{xl_file}}{if reading from an excel file specify full file name here}
+
+\item{\code{sum_to_1}}{boolean to force weights to sum to 100%, default is TRUE}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The holdings table (whether read from Excel or passed as a data.frame)
+is checked with \code\link{check_tbl_hold} to make sure an ID and 
+Weight column are both specified.
+}
+
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun {
+tbl_hold <- data.frame(
+  Ticker = c("AAPL", "MSFT"),
+  CapWgt = c(0.5, 0.5)
+)
+db$hold_model("My Stock Port", tbl_hold = tbl_hold)
+}
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
@@ -564,6 +770,7 @@ dtc_names to download specific funds}
 \if{html}{\out{<a id="method-Database-hold_ctf"></a>}}
 \if{latex}{\out{\hypertarget{method-Database-hold_ctf}{}}}
 \subsection{Method \code{hold_ctf()}}{
+Update CTF holdings
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf(
   dtc_name = NULL,
@@ -574,15 +781,24 @@ dtc_names to download specific funds}
 )}\if{html}{\out{</div>}}
 }
 
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Database-hold_ctf_backfill"></a>}}
-\if{latex}{\out{\hypertarget{method-Database-hold_ctf_backfill}{}}}
-\subsection{Method \code{hold_ctf_backfill()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Database$hold_ctf_backfill(dtc_name = NULL, combo = FALSE)}\if{html}{\out{</div>}}
-}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{dtc_name}}{option to specify specific CTFs to update, leave NULL
+to update all CTFs}
 
+\item{\code{as_of}}{as of date to update, leave NULL for last trading day}
+
+\item{\code{save_to_db}}{boolean to save to database, default is TRUE}
+
+\item{\code{return_data}}{boolean to return list of data.frames of holdings
+for each CTF, default is FALSE}
+
+\item{\code{download_ctf}}{boolean to download underlying SMA accounts first,
+default is FALSE}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-read_hold"></a>}}
@@ -598,10 +814,19 @@ Read Holdings Data
 \describe{
 \item{\code{dtc_name}}{DtcName field in MSL to pull holdings}
 
-\item{\code{latest}}{option to truncate to most recent holdings}
+\item{\code{latest}}{boolean to truncate to most recent holdings}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{db <- Database$new("~/api_keys.RData")
+db$read_hold("Cornerstone US Active")
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-download_fundamental_data"></a>}}
@@ -626,6 +851,9 @@ Download equity financial data
 \item{\code{dtype}}{data type: one of PE, PB, PFCF, DY, ROE, and MCAP}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+does not return data, updates database with fundamental data
 }
 }
 \if{html}{\out{<hr>}}
@@ -688,6 +916,9 @@ entire time-series of holdings}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Portfolio Object
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-create_port_from_ids"></a>}}
@@ -711,12 +942,17 @@ Create Portfolio from ids (quick set up)
 
 \item{\code{wgt}}{optional vector of corresponding weights, default is 1/n}
 
+\item{\code{incept}}{option for inception date}
+
 \item{\code{name}}{optional string to name portfolio}
 
 \item{\code{tr_id}}{optional string for id to pull track record, default will
 be rebalance of weights and returns from ids}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Portfolio Object
 }
 }
 \if{html}{\out{<hr>}}

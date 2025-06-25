@@ -1,3 +1,7 @@
+#' @title Refresh Black Diamond Token for API Authorization
+#' @param api_keys list of API Keys
+#' @param save_to_n if on DTC network option to save to N: drive
+#' @param save_local save to local directory, e.g., "~/"
 #' @export
 refresh_bd_key <- function(api_keys, save_to_n = FALSE, save_local = FALSE) {
   bd_key <- api_keys$bd_key
@@ -26,7 +30,7 @@ refresh_bd_key <- function(api_keys, save_to_n = FALSE, save_local = FALSE) {
 #' @param api_keys list of API Keys
 #' @param as_of optional date, defaults to last trading day, transactions
 #'   will default to last 7 days
-#' @return batch id to pass to `download_bd_batch` for bulk download
+#' @return batch id to pass to \code{\link{download_bd_batch}} for bulk download
 #' @export
 download_bd_batch_id <- function(api_keys, as_of = NULL) {
   if (is.null(as_of)) {
@@ -63,8 +67,11 @@ download_bd_batch_id <- function(api_keys, as_of = NULL) {
 
 #' @title BlackDiamond Batch Download
 #' @param api_keys list of API Keys
-#' @param batch_id from `download_bd_batch_id`
-#' @return response with raw data
+#' @param batch_id from \code{\link{download_bd_batch_id}}
+#' @return response with zipped raw data
+#' @seealso \code{\link{unzip_bd_batch}} to read the response output and 
+#' \code{\link{download_bd_batch_id}} for the 
+#'   \code{batch_id} input 
 #' @export
 download_bd_batch <- function(api_keys, batch_id) {
   bd_key <- api_keys$bd_key
@@ -85,8 +92,9 @@ download_bd_batch <- function(api_keys, batch_id) {
 }
 
 #' @title Unzip Response from BlackDiamond Batch Download
-#' @param resp response returned by `download_bd_batch`
-#' @return json data (list)
+#' @param resp response returned by \code{\link{download_bd_batch}}
+#' @return bulk data from the json download nested in a list
+#' @seealso \code{\link{download_bd_batch}} for downloading the bulk data
 #' @export
 unzip_bd_batch <- function(resp) {
   tmp <- tempfile(fileext = ".zip")
@@ -97,9 +105,12 @@ unzip_bd_batch <- function(resp) {
 
 #' @title Parse JSON file from BlackDiamond Batch Download Process
 #' @param ac arcticDB datastore
-#' @param json from `unzip_bd_batch`
+#' @param json data read in from \code{\link{unzip_bd_batch}}
 #' @return does not return data, transactions, market values, and holdings
-#'   are stored in `ac`
+#'   are stored in arcticDB cloud (S3) through \code{ac}
+#' @seealso \code{\link{unzip_bd_batch}} and \code{\link{download_bd_batch}}
+#'   for downloading bulk data from black diamond and \code{\link{create_artic}}
+#'   for arcticDB datastore
 #' @export
 handle_bd_batch <- function(ac, json, as_of) {
   lib <- get_all_lib(ac)
@@ -186,7 +197,7 @@ handle_bd_batch <- function(ac, json, as_of) {
   } # end json loop
 }
 
-#' @title Extract field from list checking for NULL
+#' @title Utility to extract field from list checking for NULL
 #' @param x list
 #' @param nm field (string)
 #' @return NA if field is NULL or field value if not NULL
@@ -199,10 +210,11 @@ extract_list_null <- function(x, nm) {
   }
 }
 
-#' @title Rowbind transactions
+#' @title Utility to row bind transaction data 
 #' @param old existing data.frame of transactions
 #' @param new newly downloaded transactions
 #' @return combo of new and old, removes duplicated values for new from old
+#' @seealso used as part of \code{\link{handle_bd_batch}}
 #' @export
 rbind_tx <- function(old, new) {
   ix <- na.omit(match(new$TransactionId, old$TransactionId))
@@ -212,6 +224,12 @@ rbind_tx <- function(old, new) {
   rbind(old, new)
 }
 
+#' @title Download Holdings from a Black Diamond Account
+#' @param account_id external account ID from Black Diamond
+#' @param api_keys list of API Keys
+#' @param as_of as of date for holdings, leave \code{NULL} to default to
+#'   last NYSE trading day
+#' @return \code{data.frame} with holdings name, ticker, cusip, and value
 #' @export
 download_bd <- function(account_id, api_keys, as_of = NULL) {
   if (is.null(as_of)) {
@@ -286,6 +304,15 @@ download_bd <- function(account_id, api_keys, as_of = NULL) {
   return(df)
 }
 
+#' @title Download latest N-Port data from SEC EDGAR
+#' @param long_cik fund specific CIK
+#' @param short_cik parent company CIK
+#' @param user_email email address needs to be provided for scraping SEC data 
+#'   (no login or registration needed)
+#' @return \code{data.frame} with holdings and meta-data
+#' @examples
+#' # GMO Quality (GQEFX)
+#' download_sec("S000004084", "772129", "asotolongo@diversifiedtrust.com")   
 #' @export
 download_sec <- function(long_cik, short_cik, user_email) {
   doc_type <- 'nport-p'
@@ -376,7 +403,17 @@ download_sec <- function(long_cik, short_cik, user_email) {
 #' @param date_end ending date
 #' @param freq "D", or "M" for daily or monthly time-series
 #' @return json with data
-#' @export
+#' @seealso \code{\link{flatten_fs_global_prices}} for converting json list into
+#'   a data.table
+#' @examples
+#' load("~/api_keys.RData")
+#' download_fs_global_prices(
+#'   api_keys = api_keys,
+#'   ids = c("AAPL", "MSFT"),
+#'   date_start = "2025-05-01",
+#'   date_end = "2025-05-15",
+#'   freq = "D")
+#' @export      
 download_fs_global_prices <- function(api_keys, ids, date_start, date_end,
                                       freq = "D") {
   username <- api_keys$fs$username
@@ -403,10 +440,20 @@ download_fs_global_prices <- function(api_keys, ids, date_start, date_end,
 #' @title Factset Global Prices API for End of Day Prices
 #' @param api_keys list of api keys
 #' @param ids character vector of ids to download
-#' @param date_start begginig date, earliest start is 2006-01-03
+#' @param date_start begging date, earliest start is 2006-01-03
 #' @param date_end ending date
 #' @param freq "D", or "M" for daily or monthly time-series
 #' @return json with data
+#' @seealso \code{\link{flatten_fs_global_prices}} for converting json list into
+#'   a data.table
+#' @examples
+#' load("~/api_keys.RData")
+#' download_fs_exchange_price(
+#'   api_keys = api_keys,
+#'   ids = c("AAPL", "MSFT"),
+#'   date_start = "2025-05-01",
+#'   date_end = "2025-05-15",
+#'   freq = "D")
 #' @export
 download_fs_exchange_price <- function(api_keys, ids, date_start, date_end,
                                        freq = "D") {
@@ -435,6 +482,9 @@ download_fs_exchange_price <- function(api_keys, ids, date_start, date_end,
 #' @param ids character vector of ids to download
 #' @param as_of leave NULL for last trading day or specify as_of date for price
 #' @return data.frame with prices
+#' @examples
+#' load("~/api_keys.RData")
+#' download_latest_price(api_keys, c("AAPL", "MSFT"), as.Date("2025-05-01"))
 #' @export 
 download_latest_price <- function(api_keys, ids, as_of = NULL) {
   as_of <- last_us_trading_day(as_of)
@@ -447,6 +497,17 @@ download_latest_price <- function(api_keys, ids, as_of = NULL) {
 #' @param t_minus number of months of desired time-series, numeric value
 #' @param freq "D", or "M" for daily or monthly time-series
 #' @return xts time-series
+#' @note
+#'   For downloading returns of investments not on an exchange, e.g., mutual
+#'   funds, indexes, DTC models, etc
+#' @examples
+#' load("~/api_keys.RData")
+#' download_fs_ra_ret(
+#'   id = "GQETX",
+#'   api_keys = api_keys,
+#'   t_minus = 1,
+#'   freq = "D"
+#' )
 #' @export
 download_fs_ra_ret <- function(id, api_keys, t_minus = 12, freq = 'D') {
   username <- api_keys$fs$username
@@ -482,8 +543,16 @@ download_fs_ra_ret <- function(id, api_keys, t_minus = 12, freq = 'D') {
 #' @param ids vector of ids to download
 #' @param formulas formula to download
 #' @param type "ts" for times-series or "cs" for cross-sectional
-#' @param flatn boolean to add "flatten=Y" to api url
+#' @param flatn boolean to add "flatten=Y" to the api URL
 #' @return json data
+#' @seealso \code{\link{flatten_fs_formula}} to transform json list into a 
+#'   data.frame
+#' @examples
+#' load("~/api_keys.RData")
+#' download_fs_formula(
+#'   api_keys = api_keys,
+#'   ids = c("AAPL", "MSFT"),
+#'   formulas = "FG_PE(-1AY,NOW,CQ)")
 #' @export
 download_fs_formula <- function(api_keys, ids, formulas, type = c('ts', 'cs'),
                                 flatn = TRUE) {
@@ -513,6 +582,9 @@ download_fs_formula <- function(api_keys, ids, formulas, type = c('ts', 'cs'),
   return(json)
 }
 
+#' @title Utility to flatten json download
+#' @param json download from \code{\link{download_fs_formula}}
+#' @return data.frame
 #' @export
 flatten_fs_formula <- function(json) {
   create_df <- function(x) {
@@ -527,6 +599,10 @@ flatten_fs_formula <- function(json) {
   do.call("rbind", df_list)
 }
 
+#' @title Utility to flatten json download
+#' @param json download from \code{\link{download_fs_global_prices}}
+#' @param price boolean, "TRUE" if price data, "FALSE" if return data
+#' @return data.frame
 #' @export
 flatten_fs_global_prices <- function(json, price = FALSE) {
   if ('status' %in% names(json)) {
@@ -568,6 +644,15 @@ flatten_fs_global_prices <- function(json, price = FALSE) {
   return(df)
 }
 
+#' @title Read Private I Excel Export
+#' @param file_nm full file name of workbook
+#' @param field_nm column name for returns
+#' @return xts object of returns
+#' @examples
+#' read_private_xts(
+#'   file_nm = "N:/Investment Team/DATABASES/CustomRet/PE-Downloads/PrivateEquity.xlsx",
+#'   field_nm = "Private Equity"
+#' )
 #' @export
 read_private_xts <- function(file_nm, field_nm) {
   dat <- readxl::read_excel(file_nm)
@@ -578,8 +663,11 @@ read_private_xts <- function(file_nm, field_nm) {
 
 #' @title Read HFR Returns CSV Export
 #' @param file_nm file name of csv file, e.g., 
-#'   "C:/users/asotolongo/Downloads/HFRI Indices.csv"
+#'   "C:/users/asotolongo/Downloads/HFR Indices.csv"
 #' @return xts object of returns
+#' @examples 
+#' dat <- read_hfr_csv("C:/users/asotolongo/Downloads/HFR Indices.csv")
+#' tail(dat[, 1:5])
 #' @export
 read_hfr_csv <- function(file_nm) {
   dat <- read.csv(file_nm)
@@ -593,7 +681,7 @@ read_hfr_csv <- function(file_nm) {
   return(r)
 }
 
-#' @title Upload Month End CTF Reconciled Returns
+#' @title Upload Month End CTF Reconciled Returns into the Database
 #' @param ac arcticDB datastore
 #' @param xl_path filepath of excel workbook with returns, leave `NULL` for
 #'   default

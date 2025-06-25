@@ -21,11 +21,22 @@ download_fs_formula(
 
 \item{type}{"ts" for times-series or "cs" for cross-sectional}
 
-\item{flatn}{boolean to add "flatten=Y" to api url}
+\item{flatn}{boolean to add "flatten=Y" to the api URL}
 }
 \value{
 json data
 }
 \description{
 Download Factset formula API
+}
+\examples{
+load("~/api_keys.RData")
+download_fs_formula(
+  api_keys = api_keys,
+  ids = c("AAPL", "MSFT"),
+  formulas = "FG_PE(-1AY,NOW,CQ)")
+}
+\seealso{
+\code{\link{flatten_fs_formula}} to transform json list into a 
+  data.frame
 }

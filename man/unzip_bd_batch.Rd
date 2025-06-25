@@ -7,11 +7,14 @@
 unzip_bd_batch(resp)
 }
 \arguments{
-\item{resp}{response returned by `download_bd_batch`}
+\item{resp}{response returned by \code{\link{download_bd_batch}}}
 }
 \value{
-json data (list)
+bulk data from the json download nested in a list
 }
 \description{
 Unzip Response from BlackDiamond Batch Download
+}
+\seealso{
+\code{\link{download_bd_batch}} for downloading the bulk data
 }
