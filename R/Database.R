@@ -437,15 +437,17 @@ Database <- R6::R6Class(
           next
         }
         tx$TradeDate <- as.Date(tx$TradeDate)
-        is_cf <- tx$Action %in% c("Withdrawal", "Contribution")
+            is_cf <- tx$Action %in% c("Withdrawal", "Contribution")
         if (any(is_cf)) {
-          tx$TradeDate[is_cf] <- prev_trading_day(tx$TradeDate[is_cf], 1)
+            tx$TradeDate[is_cf] <- prev_trading_day(tx$TradeDate[is_cf], 1)
         }
-        adj <- tx |>
-          group_by(TradeDate) |>
-          summarize(AdjVal = sum(Value))
-        price <- xts(adj[[2]], adj[[1]])
-        ret <- price_to_ret(price)
+        adj <- group_by(tx, TradeDate) |>
+          summarize(Adj = sum(Value))
+        adj <- dataframe_to_xts(adj)
+        val <- dataframe_to_xts(tx[tx$Action == "EndingValue", 
+                                     c("TradeDate", "Value")])
+        price <- xts_cbind(val, adj)
+        ret <- price[, "Value"] / lag.xts(price[, "Adj"]) - 1
         colnames(ret) <- sma$DtcName[i]
         res[[i]] <- ret
       }
