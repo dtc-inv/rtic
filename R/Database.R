@@ -1025,14 +1025,6 @@ Database <- R6::R6Class(
         #' The holdings table (whether read from Excel or passed as a data.frame)
         #' is checked with \code\link{check_tbl_hold} to make sure an ID and 
         #' Weight column are both specified.
-    #' @examples
-    #' \dontrun {
-    #' tbl_hold <- data.frame(
-    #'   Ticker = c("AAPL", "MSFT"),
-    #'   CapWgt = c(0.5, 0.5)
-    #' )
-    #' db$hold_model("My Stock Port", tbl_hold = tbl_hold)
-    #' }
     hold_model = function(dtc_name, tbl_hold = NULL, xl_file = NULL, 
                           sum_to_1 = TRUE) {
       if (!is.null(xl_file)) {
@@ -1118,9 +1110,6 @@ Database <- R6::R6Class(
     #' @description Read Holdings Data
     #' @param dtc_name DtcName field in MSL to pull holdings
     #' @param latest boolean to truncate to most recent holdings
-    #' @examples
-        #' db <- Database$new("~/api_keys.RData")
-        #' db$read_hold("Cornerstone US Active")
     read_hold = function(dtc_name, latest = TRUE) {
       read_hold(self$ac, dtc_name, latest)
     },

@@ -15,25 +15,6 @@ Download and store holdings and price time-series data in s3 from various
 
 db <- Database$new("~/api_keys.RData")
 db$read_ret(c("AAPL", "MSFT"))
-
-## ------------------------------------------------
-## Method `Database$hold_model`
-## ------------------------------------------------
-
-\dontrun {
-tbl_hold <- data.frame(
-  Ticker = c("AAPL", "MSFT"),
-  CapWgt = c(0.5, 0.5)
-)
-db$hold_model("My Stock Port", tbl_hold = tbl_hold)
-}
-
-## ------------------------------------------------
-## Method `Database$read_hold`
-## ------------------------------------------------
-
-db <- Database$new("~/api_keys.RData")
-db$read_hold("Cornerstone US Active")
 }
 \seealso{
 \code{\link{download_fs_global_prices}}
@@ -751,20 +732,6 @@ is checked with \code\link{check_tbl_hold} to make sure an ID and
 Weight column are both specified.
 }
 
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun {
-tbl_hold <- data.frame(
-  Ticker = c("AAPL", "MSFT"),
-  CapWgt = c(0.5, 0.5)
-)
-db$hold_model("My Stock Port", tbl_hold = tbl_hold)
-}
-}
-\if{html}{\out{</div>}}
-
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-hold_ctf"></a>}}
@@ -818,15 +785,6 @@ Read Holdings Data
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{db <- Database$new("~/api_keys.RData")
-db$read_hold("Cornerstone US Active")
-}
-\if{html}{\out{</div>}}
-
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Database-download_fundamental_data"></a>}}
