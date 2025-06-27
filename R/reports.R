@@ -368,25 +368,46 @@ run_cluster <- function(ret, k_group) {
   return(res)
 }
 
+#' @title Get Common Trailing Performance Dates
+#' @param as_of starting date, default is end of last month
+#' @param eom option to use end of month dates if working with monthly data,
+#'   default is TRUE
+#' @return vector of dates for common trailing periods, see details
+#' @details
+#'   Will return DTD, MTD, QTD, 1 Yr, 3 Yr, 5 Yr, and 10 Yr trailing periods.
+#'   If \code{eom} parameter is set to TRUE then DTD will be omitted. 
 #' @export
 eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   if (is.null(as_of)) {
     as_of <- lubridate::floor_date(Sys.Date(), "months") - 1
+  } else {
+    as_of <- try(as.Date(as_of))
+    if (inherits(as_of, "try-error")) {
+      stop("as_of could not be converted to date")
+    }
   }
   dt <- c(
     as_of,
-    add_with_rollback(as_of, months(-1)),
-    add_with_rollback(as_of, months(-3)),
+    floor_date(as_of, "months"),
+    floor_date(as_of, "quarters"),
+    floor_date(as_of, "years"),
     as_of - years(1),
     as_of - years(3),
     as_of - years(5),
     as_of - years(10)
   )
+  nm <- c("DTD", "MTD", "QTD", "YTD", "1 Yr", "3 Yr", "5 Yr", "10 Yr")
   if (eom) {
-    dt <- eo_month(ceiling_date(dt, "months"))
+    dt <- eo_month(dt)
+    dt[5:8] <- eo_month(add_with_rollback(dt[5:8], months(1)))
+    names(dt) <- nm
+    dt <- dt[-1]
+    return(dt)
+  } else {
+    names(dt) <- nm
+    dt[5:8] <- next_trading_day(dt[5:8], 1)
+    return(dt)
   }
-  names(dt) <- c("As of", "1 Mo", "3 Mo", "1 Yr", "3 Yr", "5 Yr", "10 Yr")
-  return(dt)
 }
 
 #' @export
