@@ -410,6 +410,60 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   }
 }
 
+run_ppu_daily <- function(ac, as_of = NULL) {
+  as_of <- handle_as_of(as_of)
+  dict_file <- "N:/Investment Team/REPORTING/IMB/imb-writer/imb-data-input.xlsx"
+  dict <- readxl::read_excel(dict_file, "data")
+  lib <- get_all_lib(ac)
+  ctf_ret_d <- lib$returns$read("ctf-daily")$data
+  ctf_ret_d <- dataframe_to_xts(ctf_ret_d)
+  tbl_msl <- lib$`meta-tables`$read("msl")$data
+}
+
+ppu_daily_table <- function(ac, as_of, table_nm, rpt_meta) {
+  dict <- dict[dict$Page == ctf_name, ]
+  ctf_hold <- read_hold(ac, ctf_name)
+  res <- merge_msl(ctf_hold, tbl_msl)
+  rpt_hold <- dict[dict$DataType == "Map", ]$Value
+  ix <- na.omit(match(rpt_hold, colnames(ctf_ret_d)))
+  if (length(ix) > 0) {
+    ctf_ret <- ctf_ret_d[, ix]
+    rpt_hold <- rpt_hold[!rpt_hold %in% colnames(ctf_ret)]
+  } else {
+    ctf_ret <- xts()
+  }
+  if (length(rpt_hold) > 0) {
+    ret <- read_ret(rpt_hold, ac) 
+    ret <- xts_cbind(ctf_ret, ret)
+  } else {
+    ret <- ctf_ret
+  }
+  if (ncol(ret) == 0) {
+    stop("no returns found")
+  }
+  ctf <- read_ret(ctf_name, ac)
+  ctf_bench <- read_ret(
+    bench_dict[bench_dict$DtcName == ctf_name, "ReturnBench"],
+    ac
+  )
+  under_bench <- read_ret(
+    bench_dict[bench_dict$DtcName %in% colnames(ret), "ReturnBench"],
+    ac
+  )  
+}
+
+handle_as_of <- function(as_of = NULL) {
+  if (is.null(as_of)) {
+    as_of <- Sys.Date()
+  } else {
+    as_of <- try(as.Date(as_of))
+    if (inherits(as_of, "try-error")) {
+      stop("as_of could not be converted to date")
+    }
+  }
+  return(as_of)
+}
+
 #' @export
 ctf_daily_est <- function(ac, dtc_name, msl = NULL, sum_to_1 = TRUE, 
                           m_seq = TRUE) {

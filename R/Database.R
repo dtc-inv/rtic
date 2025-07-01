@@ -445,7 +445,7 @@ Database <- R6::R6Class(
           next
         }
         tx$TradeDate <- as.Date(tx$TradeDate)
-            is_cf <- tx$Action %in% c("Withdrawal", "Contribution")
+        is_cf <- tx$Action %in% c("Withdrawal", "Contribution")
         if (any(is_cf)) {
             tx$TradeDate[is_cf] <- prev_trading_day(tx$TradeDate[is_cf], 1)
         }
@@ -461,10 +461,25 @@ Database <- R6::R6Class(
       }
       new_ret <- do.call(cbind, res)
       new_ret <- cut_time(new_ret, date_start, date_end)
-      colnames(new_ret) <- sapply(res, colnames)
+      colnames(new_ret) <- paste0(sapply(res, colnames), " Daily Est.")
       old_ret <- lib$returns$read("ctf-daily")$data
       combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, is_xts = FALSE)
       lib$returns$write("ctf-daily", xts_to_arc(combo))
+      ctf <- ctf[ctf$Layer == 3, ]
+      for (i in 1:nrow(ctf)) {
+        tbl_hold <- read_hold(self$ac, ctf$DtcName[i], FALSE)
+        tbl_hold$TimeStamp <- as.Date(tbl_hold$TimeStamp)
+        dt_vec <- unique(tbl_hold$TimeStamp)
+        ix <- dt_vec >= prev_trading_day(date_start, 1) &
+          dt_vec <= next_trading_day(date_end, 1)
+        trunc_dt_vec <- dt_vec[ix]
+        tbl_hold <- tbl_hold[tbl_hold$TimeStamp %in% trunc_dt_vec, ]
+        p <- Portfolio$new(self$ac, tbl_hold)
+        ix <- p$tbl_hold$SecType %in% c("sma")
+        p$tbl_hold$DtcName[ix] <- paste0(p$tbl_hold$DtcName[ix], " Daily Est.")
+        p$init_rebal("D", "D")
+      }
+      
     },
     
     #' @description
