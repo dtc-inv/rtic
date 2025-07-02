@@ -152,12 +152,18 @@ Database <- R6::R6Class(
 
     #' @description Update index returns from Factset
     #' @param ids leave NULL to update all indexes, or enter specific index
-    #'   ids to update, note ids will have to first exist in the Master Security
+    #'   DtcName to update, note ids will have to first exist in the Master Security
     #'   List `tbl_msl`
     #' @param t_minus_m how many months to download
     ret_index = function(ids = NULL, t_minus_m = 1) {
       if (is.null(ids)) {
         idx <- filter(self$tbl_msl, ReturnLibrary == "index")
+        ids <- idx$Ticker
+      } else {
+        idx <- filter(self$tbl_msl, DtcName %in% ids)
+        if (nrow(idx) == 0) {
+          stop("ids not found, need to specify DtcName(s) in MSL")
+        }
         ids <- idx$Ticker
       }
       res <- list()
