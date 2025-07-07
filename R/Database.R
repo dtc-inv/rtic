@@ -445,6 +445,7 @@ Database <- R6::R6Class(
       ctf <- ctf$union
       sma <- ctf[ctf$Layer < 3, ]
       res <- list()
+      # SMA returns from market value and transactions
       for (i in 1:nrow(sma)) {
         tx <- try(lib$transactions$read(sma$DtcName[i])$data)
         if (inherits(tx, "try-error")) {
@@ -469,9 +470,12 @@ Database <- R6::R6Class(
       new_ret <- cut_time(new_ret, date_start, date_end)
       colnames(new_ret) <- paste0(sapply(res, colnames), " Daily Est.")
       old_ret <- lib$returns$read("ctf-daily")$data
-      combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, is_xts = FALSE)
+      combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, is_xts = FALSE,
+                         backfill = TRUE)
       lib$returns$write("ctf-daily", xts_to_arc(combo))
       ctf <- ctf[ctf$Layer == 3, ]
+      res <- list()
+      # CTF returns, rebalance portfolio
       for (i in 1:nrow(ctf)) {
         tbl_hold <- read_hold(self$ac, ctf$DtcName[i], FALSE)
         tbl_hold$TimeStamp <- as.Date(tbl_hold$TimeStamp)
@@ -484,8 +488,15 @@ Database <- R6::R6Class(
         ix <- p$tbl_hold$SecType %in% c("sma")
         p$tbl_hold$DtcName[ix] <- paste0(p$tbl_hold$DtcName[ix], " Daily Est.")
         p$init_rebal("D", "D")
+        res[[i]] <- p$rebal$rebal_ret
+        colnames(res[[i]]) <- ctf[i, ]$DailyId
       }
-      
+      new_ret <- do.call(cbind, res)
+      colnames(new_ret) <- sapply(res, colnames)
+      new_ret <- cut_time(new_ret, date_start, date_end)
+      combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, is_xts = FALSE,
+                         backfill = TRUE)
+      lib$returns$write("ctf-daily", xts_to_arc(combo))
     },
     
     #' @description
