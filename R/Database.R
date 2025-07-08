@@ -274,18 +274,27 @@ Database <- R6::R6Class(
         paste0(base, "PrivateEquity.xlsx"),
         "Private Equity Index"
       )
+      pe_q <- unsmooth_ret(pe_q)
       re_q <- read_private_xts(
         paste0(base, "PrivateRealEstateValueAdd.xlsx"),
         "Private Real Estate Value Add Index"
       )
+      re_q <- unsmooth_ret(re_q)
       reg_q <- read_private_xts(
         paste0(base, "PrivateRealEstate.xlsx"),
         "Private Real Estate Index"
       )
+      reg_q <- unsmooth_ret(reg_q)
       pc_q <- read_private_xts(
         paste0(base, "PrivateCredit.xlsx"),
         "Private Credit Index"
       )
+      pc_q <- unsmooth_ret(pc_q)
+      vc_q <- read_private_xts(
+        paste0(base, "VentureCapital.xlsx"),
+        "Venture Capital Index"
+      )
+      vc_q <- unsmooth_ret(vc_q)
       lib <- self$ac$get_library("returns")
       ind <- lib$read("index")
       ind <- dataframe_to_xts(ind$data)
@@ -296,13 +305,16 @@ Database <- R6::R6Class(
       re <- monthly_spline(re_m, re_q)
       reg <- monthly_spline(re_m, reg_q)
       pc <- monthly_spline(pc_m, pc_q)
+      vc <- monthly_spline(pe_m, vc_q)
       colnames(pe) <- "Private Equity Index"
       colnames(re) <- "Private Real Estate Value Add Index"
       colnames(reg) <- "Private Real Estate Index"
       colnames(pc) <- "Private Credit Index"
+      colnames(vc) <- "Private Venture Capital Index"
       dat <- xts_cbind(pe, re)
       dat <- xts_cbind(dat, reg)
       dat <- xts_cbind(dat, pc)
+      dat <- xts_cbind(dat, vc)
       xdf <- xts_to_dataframe(dat)
       xdf$Date <- as.character(xdf$Date)
       lib$write("private-index", xdf)
