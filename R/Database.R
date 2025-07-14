@@ -506,6 +506,7 @@ Database <- R6::R6Class(
       new_ret <- do.call(cbind, res)
       colnames(new_ret) <- sapply(res, colnames)
       new_ret <- cut_time(new_ret, date_start, date_end)
+      old_ret <- lib$returns$read("ctf-daily")$data
       combo <- xts_rbind(xts_to_dataframe(new_ret), old_ret, is_xts = FALSE,
                          backfill = TRUE)
       lib$returns$write("ctf-daily", xts_to_arc(combo))
