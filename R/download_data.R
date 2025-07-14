@@ -713,7 +713,9 @@ upload_ctf_monthly <- function(ac, xl_path = NULL, skip = 4) {
   nm_tgt <- match(colnames(r), tbl_cust$WorkupId)
   colnames(r) <- tbl_cust$DtcName[nm_tgt]
   r <- r["1994/"] / 100
-  lib$returns$write("ctf-monthly", xts_to_arc(r))
+  old_ret <- lib$returns$read("ctf")$data
+  combo <- xts_rbind(xts_to_arc(r), old_ret,is_xts = FALSE, backfill = TRUE)
+  lib$returns$write("ctf", xts_to_arc(combo))
 }
 
 read_daily_ctf_xl <- function(nm) {

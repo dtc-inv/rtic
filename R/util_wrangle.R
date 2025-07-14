@@ -460,3 +460,16 @@ rbind_holdings <- function(old, new, keep = c("old", "new")) {
   return(res)
 }
 
+pe_cf_twr <- function(wb, cf_sht = "cf", nav_sht = "nav") {
+  cf <- readxl::read_excel(wb, cf_sht)
+  cf <- dataframe_to_xts(cf)
+  nav <- readxl::read_excel(wb, nav_sht)
+  nav <- dataframe_to_xts(nav)
+  inter <- intersect(colnames(cf), colnames(nav))
+  cf <- cf[, inter]
+  nav <- nav[, inter]
+  for (i in 1:ncol(nav)) {
+    x <- cbind(cf[, i], nav[, i])
+    # find first NAV
+  }
+}
