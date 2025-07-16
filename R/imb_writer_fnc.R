@@ -49,7 +49,7 @@ create_perf_tbl <- function(rpt, tm10, freq = "months") {
 #' @export
 create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL, 
                                   b_or = NULL) {
-  dt <- eom_cal_perf_dt()[-1]
+  dt <- eom_cal_perf_dt()
   col <- rpt$col
   combo <- rpt$ret_combo(freq = freq, date_end = dt[1])[[1]]
   fund <- combo$p
@@ -64,7 +64,7 @@ create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL,
   }
   cr <- matrix(nrow = 2, ncol = length(dt))
   for (i in 1:length(dt)) {
-    if (i >= 3) {
+    if (i >= 4) {
       n <- as.numeric(gsub(" Yr", "", names(dt)[i]))
     } else {
       n <- 1
@@ -113,7 +113,7 @@ create_trail_perf_tbl <- function(rpt, freq = "months", p_or = NULL,
     width(1.75, j = 1) |>
     width(0.525, j = 2:ncol(cr)) |>
     height(0.18, i = 1:nrow(cr)) |> 
-    vline(j = 7, border = fp_border(color = "grey")) |>
+    vline(j = 8, border = fp_border(color = "grey")) |>
     hline(i = 2, border = fp_border(color = "grey"))
 }
 

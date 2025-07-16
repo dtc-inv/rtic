@@ -712,6 +712,25 @@ upload_ctf_monthly <- function(ac, xl_path = NULL, skip = 4) {
   r <- dat[, ix]
   nm_tgt <- match(colnames(r), tbl_cust$WorkupId)
   colnames(r) <- tbl_cust$DtcName[nm_tgt]
+  # manually get HFs - need better process here
+  tgt <- c(
+    "DTC PRIVATE DIVERSIFIERS II COMMON FUND (NoC)",
+    "DTC PRIVATE DIVERSIFIERS COMMON FUND (NoC)",
+    "DTC SHORT DURATION FIXED INCOME COMMON FUND (NoC)",
+    "Magnitude International Class A  (Net)",
+    "Turion Onshore, L.P. (Net)",
+    "Granville Multi-Strategy Partners, L.P. (Net)",
+    "Granville Equity Partners, L.P. (Net)",
+    "Winston Global Fund, L.P. (Net)",
+    "Winston Hedged Equity Fund, L.P. (Net)"
+  )
+  x <- dat[, tgt[1:3]]
+  colnames(x)<- c(
+    "Private Diversifiers",
+    "Private Diversifiers II",
+    "Short Duration"
+  )
+  r <- xts_cbind(r, x)
   r <- r["1994/"] / 100
   old_ret <- lib$returns$read("ctf")$data
   combo <- xts_rbind(xts_to_arc(r), old_ret,is_xts = FALSE, backfill = TRUE)

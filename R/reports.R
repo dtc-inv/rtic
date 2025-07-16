@@ -266,8 +266,8 @@ viz_trade_off <- function(x, b = NULL,
 
 #' @export
 viz_roll_style <- function(x, b, n = 63, freq = "days") {
-  col <- set_plot_col(ncol(res))
   res <- roll_style(x, b, n)
+  col <- set_plot_col(ncol(res))
   dat <- xts_to_tidy(res)
   ggplot(dat, aes(x = Date, y = value, fill = name)) +
     geom_area() +
