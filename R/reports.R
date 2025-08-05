@@ -410,46 +410,108 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   }
 }
 
-run_ppu_daily <- function(ac, as_of = NULL) {
-  as_of <- handle_as_of(as_of)
-  dict_file <- "N:/Investment Team/REPORTING/IMB/imb-writer/imb-data-input.xlsx"
-  dict <- readxl::read_excel(dict_file, "data")
-  lib <- get_all_lib(ac)
-  ctf_ret_d <- lib$returns$read("ctf-daily")$data
-  ctf_ret_d <- dataframe_to_xts(ctf_ret_d)
-  tbl_msl <- lib$`meta-tables`$read("msl")$data
+tbl_cal_perf <- function(x, as_of = NULL, eom = FALSE) {
+  dt <- eom_cal_perf_dt(as_of, eom)
+  perf <- list()
+  for (i in 1:length(dt)) {
+    perf[[i]] <- apply(x[paste0(dt[i], "/", as_of)] + 1, 2, prod)
+    if (i %in% 6:8) {
+      a <- as.numeric(gsub(" Yr", "", names(dt[i])))
+      perf[[i]] <- perf[[i]]^(1/a) - 1
+    } else {
+      perf[[i]] <- perf[[i]] - 1
+    }
+  }
+  perf <- do.call("cbind", perf)
+  perf <- data.frame(
+    Name = rownames(perf),
+    perf,
+    row.names = NULL
+  )
+  colnames(perf)[2:ncol(perf)] <- names(dt)
+  return(perf)
 }
 
-ppu_daily_table <- function(ac, as_of, table_nm, rpt_meta) {
-  dict <- dict[dict$Page == ctf_name, ]
-  ctf_hold <- read_hold(ac, ctf_name)
-  res <- merge_msl(ctf_hold, tbl_msl)
-  rpt_hold <- dict[dict$DataType == "Map", ]$Value
-  ix <- na.omit(match(rpt_hold, colnames(ctf_ret_d)))
-  if (length(ix) > 0) {
-    ctf_ret <- ctf_ret_d[, ix]
-    rpt_hold <- rpt_hold[!rpt_hold %in% colnames(ctf_ret)]
+run_ppu_daily <- function(ac, as_of = NULL) {
+  if (is.null(as_of)) {
+    as_of <- last_us_trading_day(Sys.Date())
   } else {
-    ctf_ret <- xts()
+    as_of <- as.Date(as_of)
   }
-  if (length(rpt_hold) > 0) {
-    ret <- read_ret(rpt_hold, ac) 
-    ret <- xts_cbind(ctf_ret, ret)
+  lib <- get_all_lib(ac)
+  ppu_tbl <- lib$`meta-tables`$read("ppu")$data
+  r <- read_ret(ppu_tbl$DtcName, ac)
+  
+}
+
+ppu_tbl <- function(ppu_tbl, r, as_of, tbl_name = NULL) {
+  if (tbl_name) {
+    ppu_x <- ppu_tbl[ppu_tbl$Table %in% tbl_name, ]
   } else {
-    ret <- ctf_ret
+    ppu_x <- ppu_tbl
   }
-  if (ncol(ret) == 0) {
-    stop("no returns found")
+  x <- r[, ppu_x$DtcName]
+  x <- clean_by_col(x)
+  if (!is.na(x$miss)) {
+    warning("some returns missing")
+    ppu_x <- ppu_x[ppu_x$DtcName %in% colnames(x$ret), ]
   }
-  ctf <- read_ret(ctf_name, ac)
-  ctf_bench <- read_ret(
-    bench_dict[bench_dict$DtcName == ctf_name, "ReturnBench"],
-    ac
+  x <- x$ret
+  perf <- tbl_cal_perf(x, as_of)
+  perf$Name <- gsub(" Daily Est.", "", perf$Name)
+  yrs <- xts_to_dataframe(change_freq(x, "years"))
+  yrs <- yrs[order(yrs$Date, decreasing = TRUE), ]
+  yrs <- t(yrs[2:4, -1])
+  y <- seq(from = year(as_of) - 1, to = year(as_of) - 3)
+  colnames(yrs) <- as.character(y)
+  xdf <- data.frame(
+    Name = perf$Name, Target = ppu_x$Target / 100
   )
-  under_bench <- read_ret(
-    bench_dict[bench_dict$DtcName %in% colnames(ret), "ReturnBench"],
-    ac
-  )  
+  xdf <- cbind(xdf, perf[, 2:8], yrs)
+  xdf <- cbind(xdf, ppu_x[, "Format"])
+  colnames(xdf)[13] <- "Format"
+  xdf$Format[is.na(xdf$Format)] <- ""
+  rownames(xdf) <- NULL
+  column_defs <- setNames(
+    lapply(colnames(xdf[, -1]), function(col) {
+      if (col %in% c("DTD", "1 Yr", "2024")) {
+        colDef(
+          style = function(value, index, name) {
+            list(borderLeft = "1px solid #000")
+          },
+          format = colFormat(percent = TRUE, digits = 2)
+        )
+      } else {
+        colDef(
+          format = colFormat(percent = TRUE, digits = 2)
+        )
+      } 
+    }),
+    colnames(xdf)[-1]    
+  )
+  column_defs$Format <- colDef(show = FALSE)
+  reactable(
+    xdf,
+    theme = reactableTheme(
+      headerStyle = list(
+        backgroundColor =  "#003057",
+        color = "white",
+        fontWeight = "bold"
+      )
+    ),
+    columns = column_defs,
+    rowStyle = function(index) {
+      if (xdf[index, "Format"] == "bold") {
+        list(`font-weight` = "bold")
+      } else if (xdf[index, "Format"] == "bench") {
+        list(background = "lightgrey")
+      } else if (xdf[index, "Format"] == "lowgrid") {
+        list(borderBottom = "1px solid #000")
+      } else if (xdf[index, "Format"] == "lowgrid-bench") {
+        list(background = "lightgrey", borderBottom = "1px solid #000")
+      }
+    }
+  )
 }
 
 handle_as_of <- function(as_of = NULL) {
@@ -462,6 +524,34 @@ handle_as_of <- function(as_of = NULL) {
     }
   }
   return(as_of)
+}
+
+#' @export
+clean_by_col <- function(x, eps = 0.05) {
+  is_miss <- rep(NA, ncol(x))
+  for (i in 1:ncol(x)) {
+    cln <- na.omit(x[, i])
+    first_ret <- zoo::index(cln)[1]
+    last_ret <- zoo::index(cln)[length(cln)]
+    dt_rng <- paste0(first_ret, "/", last_ret)    
+    is_miss[i] <- sum(is.na(x[dt_rng, i])) > (eps * length(x[dt_rng, i]))
+    if (!is_miss[i]) {
+      x_sub <- x[dt_rng, i]
+      x_sub[is.na(x_sub)] <- 0
+      x[dt_rng, i] <- x_sub
+    }
+  }
+  if (any(is_miss)) {
+    ret <- x[, !is_miss]
+    miss <- x[, is_miss]
+  } else {
+    ret <- x
+    miss <- NA
+  }
+  res <- list()
+  res$ret <- ret
+  res$miss <- miss
+  return(res)
 }
 
 #' @export

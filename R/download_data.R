@@ -738,7 +738,8 @@ upload_ctf_monthly <- function(ac, xl_path = NULL, skip = 4) {
 }
 
 read_daily_ctf_xl <- function(nm) {
-  fnm <- paste0("N:/Investment Team/DATABASES/CustomRet/ctf-daily-backfill/", nm, ".csv")
+  fnm <- paste0("N:/Investment Team/DATABASES/CustomRet/ctf-daily-backfill/", 
+                nm, ".csv")
   dat <- read.csv(fnm)
   dt <- try(as.Date(dat$Date))
   if (inherits(dt, "try-error")) {
@@ -751,4 +752,55 @@ read_daily_ctf_xl <- function(nm) {
   out <- xts(r, dt)
   colnames(out) <- nm
   return(out)
+}
+
+pvt_cf <- function(wb, cf_sht = "cf", nav_sht = "nav") {
+  cf <- read_xts(wb, cf_sht)
+  nav <- read_xts(wb, nav_sht)
+  inter <- intersect(colnames(cf), colnames(nav))
+  nav <- nav[, inter]
+  cf <- cf[, inter]
+  res <- list()
+  for (i in 1:ncol(nav)) {
+    ix <- paste0(zoo::index(na.omit(cf[, i]))[1], "/")
+    combo <- clean_ret(cbind(cf[ix, i], nav[ix, i]), trunc_start = FALSE, eps = 1)
+    q <- combo$ret[, 2]
+    q <- q[q!= 0, ]
+    twr <- q
+    twr[,] <- NA
+    cfi <- combo$ret[, 1]
+    #cfj <- cut_time(cfi, date_end = zoo::index(q)[1])
+    cfj <- cfi[paste0("/", zoo::index(q)[1])]
+    w <- wgt_month(zoo::index(q)[1], zoo::index(cfj))
+    twr[1] <- (as.numeric(q[1]) + sum(cfj)) / -sum(cfj * w)
+    for (j in 2:nrow(q)) {
+      #cfj <- cut_time(cfi, date_start = zoo::index(q)[j-1]+1, zoo::index(q)[j])
+      date_start <- zoo::index(q)[j-1]+1
+      date_end <- zoo::index(q)[j]
+      cfj <- cfi[paste0(date_start, "/", date_end)]
+      v1 <- as.numeric(q[j])
+      v0 <- as.numeric(q[j-1])
+      w <- wgt_month(zoo::index(q)[j], zoo::index(cfj))
+      twr[j] <- (v1 - v0 + sum(cfj)) / (v0 - sum(cfj * w)) 
+    }
+    res[[i]] <- twr
+  }
+}
+
+#' @export
+wgt_month <- function(q, m) {
+  x <- month(q) - month(m)
+  wgt <- rep(NA, length(x))
+  for (i in 1:length(x)) {
+    if (x[i] == 0) {
+      wgt[i] <- c(90 - 75) / 90
+    }
+    if (x[i] == 1) {
+      wgt[i] <- (90 - 45) / 90
+    }
+    if (x[i] == 2) {
+      wgt[i] <- (90 - 15) / 90
+    }
+  }
+  return(wgt)
 }
