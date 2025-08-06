@@ -448,6 +448,7 @@ run_ppu_daily <- function(ac, as_of = NULL) {
   for (i in 1:length(tbl_name)) {
     res[[i]] <- ppu_sect(ppu_tbl, r, as_of, tbl_name[i])
   }
+  names(res) <- tbl_name
   return(res)
 }
 
