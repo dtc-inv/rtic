@@ -237,7 +237,7 @@ Update index returns from Factset
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{ids}}{leave NULL to update all indexes, or enter specific index
-ids to update, note ids will have to first exist in the Master Security
+DtcName to update, note ids will have to first exist in the Master Security
 List `tbl_msl`}
 
 \item{\code{t_minus_m}}{how many months to download}

@@ -410,6 +410,7 @@ eom_cal_perf_dt <- function(as_of = NULL, eom = TRUE) {
   }
 }
 
+#' @export
 tbl_cal_perf <- function(x, as_of = NULL, eom = FALSE) {
   dt <- eom_cal_perf_dt(as_of, eom)
   perf <- list()
@@ -432,6 +433,7 @@ tbl_cal_perf <- function(x, as_of = NULL, eom = FALSE) {
   return(perf)
 }
 
+#' @export
 run_ppu_daily <- function(ac, as_of = NULL) {
   if (is.null(as_of)) {
     as_of <- last_us_trading_day(Sys.Date())
@@ -441,11 +443,17 @@ run_ppu_daily <- function(ac, as_of = NULL) {
   lib <- get_all_lib(ac)
   ppu_tbl <- lib$`meta-tables`$read("ppu")$data
   r <- read_ret(ppu_tbl$DtcName, ac)
-  
+  tbl_name <- unique(ppu_tbl$Table)
+  res <- list()
+  for (i in 1:length(tbl_name)) {
+    res[[i]] <- ppu_sect(ppu_tbl, r, as_of, tbl_name[i])
+  }
+  return(res)
 }
 
-ppu_tbl <- function(ppu_tbl, r, as_of, tbl_name = NULL) {
-  if (tbl_name) {
+#' @export
+ppu_sect <- function(ppu_tbl, r, as_of, tbl_name = NULL) {
+  if (!is.null(tbl_name)) {
     ppu_x <- ppu_tbl[ppu_tbl$Table %in% tbl_name, ]
   } else {
     ppu_x <- ppu_tbl
@@ -504,16 +512,17 @@ ppu_tbl <- function(ppu_tbl, r, as_of, tbl_name = NULL) {
       if (xdf[index, "Format"] == "bold") {
         list(`font-weight` = "bold")
       } else if (xdf[index, "Format"] == "bench") {
-        list(background = "lightgrey")
+        list(background = "lightgray")
       } else if (xdf[index, "Format"] == "lowgrid") {
         list(borderBottom = "1px solid #000")
       } else if (xdf[index, "Format"] == "lowgrid-bench") {
-        list(background = "lightgrey", borderBottom = "1px solid #000")
+        list(background = "lightgray", borderBottom = "1px solid #000")
       }
     }
   )
 }
 
+#' @export
 handle_as_of <- function(as_of = NULL) {
   if (is.null(as_of)) {
     as_of <- Sys.Date()
