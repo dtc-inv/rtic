@@ -527,7 +527,7 @@ Database <- R6::R6Class(
         d <- daily[, i]
         d <- clean_ret(d, eps = 1)
         d <- d$ret
-        ix <- colnames(monthly) %in% colnames(d)
+        ix <- colnames(monthly) %in% gsub(" Daily Est.", "", colnames(d))
         if (sum(ix) == 0) {
           warning(paste0(colnames(d), " not found in monthly returns"))
           next
