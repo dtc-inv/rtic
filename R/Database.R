@@ -187,7 +187,7 @@ Database <- R6::R6Class(
       combo_df$Date <- as.character(combo_df$Date)
       lib$write("index", combo_df)
     },
-
+    
     #' @description Update ETF returns from Factset
     #' @param ids leave `NULL` to udpate all ETFs in the Master Security List,
     #'   or enter a vector to only update specific ETFs
