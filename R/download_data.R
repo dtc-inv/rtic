@@ -99,7 +99,8 @@ download_bd_batch <- function(api_keys, batch_id) {
 unzip_bd_batch <- function(resp) {
   tmp <- tempfile(fileext = ".zip")
   brio::write_file_raw(resp$content, path = tmp)
-  ufile <- try(unzip(tmp, exdir = paste0("~/json/", Sys.Date())))
+  ufile <- try(unzip(tmp, exdir = "~/json/"))
+  print(ufile)
   if (inherits(ufile, "try-error")) {
     save(resp, file = "~/resp.RData")
     stop("error in unzipping, saving ~/resp.RData")
